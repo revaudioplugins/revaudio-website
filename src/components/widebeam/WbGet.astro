@@ -10,7 +10,8 @@
  * house forms' no-JS route). Once the trial is open (ask.registerUrl) there is no such route: the download goes out
  * only from /download/register, which reads JSON, and the worker logs a '-trial' source on /form-once without relaying
  * it, then answers "You're on the list" (r-asks-nojstrial). So there the form has no action and its key stays
- * disabled until capture.ts binds it ([data-wb-needs-script]); with JS off a <noscript> line says why.
+ * disabled until capture.ts binds it ([data-wb-needs-script]); with JS off a <noscript> line says why, and with JS on
+ * but the script failed a .wb-get-late line does, from 9 s (get.css).
  */
 import { widebeam, askFor, buyFor, formatsLine, onceUrl as formOnceUrl } from '../../data/widebeam';
 
@@ -19,8 +20,11 @@ const ask = askFor();
 const buy = buyFor();
 // pre-open only: the one no-JS route that does what the page says (see above)
 const native = !ask.registerUrl;
+// JS on but the page script never bound the form (a blocker, a dropped request, an old browser): the key stays
+// disabled, so a line says why. CSS shows it from 9 s while the form still has [data-wb-needs-script] (capture.ts
+// removes it on bind), never with JS off, where the <noscript> line speaks (get.css, r-asks-deadtrial): ask.late
 ---
-<!-- ============ GET IT: the one ask + the buy side (src/data/widebeam.ts askFor / buyFor) ============ -->
+{/* ============ GET IT: the one ask + the buy side (src/data/widebeam.ts askFor / buyFor) ============ */}
 <section class="wb-get" id="wb-get" aria-label="Get WIDE BEAM">
   <div class="wb-get-plate wb-plate wb-plate--badge" data-reveal="fade">
     <div class="wb-get-trial" data-wb-ask>
@@ -42,6 +46,7 @@ const native = !ask.registerUrl;
         <button type="submit" class="rv-btn" disabled={!native}><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
       </form>
       {!native && ask.nojs && <noscript><p class="wb-get-status err">{ask.nojs}</p></noscript>}
+      {!native && <p class="wb-get-status err wb-get-late">{ask.late}</p>}
       <p class="wb-get-status" id="wb-get-status" data-wb-trial-status role="status" aria-live="polite" tabindex="-1"></p>
       <p class="wb-get-micro wb-plate-label" id="wb-get-micro">{ask.micro}</p>
       <p class="wb-get-notice" id="wb-get-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>

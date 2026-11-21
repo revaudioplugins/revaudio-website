@@ -204,7 +204,7 @@ export class WideBeamEngine {
   stop() { this.source?.stop(); this.source = null; }
   get playing() { return !!this.source; }
   /** what plays (or would play on start): the loop or the last file / clip */
-  get sourceName() { return this.current.kind === 'demo' ? (this.current.name ?? 'Night Drive loop') : this.current.name; }
+  get sourceName() { return this.current.kind === 'demo' ? (this.current.name ?? 'Synth loop') : this.current.name; }
   get sourceKind() { return this.current.kind; }
 
   /** Pick what plays; if something is playing it switches at once. */
@@ -336,7 +336,13 @@ function nightDrive(ctx: AudioContext, dest: AudioNode) {
   // an OfflineAudioContext (a test render) has no clock to tick on: schedule its whole length up front
   const offline = typeof OfflineAudioContext !== 'undefined' && ctx instanceof OfflineAudioContext;
   let next = ctx.currentTime + 0.08, i = 0;
-  const tick = () => { const until = offline ? (ctx as unknown as OfflineAudioContext).length / ctx.sampleRate : ctx.currentTime + 0.6; while (next < until) { schedBar(next, i++); next += bar; } };
+  // a timer held back past the look-ahead (a stalled main thread, a clamped background timer) never books the bars it
+  // missed into the past, where they all fire at once: the loop picks up at the next bar after now (r-dash-scheduler)
+  const tick = () => {
+    if (!offline && next < ctx.currentTime) { const miss = Math.ceil((ctx.currentTime - next) / bar); next += miss * bar; i += miss; }
+    const until = offline ? (ctx as unknown as OfflineAudioContext).length / ctx.sampleRate : ctx.currentTime + 0.6;
+    while (next < until) { schedBar(next, i++); next += bar; }
+  };
   tick();
   const timer = offline ? 0 : window.setInterval(tick, 150);
   return {

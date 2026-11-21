@@ -66,6 +66,8 @@
 }
 .wb-hero-line span { display: inline-block; }
 .wb-hero-keys { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 22px; }
+/* after a sign-up (hero.ts, wb:joined) the trial key goes: .rv-btn's own display would keep a [hidden] key on screen */
+.wb-hero-keys a[hidden] { display: none; }
 /* at 'open' the trial key takes the shine and the drive steps down to a quiet link in the same row */
 .wb-hero-drive {
   font-family: var(--font-body); font-weight: 600; font-size: 1rem; color: var(--ivory); text-decoration: underline;
@@ -84,6 +86,18 @@
 /* a short laptop (Dan's 1141x636, 1280x665): the lockup about 15 % smaller so the column clears the car (art-d02) */
 @media (max-height: 700px) and (min-width: 561px) {
   .wb-mark-row { font-size: min(calc(clamp(3rem, 12.5vw, 10.5rem) * .85), var(--wb-mark-fit)); } /* 121 / 136 px there, as tuned */
+}
+/* Skip / Replay (top right, 101 / 90 px) must never paint over the M, at WIDTH 200 either (r-hero-pill: -5 px at
+   1000x700, -17 at 800x600). Below 1141 px wide the row reaches under the pill, so:
+   - a short screen keeps the column high (the car's vanishing point is close): the row stops short of the pill
+     instead (both sides less the pill's 106 px band and ~12 px of air; 7.66 em = the row's 7.76 less the M's side
+     bearing). 1141 and up are unchanged.
+   - a taller landscape screen has room below: the column starts under the pill's band (ink top >= 9 px under it). */
+@media (max-height: 700px) and (min-width: 561px) and (max-width: 1140px) {
+  .wb-hero { --wb-mark-fit: calc((100vw - 236px) / 7.66); }
+}
+@media (orientation: landscape) and (min-height: 701px) and (max-width: 1260px) {
+  .wb-hero-inner { padding-top: max(44px, calc(8vh - 30px)); }
 }
 
 /* ---------- the intro film over the road, and its dissolve into it ----------
@@ -146,16 +160,31 @@
   .wb-hero-sig { margin-top: 6px; font-size: 1.9rem; }
   .wb-hero-sig span { transform: translateX(36px) rotate(-6deg); }
 }
+/* the name stays the widest part (the GAS 2 canon): at 2.05rem the one-line outcome line is 358 px of ink, wider than
+   the lockup from 386 px (where it stops wrapping) to 410 (390: 358 vs 340). There it scales with the lockup instead
+   (10.91 em of ink vs the lockup's 6.55 em), still one line: wrapping it put the column 30 px lower, 34 px from the
+   road's vanishing point at 393x659 (an iPhone with its bars). 360 and 375 keep their two lines. */
+@media (min-width: 386px) and (max-width: 410px) {
+  .wb-hero-line { font-size: calc((100vw - 32px) / 11.6); }
+}
 
 /* ---------- a phone held sideways: tighter, and the key on the first screen (mobile-13) ---------- */
 @media (orientation: landscape) and (max-height: 500px) {
-  .wb-hero-inner { padding: 10px 16px 24px; }
-  .wb-mark-row { font-size: min(12.5vw, 15vh); }
+  .wb-hero-inner { padding: 6px 16px 24px; }
+  .wb-mark-row { font-size: min(12.5vw, 13.5vh); }
   .wb-sub { margin-top: 6px; font-size: 13px; }
-  .wb-hero-line { margin-top: 8px; font-size: 1.45rem; }
+  .wb-hero-line { margin-top: 6px; font-size: 1.45rem; }
   .wb-hero-keys { margin-top: 10px; }
   .wb-hero-keys .rv-btn--lg { --rb-h: 52px; --rb-fs: 18px; --rb-px: 26px; --rb-r: 14px; }
-  .wb-hero-sig { margin-top: -6px; font-size: 1.6rem; }
+  .wb-hero-sig { font-size: 1.6rem; }
+  /* the column ends >= 40 px above the car's vanishing point here too (art-03; r-hero-vp: with the signature under the
+     key it was 2 px at 667x375 and 21 at 844x390). The signature steps up beside the key, still to its right and
+     tilted, and the lockup is a little shorter (13.5vh, was 15). The row has the width for it, the open phase's two
+     keys included (412 + 14 + 126 px in the 635 px column at 667). */
+  .wb-hero-inner { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; column-gap: 14px; }
+  .wb-hero-inner > :not(.wb-hero-keys, .wb-hero-sig) { flex: 0 0 100%; }
+  .wb-hero-sig { margin: 10px 0 0; }
+  .wb-hero-sig span { transform: rotate(-6deg); }
 }
 
 /* ---------- forced colours (Windows High Contrast): the lockup reads as letters, not tiles (art-d04) ---------- */

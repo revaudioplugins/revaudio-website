@@ -76,6 +76,16 @@
 }
 .wb-page ::selection { background: rgba(201, 163, 92, .4); }
 
+/* the house smoke (global.css .haze-plate, haze1 + haze2.webp, 67 KB) sits behind the page's own opaque background, so on
+   /widebeam it shows only through the translucent footer (measured at 390x844: a shot with the plates hidden differs
+   from one with them only in the footer rows; everywhere else the two are the same, stage 4). Its two photos wait for the footer: the inline
+   script at the end of widebeam.astro marks .site-footer [data-wb-near] 3/4 of a screen ahead, as the parts kit's art.
+   That takes them out of a phone's first view, which sat 1.4 KB over G11's 1.0 MB bar (r-cross-g11fv). Without JS, or in
+   a browser without :has(), the rule doesn't apply and the smoke loads as on every other page. */
+@media (scripting: enabled) {
+  :root:not(:has(.site-footer[data-wb-near])) .haze-plate { background-image: none; }
+}
+
 /* ---------- shared ---------- */
 .wb-head { max-width: 1180px; margin: 0 auto; padding: 0 16px; text-align: center; }
 /* kickers: the plate's engraved serif caps (D4 C) */
@@ -93,6 +103,18 @@
 
 [data-wb-reveal] { opacity: 0; transform: translateY(30px); transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform 1s cubic-bezier(.16, 1, .3, 1); }
 [data-wb-reveal].is-in { opacity: 1; transform: none; }
+
+/* the house reveal's failsafe on this page (r-cross-revealstuck). global.css hides [data-reveal] under html.motion-ok
+   (set by BaseLayout's inline head gate) until src/lib/reveal.ts adds .revealed, and in a production build reveal.ts
+   rides the page's own script chunk. If that chunk never runs (cached HTML naming the last deploy's chunk, a dropped
+   request, a blocker), the plate, the four section heads, the glove box, the manual and the closer (both sign-up forms)
+   stayed at opacity 0 for good. CSS only, since a failsafe in the failed chunk would never run: at 9 s they show (the
+   hero's own failsafe is 8.5 s). init.ts puts .wb-booted on the page as it boots, which takes the failsafe off and
+   leaves the blocks to the house reveal (its entrance on scroll, and its own fallback that shows the rest 2.5 s after
+   it starts), so on a working page this never fires. An animation beats the house's opacity 0 and gsap's inline
+   from-state. */
+html.motion-ok .wb-page:not(.wb-booted) :is([data-reveal], [data-reveal-item]):not(.revealed) { animation: wb-reveal-failsafe 0s 9s forwards; }
+@keyframes wb-reveal-failsafe { to { opacity: 1; } }
 
 .wb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .wb-head > p { margin-left: auto; margin-right: auto; }
@@ -128,3 +150,10 @@ html.hc .wb-page {
 html.hc .wb-page :is(.wb-step, .wb-level) { opacity: 1; }
 html.hc .wb-page :is(.wb-hud-lcd, .wb-lede) { text-shadow: none; }
 html.hc .wb-page .wb-dr dd { color: var(--lcd-ink); }
+/* the brass keys' focus ring in high contrast (r-base-hcring). The house html.hc .rv-btn (buttons.css, 0-2-1) draws an
+   always-on 2 px white outline that outranks both html.hc :focus-visible (0-1-1) and .rv-btn:focus-visible (0-2-0), so
+   a focused key looked exactly like a blurred one. Focused, the key takes the house hc ring (3 px --brass-bright) set
+   out to 4 px: the white band at 2-4 px turns to the page's dark and the ring sits outside it, a change that reads at a
+   glance. 'Use your own track' is a label round its file input, so it rings on :focus-within (drive.css .wb-file).
+   A house bug (the /plugins key is the same); this fixes it on /widebeam only. */
+html.hc .wb-page :is(.rv-btn:focus-visible, .rv-btn.wb-file:focus-within) { outline: 3px solid var(--brass-bright); outline-offset: 4px; }

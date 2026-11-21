@@ -14,7 +14,11 @@ import type { Face } from './face';
 export function initKeys(page: HTMLElement, store: Store, face: Face, reduced: boolean) {
   const drive = page.querySelector<HTMLElement>('#wb-drive');
   drive?.addEventListener('keydown', (e) => {
-    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    if (e.repeat || e.metaKey || e.defaultPrevented) return;
+    // [ and ] need Option (a German, French, Nordic or Swiss Mac) or AltGr (= Ctrl + Alt on Windows) on many layouts: those
+    // still step the presets; a plain Ctrl or Alt chord is the browser's or the system's (r-dash-altkeys)
+    const bracket = e.key === '[' || e.key === ']';
+    if (bracket ? e.ctrlKey && !e.altKey : e.ctrlKey || e.altKey) return;
     const t = e.target as HTMLElement;
     // (a range takes no letters: the phone deck's knobs and VOLUME are dash controls like the face's)
     if (t.closest('input:not([type=range]), textarea, select, [contenteditable], iframe, video, [data-wb-manual]')) return;

@@ -20,9 +20,9 @@ const TOGGLE = { frames: 29, cols: 6, rows: 5 };
 const pos = (f: number) => `${((f % TOGGLE.cols) / (TOGGLE.cols - 1)) * 100}% ${(Math.floor(f / TOGGLE.cols) / (TOGGLE.rows - 1)) * 100}%`;
 const COACH_KEY = 'wb-coach-v1';
 
-export function initConsole(page: HTMLElement, store: Store, face: Face, audio: { setVolume(db: number): void }) {
+export function initConsole(page: HTMLElement, store: Store, face: Face, audio: { setVolume(db: number): void; monoSource(): boolean }) {
   const root = page.querySelector<HTMLElement>('[data-wb-console]');
-  if (!root) return;
+  if (!root) return () => {};
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ── ORIGINAL | WIDE BEAM: the bat strip on an over-centre spring (the face's own swStep), bound to POWER ──
@@ -47,6 +47,15 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
   setBatArt();
   keyOn?.addEventListener('click', () => store.set({ power: true }, 'console'));
   keyOff?.addEventListener('click', () => store.set({ power: false }, 'console'));
+  // the pair is one choice of two, so it is a radio group (WbConsole.astro): one Tab stop, the arrows move the choice
+  // (two aria-pressed toggles announced a toggle that did nothing when pressed again: r-dash-abrole)
+  [keyOn, keyOff].forEach((k) => k?.addEventListener('keydown', (e) => {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
+    e.preventDefault();
+    const to = k === keyOn ? keyOff : keyOn;
+    store.set({ power: to === keyOn }, 'console');
+    to?.focus();
+  }));
 
   // ── MONO CHECK ──
   const mono = root.querySelector<HTMLButtonElement>('[data-wb-mono-check]');
@@ -93,8 +102,10 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
 
   const paint = () => {
     const s = store.get();
-    keyOn?.setAttribute('aria-pressed', String(s.power));
-    keyOff?.setAttribute('aria-pressed', String(!s.power));
+    keyOn?.setAttribute('aria-checked', String(s.power));
+    keyOff?.setAttribute('aria-checked', String(!s.power));
+    if (keyOn) keyOn.tabIndex = s.power ? 0 : -1;
+    if (keyOff) keyOff.tabIndex = s.power ? -1 : 0;
     root.classList.toggle('is-original', !s.power);
     mono?.setAttribute('aria-pressed', String(s.mono));
     const nm = PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
@@ -106,9 +117,12 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
 
   // ── the coach (first visit): the trip LCD names the next thing to try, its control's light breathes ──
   // con / deck: the console's and the phone deck's own control for that step; touchText / touchSay: a finger's gesture
-  type Step = { text: string; say: string; touchText?: string; touchSay?: string; cue: CueTarget; con?: string; deck: string; done(s: ReturnType<Store['get']>, ch: Record<string, unknown>, src: string): boolean };
+  // wait(s): the step has nothing to ask for now, and the coach goes on to the next one (the step stays owed)
+  type Step = { text: string; say: string; touchText?: string; touchSay?: string; cue: CueTarget; con?: string; deck: string; done(s: ReturnType<Store['get']>, ch: Record<string, unknown>, src: string): boolean; wait?(s: ReturnType<Store['get']>): boolean };
   const STEPS: Step[] = [
-    { text: 'DRAG WIDTH UP', say: 'Try this: drag WIDTH up.', touchText: 'SLIDE WIDTH RIGHT', touchSay: 'Try this: slide a finger right across WIDTH.', cue: 'width', deck: '[data-wb-deck-ctl="width"]', done: (s, ch, src) => 'width' in ch && src !== 'preset' && s.width >= 160 },
+    // (WIDTH already at 160 or past it, a preset's doing: no "drag it up" to a visitor who has it there or at the top, 200:
+    // r-dash-coachmax; on a mono track WIDTH has nothing to widen: HIGH BEAM is the move, r-dash-monocoach)
+    { text: 'DRAG WIDTH UP', say: 'Try this: drag WIDTH up.', touchText: 'SLIDE WIDTH RIGHT', touchSay: 'Try this: slide a finger right across WIDTH.', cue: 'width', deck: '[data-wb-deck-ctl="width"]', done: (s, ch, src) => 'width' in ch && src !== 'preset' && s.width >= 160, wait: (s) => s.width >= 160 || audio.monoSource() },
     { text: 'NOW PRESS MONO', say: 'Now press MONO.', cue: 'mono', con: '[data-wb-mono-check]', deck: '[data-wb-deck-sw="mono"]', done: (s, ch) => 'mono' in ch && s.mono },
     { text: 'POWER OFF = ORIGINAL', say: 'Now switch POWER off: that is the original.', cue: 'power', con: '[data-wb-ab="off"]', deck: '[data-wb-deck-sw="power"]', done: (s, ch) => 'power' in ch && !s.power },
   ];
@@ -117,18 +131,24 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
   let doneMask = 0;
   try { doneMask = Number(localStorage.getItem(COACH_KEY)) || 0; } catch {}
   const all = (1 << STEPS.length) - 1;
-  let shown = -1, lit = false;
+  // on a mono track, while WIDTH's step is owed: the beam first (shown only, never stored: the track decides it)
+  const BEAM: Step = { text: 'FLIP HIGH BEAM', say: 'This track is mono, so WIDTH has nothing to widen: flip HIGH BEAM.', cue: 'high', deck: '[data-wb-deck-sw="high"]', done: () => false };
+  let shown: Step | null = null, lit = false;
   const coach = () => {
     const s = store.get();
-    const i = lit && doneMask !== all ? STEPS.findIndex((_, n) => !(doneMask & (1 << n))) : -1;
+    let st: Step | null = null;
+    if (lit && doneMask !== all) {
+      if (!(doneMask & 1) && audio.monoSource() && !s.high) st = BEAM;
+      else st = STEPS.find((x, n) => !(doneMask & (1 << n)) && !x.wait?.(s)) ?? null;
+    }
     // the line and the lamp only while the face is lit (POWER off leaves dark glass: the step that is next waits)
-    const showing = i >= 0 && s.power, finger = deckOn() || matchMedia('(pointer: coarse)').matches;
-    face.say(showing ? (finger && STEPS[i].touchText) || STEPS[i].text : null);
-    face.cue(showing ? STEPS[i].cue : null);
+    const showing = !!st && s.power, finger = deckOn() || matchMedia('(pointer: coarse)').matches;
+    face.say(showing ? (finger && st!.touchText) || st!.text : null);
+    face.cue(showing ? st!.cue : null);
     [root, deck].forEach((r) => r?.querySelectorAll('.is-cue').forEach((n) => n.classList.remove('is-cue')));
-    if (showing && STEPS[i].con) root.querySelector(STEPS[i].con!)?.classList.add('is-cue');
-    if (showing && deck) deck.querySelector(STEPS[i].deck)?.classList.add('is-cue');
-    if (i !== shown) { shown = i; if (live) live.textContent = i >= 0 ? (finger && STEPS[i].touchSay) || STEPS[i].say : ''; }
+    if (showing && st!.con) root.querySelector(st!.con!)?.classList.add('is-cue');
+    if (showing && deck) deck.querySelector(st!.deck)?.classList.add('is-cue');
+    if (st !== shown) { shown = st; if (live) live.textContent = st ? (finger && st.touchSay) || st.say : ''; }
   };
   store.on((s, ch, src) => {
     if (src === 'init' || src === 'story') return;
@@ -139,4 +159,5 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
   });
   face.onIgnite(() => { lit = true; coach(); });
   matchMedia(DECK_MQ).addEventListener?.('change', coach); // turned sideways or back: the line for the controls in view
+  return coach; // sound.ts: the track changed (a mono one asks for HIGH BEAM)
 }

@@ -16,7 +16,8 @@
  *
  * API for the other modules: requestSound(srcEl) starts it as "Take it for a drive" does; stopForFilm() stops it and
  * nothing restarts it by itself (lane S calls it when the tutorial plays); isPlaying(); onChange(fn) hears play / stop.
- * The SOUND key (lane A's markup, no aria-label): its visible text is its name, "Sound on" / "Sound off", with aria-pressed.
+ * The SOUND key (lane A's markup, no aria-label): its visible text is its name, a fixed "Sound", and aria-pressed carries the
+ * state (WbSound.astro, r-asks-soundname).
  */
 import { WideBeamEngine, type WbSource } from './audio';
 import type { Store } from './state';
@@ -39,7 +40,7 @@ export const isPlaying = () => !!api?.playing();
 export function onChange(fn: (on: boolean) => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 
 /**
- * What the demo plays: the synthesized Night Drive loop, or one of four clips cut from the team's own renders already on
+ * What the demo plays: the synthesized loop (audio.ts nightDrive), or one of four clips cut from the team's own renders already on
  * the site (Yoni's DAW bounces; how each was cut, measured and matched: the lane D report, D.3). Each clip is a seamless
  * loop of `samples` at 48 kHz with 0.25 s of itself on both sides (the AAC priming never reaches the seam), AAC 160k,
  * loudness-matched to the others and to the synth loop at the engine's input (-19.3 LUFS, true peak <= -1.4 dBTP), so it
@@ -51,11 +52,12 @@ export function onChange(fn: (on: boolean) => void) { listeners.add(fn); return 
  *   Full mix      the GAS mixer's three dry stems summed (public/gas-mixer/audio/*_dry.m4a), its first 4 of 8 bars.
  */
 const PAD = 0.25, SR = 48000;
-type Track = { name: string; hint: string; url?: string; loop?: [number, number] };
+type Track = { name: string; hint: string; url?: string; loop?: [number, number]; mono?: boolean };
 const clip = (url: string, samples: number) => ({ url, loop: [PAD, PAD + samples / SR] as [number, number] });
 export const TRACKS: Track[] = [
-  { name: 'Night Drive (synth)', hint: 'turn WIDTH, flip HIGH BEAM, press MONO' },
-  { name: 'Vocal (mono)', hint: "WIDTH can't widen a mono track: flip HIGH BEAM", ...clip(vocalClip, 576000) },
+  // (not "Night Drive": factory preset 15 has that name, in the PRESET window right above: r-dash-trackname)
+  { name: 'Synth loop', hint: 'turn WIDTH, flip HIGH BEAM, press MONO' },
+  { name: 'Vocal (mono)', hint: "WIDTH can't widen a mono track: flip HIGH BEAM", mono: true, ...clip(vocalClip, 576000) },
   { name: 'Guitar', hint: 'two takes, left and right: turn WIDTH, then press MONO', ...clip(guitarClip, 512000) },
   { name: 'Pad', hint: 'turn WIDTH; LOW FOCUS keeps its low end in the middle', ...clip(padClip, 610331) },
   { name: 'Full mix', hint: 'turn WIDTH, then press MONO', ...clip(mixClip, 658286) },
@@ -65,6 +67,8 @@ export const TRACKS: Track[] = [
 const NEVER = '[data-wb-manual], form, input:not([data-wb-deck-k]), textarea, select, label, iframe, video, [data-wb-sound], [data-wb-play], [data-wb-track-step]';
 const ACT_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End']);
 const ADJUSTS = '[role="slider"], input[type="range"]';
+// the console's ORIGINAL | WIDE BEAM radio pair: an arrow moves its choice (Page Up / Down, Home, End still scroll the page)
+const RADIO_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
 export function initSound(page: HTMLElement, store: Store, face: Face, ignite: () => void) {
   let engine: WideBeamEngine | null = null, userStopped = false, token = 0, volumeDb = -3.9, stops = 0;
@@ -77,22 +81,36 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
   const scope = page.querySelector<HTMLCanvasElement>('[data-wb-scope]');
   const corrRead = page.querySelector<HTMLElement>('[data-wb-corr]');
   const sound = page.querySelector<HTMLButtonElement>('[data-wb-sound]');
-  // its name is its visible text, "Sound off" / "Sound on", with aria-pressed (demo-12, WCAG 2.5.3): a static
-  // aria-label ("Music") would hide it, so it goes (lane A's markup: WbSound.astro can drop it for good)
+  // its name is its visible text, a fixed "Sound", with aria-pressed (demo-12, WCAG 2.5.3): a static aria-label ("Music")
+  // would hide it, so it goes (lane A's markup: WbSound.astro can drop it for good)
   sound?.removeAttribute('aria-label');
   const faceEl = face.root;
 
-  // made inside the first act: it is the gesture that opens the audio device (and unlocks it on iOS)
-  const makeEngine = () => {
+  // made inside the first act: it is the gesture that opens the audio device (and unlocks it on iOS). A browser that
+  // cannot make an AudioContext (no output device, a hardened browser) gets null and the status line says so; the knobs,
+  // the presets and the forms keep working (r-dash-noaudio)
+  const NO_AUDIO = "Sound isn't available in this browser, so the demo can't play. The knobs and presets still work.";
+  const makeEngine = (): WideBeamEngine | null => {
     if (!engine) {
       try { const s = (navigator as any).audioSession; if (s && s.type !== 'playback') s.type = 'playback'; } catch {}
-      engine = new WideBeamEngine();
+      try { engine = new WideBeamEngine(); }
+      catch { if (msg) msg.textContent = NO_AUDIO; return null; }
       engine.set(store.get());
       engine.setVolume(volumeDb);
       store.on((s) => engine!.set(s));
+      // a call, Siri, another app or a screen lock can suspend (or 'interrupt') the context from outside: the page says
+      // so, and the next act resumes it (r-dash-interrupt)
+      const e = engine;
+      e.ctx.addEventListener?.('statechange', () => {
+        if (!e.playing) return;
+        if (e.ctx.state === 'running') { if (!page.classList.contains('is-playing')) setPlaying(true); }
+        else if (page.classList.contains('is-playing')) { setPlaying(false); if (msg) msg.textContent = 'The sound was paused from outside the page. Press Sound or turn a knob to bring it back.'; }
+      });
     }
     return engine;
   };
+  // sounding: a source plays AND the device runs (a suspended context has a source and no sound)
+  const audible = () => !!engine?.playing && engine.ctx.state === 'running';
   // Chrome and Firefox start their audio service inside the first `new AudioContext()`: a 100-210 ms freeze of the page
   // on the first touch (G3 timing; measured on a bare page too). Asking for the device list starts that service off the
   // main thread, so the context opens in ~3 ms later (it needs ~300 ms' start). Asked once, never at load: when the
@@ -120,8 +138,6 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     // a polite status line: "Sound on" is announced with what plays
     if (msg) msg.textContent = on ? `Sound on. ${label()}` : 'Engine off.';
     sound?.setAttribute('aria-pressed', String(on));
-    const sf = sound?.querySelector('[data-face]');
-    if (sf) sf.textContent = on ? 'Sound on' : 'Sound off';
     if (on) meterLoop();
     else { face.setCorrelation(null); if (corrRead) corrRead.textContent = '--'; const c = scope?.getContext('2d'); if (c && scope) c.clearRect(0, 0, scope.width, scope.height); }
     listeners.forEach((fn) => fn(on));
@@ -129,9 +145,10 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
 
   async function start(explicit: boolean) {
     if (!explicit && userStopped) return; // a visitor's (or a film's) stop is never undone by a knob or a card
-    if (engine?.playing) return;
+    if (engine?.playing) { if (engine.ctx.state !== 'running') unlock(engine); return; } // paused from outside: resume (statechange repaints)
     const my = ++token;
     const e = makeEngine();
+    if (!e) return;
     await unlock(e);
     if (my !== token || e.playing) return; // stopped (or a film began) while the device opened
     if (e.ctx.state !== 'running') return; // still locked without a gesture: the next act tries again
@@ -144,12 +161,12 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     if (byVisitor) { userStopped = true; stops++; }
     if (engine?.playing) { engine.stop(); setPlaying(false); }
   }
-  const toggle = () => (engine?.playing ? stop(true) : start(true));
+  const toggle = () => (audible() ? stop(true) : start(true));
 
   api = {
     request: () => start(true),
     stopForFilm: () => stop(true),
-    playing: () => !!engine?.playing,
+    playing: () => audible(),
   };
 
   // ── the allow-list: an act on the demo ([data-wb-demo]) starts it; the sound keys choose for themselves ──
@@ -185,7 +202,8 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
   // (the hero's "Take it for a drive", a glove card, MONO CHECK) it scrolls the page, so it never starts the sound (P2 B)
   page.addEventListener('keydown', (e) => {
     if (!ACT_KEYS.has(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
-    if ((e.target as Element | null)?.matches?.(ADJUSTS)) act(demoOf(e.target));
+    const t = e.target as Element | null;
+    if (t?.matches?.(ADJUSTS) || (RADIO_KEYS.has(e.key) && t?.matches?.('[data-wb-ab]'))) act(demoOf(e.target));
   }, true);
   // a screen reader's adjust on a deck knob (a native range) sends no key: its input event is the act (a script's own
   // value change sends none)
@@ -197,17 +215,18 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
 
   // ── your own track: decoded here, never uploaded; it stays the source until the visitor picks another (demo-16) ──
   // the label's click is the gesture: the device opens there, so the track can play when the chooser returns
-  fileLabel?.addEventListener('click', () => { unlock(makeEngine()); });
+  fileLabel?.addEventListener('click', () => { const e = makeEngine(); if (e) unlock(e); });
   fileIn?.addEventListener('change', async () => {
     const f = fileIn.files?.[0];
     fileIn.value = '';
     if (!f) return;
     const e = makeEngine();
+    if (!e) return;
     try {
       const buffer = await e.ctx.decodeAudioData(await f.arrayBuffer());
       pickSeq++; clearTimeout(pickT); // a track still loading gives way to the file
       e.setSource({ kind: 'buffer', buffer, name: f.name });
-      track = playingTrack = -1; paintTrack();
+      track = playingTrack = -1; paintTrack(); recoach();
       if (e.playing) setPlaying(true); else await start(true);
       if (!e.playing && msg) msg.textContent = `${f.name} is loaded. Press Start the engine to hear it.`;
     } catch { if (msg) msg.textContent = "That file didn't decode. Try an MP3, WAV or M4A."; }
@@ -239,12 +258,16 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     }
     return p;
   };
+  const ready = new Set<number>();
   async function loadTrack(my: number, stopsAtPick: number) {
     const i = track, t = TRACKS[i], e = makeEngine();
+    if (!e) { track = playingTrack; paintTrack(); return; } // no sound here: the LCD keeps naming what the demo has (NO_AUDIO says why)
     let src: WbSource = { kind: 'demo' };
     if (t.url) {
-      if (msg && !e.playing) msg.textContent = `Loading ${t.name}…`;
-      try { src = { kind: 'buffer', buffer: await bufferOf(i, e), name: t.name, loop: t.loop, gain: 1 }; }
+      // while the old track plays, the status line says it still does, until the new one is in (the LCD already names the
+      // pick: r-dash-cliploading)
+      if (msg && !ready.has(i)) msg.textContent = e.playing && playingTrack !== i ? `Loading ${t.name}… ${playingTrack < 0 ? 'your track' : TRACKS[playingTrack].name} plays until it is in.` : `Loading ${t.name}…`;
+      try { src = { kind: 'buffer', buffer: await bufferOf(i, e), name: t.name, loop: t.loop, gain: 1 }; ready.add(i); }
       catch {
         if (my !== pickSeq) return;
         track = playingTrack; paintTrack(); // the LCD goes back to what plays
@@ -254,13 +277,13 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     }
     if (my !== pickSeq) return; // a newer pick (or a file) owns the source
     e.setSource(src);
-    playingTrack = i;
+    playingTrack = i; recoach();
     if (e.playing) setPlaying(true); // the status line names the new track
     else if (stops === stopsAtPick) await start(true);
     else if (msg) msg.textContent = `${t.name} is loaded. Press Start the engine to hear it.`;
   }
   page.querySelectorAll<HTMLButtonElement>('[data-wb-track-step]').forEach((b) => b.addEventListener('click', () => {
-    unlock(makeEngine()); // the click is the gesture that opens the audio device (iOS)
+    const eng = makeEngine(); if (eng) unlock(eng); // the click is the gesture that opens the audio device (iOS)
     const n = TRACKS.length, d = Number(b.dataset.wbTrackStep);
     track = track < 0 ? (d > 0 ? 0 : n - 1) : (track + d + n) % n;
     paintTrack();
@@ -310,7 +333,8 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
   if (scope) { const fit = () => { scope.width = Math.max(1, scope.clientWidth * Math.min(2, devicePixelRatio)); scope.height = Math.max(1, scope.clientHeight * Math.min(2, devicePixelRatio)); }; new ResizeObserver(fit).observe(scope); fit(); }
 
   // ── the console beside the face (console.ts): its VOLUME is the engine's monitor level ──
-  initConsole(page, store, face, { setVolume(db) { volumeDb = db; engine?.setVolume(db); } });
+  // and its coach hears which track the engine has: a mono one asks for HIGH BEAM, not WIDTH (r-dash-monocoach)
+  const recoach = initConsole(page, store, face, { setVolume(db) { volumeDb = db; engine?.setVolume(db); }, monoSource: () => playingTrack >= 0 && !!TRACKS[playingTrack].mono });
   // ── the phone deck under the face (deck.ts, D.4): the same store; its TRACK keys are the picker's above ──
   initDeck(page, store, face);
 }

@@ -4,19 +4,20 @@
  *  down). A card glides the dash's knobs once the page has driven up to it (src/lib/widebeam/presets.ts); the picked
  *  card wears the plugin's own list selection, the #2894fa 25 % band (aria-pressed mirrors it). */
 import { PRESETS } from '../../lib/widebeam/state';
-import { GLOVE_SUB } from '../../data/widebeam';
+import { GLOVE_SUB, GLOVE_SUB_NOJS } from '../../data/widebeam';
 
 // a preset card's little road, printed on the card: two beams opening with its WIDTH, the focus line, the mix as the
 // light's strength
 const beam = (w: number) => { const s = 6 + (w / 200) * 50; return `M58 74L${60 - s} 6L${60 - s + 14} 6Z M62 74L${60 + s - 14} 6L${60 + s} 6Z`; };
 const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
 ---
-<!-- ============ THE GLOVE BOX: sixteen roads ============ -->
+{/* ============ THE GLOVE BOX: sixteen roads ============ */}
 <section class="wb-presets" id="wb-presets" aria-labelledby="wb-presets-h">
   <header class="wb-head" data-reveal="fade">
     <p class="wb-eyebrow">THE GLOVE BOX</p>
     <h2 id="wb-presets-h">Sixteen roads to start on.</h2>
-    <p class="wb-headsub">{GLOVE_SUB}</p>
+    <p class="wb-headsub wb-glove-sub">{GLOVE_SUB}</p>
+    <noscript><p class="wb-headsub">{GLOVE_SUB_NOJS}</p></noscript>
   </header>
   <div class="wb-glove-wrap" data-reveal="fade">
     <div class="wb-plate wb-plate--strap wb-glove">
@@ -32,7 +33,7 @@ const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
                 <path d={`M${60 - (focusY(f) - 6) * 0.6} ${focusY(f)}H${60 + (focusY(f) - 6) * 0.6}`} stroke="#e8c878" stroke-dasharray="3 3" stroke-width="1.2" opacity={f > 21 ? 0.9 : 0} />
                 <path d="M60 10V76" stroke="#ecdfbd" stroke-width="1" stroke-dasharray="4 5" opacity=".5" />
               </svg>
-              <span class="wb-card-vals">W {w} · F {f}Hz · M {m}%</span>
+              <span class="wb-card-vals"><span><small>WIDTH</small> {w}</span> <span><small>LOW FOCUS</small> {f} Hz</span> <span><small>MIX</small> {m}%</span></span>
               <span class="wb-card-note">{p.note}</span>
             </button>
           );

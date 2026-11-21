@@ -49,23 +49,24 @@ tiers.base = [
 const stills = await Promise.all([640, 960, 1280, 1536].map((width) => getImage({ src: stillImg, format: 'webp', width, quality: 74 })));
 const stillSrcset = stills.map((s, i) => `${s.src} ${[640, 960, 1280, 1536][i]}w`).join(', ');
 ---
-<!-- ============ THE DASH: the live face + the console ============ -->
+{/* ============ THE DASH: the live face + the console ============ */}
 <section class="wb-drive" id="wb-drive" aria-labelledby="wb-drive-h">
   <header class="wb-head" data-reveal="fade">
-    <p class="wb-eyebrow">THE DASH · LIVE</p>
+    <p class="wb-eyebrow">THE DASH<span class="wb-eyebrow-live"> · LIVE</span></p>
     <h2 id="wb-drive-h">{DASH.head} <em>{DASH.headEm}</em></h2>
     <p class="wb-headsub"><span class="wb-headsub-pointer">{DASH.sub}</span><span class="wb-headsub-touch">{DASH.subTouch}</span></p>
+    <noscript><p class="wb-drive-nojs">The live dash needs JavaScript, which is off in this browser. Below is a still picture of WIDE BEAM's face.</p></noscript>
   </header>
 
   <div class="wb-dash-wrap">
     <div class="wb-dash" data-wb-dash>
       <div class="wb-face is-cold" data-wb-face data-wb-art={JSON.stringify(tiers)}>
-        <!-- the still loads a screen ahead of the reader, not on first view (r-base-foldart: loading=lazy's own margin took it
-             at load): init.ts nearArt() swaps data-src / data-srcset in on [data-wb-defer]. With JS off, the <noscript> copy. -->
+        {/* the still loads a screen ahead of the reader, not on first view (r-base-foldart: loading=lazy's own margin took it
+             at load): the inline script at the end of widebeam.astro swaps data-src / data-srcset in on [data-wb-defer]. With JS off, the <noscript> copy. */}
         <img class="wb-dash-still" data-wb-defer data-src={stills[1].src} data-srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" decoding="async" />
         <noscript><img class="wb-dash-still" src={stills[1].src} srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async" /></noscript>
       </div>
-      <!-- beside the face, not in it: on an upright phone the face is inert, and so would be a live region inside it -->
+      {/* beside the face, not in it: on an upright phone the face is inert, and so would be a live region inside it */}
       <span class="sr-only" data-wb-announce aria-live="polite"></span>
       <WbDeck />
       <WbConsole />

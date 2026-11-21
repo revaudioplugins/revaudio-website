@@ -82,6 +82,36 @@ const art = {
     <WbManual />
     <WbCloser />
     <WbStickyBar />
+    {/* the parts kit's below-the-fold art (parts.css, r-base-foldart) loads 3/4 of a screen ahead of the reader: each part
+         (and any [data-wb-defer] element) gets [data-wb-near] once it comes within 3/4 of a screen, and a deferred <img>
+         (the dash's face-still) gets its data-srcset / data-src at that moment (the same as face.ts showDeferred, which
+         the face's art loader also calls, sometimes sooner). Inline, not in the page's script chunk (r-base-artbare):
+         a late chunk (4-12 s on a slow line) or a failed one left the face a broken image and the parts bare.
+         3/4, not a full screen: at 1440x900 and 1728x1000 a full screen reached the face-still and the dash's road at
+         load, which put the first view over G11's 1.9 MB bar. The house footer is marked too: the house smoke's two photos
+         wait for it (base.css, r-cross-g11fv). */}
+    <script is:inline>
+      (function () {
+        var els = document.querySelectorAll('.wb-part-lamp-l, .wb-part-lamp-r, .wb-part-road, .wb-part-meter, .wb-part-cap, [data-wb-defer]');
+        var io = null;
+        // the house footer comes after this script in the document: watched once the parser has reached it
+        function foot() { var f = document.querySelector('.site-footer'); if (f) { if (io) io.observe(f); else near(f); } }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', foot); else setTimeout(foot);
+        function near(el) {
+          el.setAttribute('data-wb-near', '');
+          if (el.tagName === 'IMG' && el.dataset.src && !el.getAttribute('src')) {
+            el.fetchPriority = 'high';
+            if (el.dataset.srcset) el.srcset = el.dataset.srcset;
+            el.src = el.dataset.src;
+          }
+        }
+        if (!('IntersectionObserver' in window)) { els.forEach(near); return; }
+        io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) { near(e.target); io.unobserve(e.target); } });
+        }, { rootMargin: '75% 0px' });
+        els.forEach(function (el) { io.observe(el); });
+      })();
+    </script>
   </div>
 </BaseLayout>
 

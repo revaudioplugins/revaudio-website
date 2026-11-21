@@ -42,8 +42,10 @@ const PORTRAIT = '(max-aspect-ratio: 3/5), (orientation: portrait) and (min-widt
 const FULL_FRAME = '0 0 1920 1080';
 const PORTRAIT_FRAME = '620 0 680 1080';
 ---
-<!-- ============ HERO: the night road ============ -->
-<section class="wb-hero" aria-labelledby="wb-title">
+{/* ============ HERO: the night road ============ */}
+{/* the landmark is named by the sr-only words, not the h1: while the intro hides the h1, the name computation reads a
+     hidden h1 whole, aria-hidden letter row included ("WIDE BEAM W I D E B E A M") */}
+<section class="wb-hero" aria-labelledby="wb-title-name">
   <picture>
     <source media={PORTRAIT} srcset={roadStillPortrait.src} />
     <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
@@ -60,7 +62,7 @@ const PORTRAIT_FRAME = '620 0 680 1080';
   <button type="button" class="wb-replay" data-wb-replay hidden aria-label="Replay the intro"><span aria-hidden="true">↺</span> Replay</button>
   <div class="wb-hero-inner" data-wb-hero-inner data-wb-cta>
     <h1 id="wb-title" class="wb-mark" data-wb-mark tabindex="-1">
-      <span class="sr-only">WIDE BEAM</span>
+      <span class="sr-only" id="wb-title-name">WIDE BEAM</span>
       <span class="wb-mark-row" aria-hidden="true">{WORD.map((c) => (c === ' ' ? <i class="wb-sp"></i> : <i>{c}</i>))}</span>
     </h1>
     <p class="wb-sub" data-wb-hero-in><span>STEREO WIDTH CONTROL</span></p>
@@ -69,7 +71,7 @@ const PORTRAIT_FRAME = '620 0 680 1080';
       {trialKey ? (
         <>
           {/* a plain link to the plate: [data-wb-trial] is the plate FORM's hook (capture.ts binds the first one), never put it here */}
-          <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-get"><span data-face>{trialKey}</span></a>
+          <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-get"><span data-face>{trialKey.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></a>
           <a class="wb-hero-drive" href="#wb-drive" data-wb-start data-wb-demo data-wb-drive-key>Take it for a drive</a>
         </>
       ) : (

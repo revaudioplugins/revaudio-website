@@ -69,9 +69,13 @@
   background-origin: border-box, border-box, content-box;
   background-clip: border-box, border-box, content-box;
 }
+/* the nameplate's url once for both users (the badge plate and .wb-part-badge), as the strap's above: two rules naming it
+   shipped its base64 twice in the built CSS */
+.wb-plate--badge,
+.wb-part-badge { --wb-badge: url(../../assets/widebeam/parts/badge.webp); }
 /* + the RevAudio nameplate, centred on the strap where the plugin has it */
 .wb-plate--badge::after {
-  background-image: url(../../assets/widebeam/parts/badge.webp), var(--wb-strap-l), var(--wb-strap-r), var(--wb-strap-run);
+  background-image: var(--wb-badge), var(--wb-strap-l), var(--wb-strap-r), var(--wb-strap-run);
   background-position: 50% calc(var(--wb-ps) * 43px), left top, right top, left top;
   background-size: calc(var(--wb-ps) * 250px) auto, calc(var(--wb-ps) * 100px) 100%, calc(var(--wb-ps) * 100px) 100%, calc(var(--wb-ps) * 400px) 100%;
   background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
@@ -120,9 +124,10 @@
 
 /* below-the-fold art waits until it is about a screen away (r-base-foldart): every one of these parts sits under the
    first view on every size, and as CSS backgrounds they loaded with the page (lamps 2 x 31 KB at the closer, road 33,
-   meter 8, cap 8). init.ts marks each part [data-wb-near] 3/4 of a screen ahead of the reader (IntersectionObserver
-   rootMargin 75%); the box keeps its size (aspect-ratio), so nothing moves when the art lands. Only with scripting:
-   without JS, or where the query is unknown, the art loads as before. Other areas opt in with [data-wb-defer] on an
+   meter 8, cap 8). An inline script at the end of the page (widebeam.astro, not the page's script chunk, so a late or
+   failed chunk can't leave them bare: r-base-artbare) marks each part [data-wb-near] 3/4 of a screen ahead of the
+   reader (IntersectionObserver rootMargin 75%); the box keeps its size (aspect-ratio), so nothing moves when the art
+   lands. Only with scripting: without JS, or where the query is unknown, the art loads as before. Other areas opt in with [data-wb-defer] on an
    element and their own :not([data-wb-near]) rule. The plate (just under the fold, and its border-image would fall
    back to a solid currentColor frame) is not deferred. */
 @media (scripting: enabled) {
@@ -164,4 +169,4 @@
 .wb-part-cap--down { transform: scale(.97); filter: brightness(.86); }
 
 /* the RevAudio nameplate on its own (the strap modifier already carries it on a plate) */
-.wb-part-badge { aspect-ratio: 250 / 84; background-image: url(../../assets/widebeam/parts/badge.webp); }
+.wb-part-badge { aspect-ratio: 250 / 84; background-image: var(--wb-badge); }

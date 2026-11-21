@@ -11,6 +11,7 @@
 .wb-get-label {
   margin: 0 0 14px; font-family: var(--wb-display); font-size: clamp(1.7rem, 2.6vw, 2.2rem); line-height: 1; letter-spacing: .02em; color: var(--ivory);
   text-shadow: var(--wb-engrave-cut);
+  text-wrap: balance; /* a two-line label breaks evenly, never a lone "opens" (r-asks-widow: 414 and 430) */
 }
 .wb-get-form { display: flex; gap: 10px; }
 .wb-get-form[hidden] { display: none; } /* a sent form goes away; its status line says what happened */
@@ -31,6 +32,15 @@
 .wb-get-status.ok { color: var(--emerald-text); }
 .wb-get-status.err { color: var(--oxide-text); }
 .wb-get-status:focus { outline: none; }
+/* the trial key while it waits for the script (WbGet.astro): dimmed like any disabled key, and if the script never
+   binds the form (JS on, the page script failed) a line says why from 9 s, the hero's own failsafe beat (hero.css
+   8.5 s; the slow-line case lands by 4.5 s). capture.ts removes [data-wb-needs-script] on bind, so the line never
+   shows on a working page; with JS off the <noscript> line speaks instead (r-asks-deadtrial) */
+.wb-get-late { display: none; }
+/* waiting, it takes no room (no box, no margin): the bind would otherwise shrink the plate and shift the page */
+form[data-wb-needs-script] ~ .wb-get-late { display: block; visibility: hidden; max-height: 0; margin: 0; overflow: hidden; animation: wb-late 0s 9s forwards; }
+@media (scripting: none) { form[data-wb-needs-script] ~ .wb-get-late { display: none; } }
+@keyframes wb-late { to { visibility: visible; max-height: none; margin-top: 10px; overflow: visible; } }
 /* the joined state: the field and its small print go; the status line says so (capture.ts) */
 [data-wb-ask].is-joined .wb-get-micro:not(.wb-get-formats), [data-wb-ask].is-joined .wb-get-notice { display: none; }
 /* the divider: a brass hairline on the steel */

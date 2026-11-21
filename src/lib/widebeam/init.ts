@@ -10,11 +10,14 @@
  *   presets.ts   the glove box cards (drive-to.ts) (S)          story.ts     the stereo road (S)
  *   manual.ts    the Owner's Manual (S)                         odometer.ts  the spec numbers (A)
  *   capture.ts   the one ask: the plate + the closer (A)
- * Stage 4 (base fixer) added one boot step here: nearArt(), the parts kit's below-the-fold art on approach.
+ * Stage 4 (base fixer): the boot marks the page .wb-booted first, which takes off the CSS failsafe that shows the house
+ * reveal's blocks at 9 s when this script never runs (base.css, r-cross-revealstuck). The parts kit's below-the-fold art
+ * on approach (nearArt) moved out of this chunk into an inline script at the end of the page (widebeam.astro,
+ * r-base-artbare), so a late or failed chunk can't leave the dash bare.
  */
 import { ScrollTrigger, reducedMotion } from '../motion';
 import { createStore } from './state';
-import { initFace, showDeferred, type FaceArt } from './face';
+import { initFace, type FaceArt } from './face';
 import { initHero } from './hero';
 import { initSound } from './sound';
 import { initKeys } from './keys';
@@ -28,7 +31,8 @@ import { initCapture } from './capture';
 export function initWideBeam(art: FaceArt) {
   const page = document.querySelector<HTMLElement>('[data-wb-page]');
   if (!page) return;
-  nearArt();
+  // first: the house reveal is in this same chunk, so from here on it, not the 9 s failsafe, shows the blocks
+  page.classList.add('wb-booted');
   const store = createStore();
   const reduced = reducedMotion();
 
@@ -45,21 +49,4 @@ export function initWideBeam(art: FaceArt) {
   initCapture(page);
 
   ScrollTrigger.refresh();
-}
-
-/** The parts kit's below-the-fold art (parts.css, r-base-foldart) loads 3/4 of a screen ahead of the reader, not on first
- *  view: each part (and any [data-wb-defer] element) gets [data-wb-near] once it comes within 3/4 of a screen. First, so an
- *  error in a later module can't leave the parts bare. A deferred <img> gets its data-src / data-srcset at the same moment
- *  (face.ts showDeferred; the face's art loader also calls it first, which can come sooner).
- *  3/4, not a full screen: at 1440x900 and 1728x1000 a full screen reached the face-still and the dash's road at load
- *  (1742 / 1767 px down at 1440), which put the first view at 1.95 MB over G11's 1.9 MB bar. */
-function nearArt() {
-  const els = document.querySelectorAll('.wb-part-lamp-l, .wb-part-lamp-r, .wb-part-road, .wb-part-meter, .wb-part-cap, [data-wb-defer]');
-  const near = (el: Element) => {
-    el.setAttribute('data-wb-near', '');
-    showDeferred(el); // a deferred <img> (the dash's face-still) carries its sources as data-srcset / data-src until now
-  };
-  if (!('IntersectionObserver' in window)) { els.forEach(near); return; }
-  const io = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) { near(e.target); io.unobserve(e.target); } }), { rootMargin: '75% 0px' });
-  els.forEach((el) => io.observe(el));
 }
