@@ -72,8 +72,12 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       /widebeam (now gated in `src/layouts/BaseLayout.astro`, the sale-gate line only).
     - Built, not yet seen passing: the L1440 full-visit byte row (3.33 vs 3.30 MB before the face.ts tier fix) and the
       G3 Firefox "stops" guard. The final gate run proves them.
-  - Waiting on Dan (evidence in the scratchpad, lost on a reboot):
-    - The launch email: mail the whole newsletter list at launch (`launchMailToWholeList`, now false)? Fixer's pick: yes.
+  - Dan, 2026-11-21: "we only deal with design" here, so his list holds design choices only. Shown with pictures on
+    https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs (every section now vs his picks, laptop + iPhone; the old stills
+    link is gone).
+  - For the launch owner (Gil / Yoni), not Dan: mail the whole newsletter list at launch (`launchMailToWholeList`, now
+    false; fixer's pick yes); the licence of the loops under the demo clips (Yoni's renders).
+  - Waiting on Dan (design; evidence in the scratchpad, lost on a reboot):
     - The phone deck after "Take it for a drive": MONO and POWER sit below the screen. A reorder (WIDTH row, the four
       keys, then LOW FOCUS / MIX / REACH; leaves the plugin's plate order), B a smaller deck, C keep. Pick: A.
     - An upright iPad: A today (landscape film centre-cropped, one headlight pair at 1.2 s) or B (the phone's portrait
@@ -95,7 +99,7 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
   - For Yoni (a note): in headless Chrome the AudioContext clock stays near 0, so the page's level checks are offline
     renders of its own engine, not real-time measures.
   - The gate kit and the stage scripts live in the session scratchpad (lost on a reboot); stage 4 copies the gate
-    scripts into the repo. Dan's stills page of the state after stage 2: https://claude.ai/artifact/2b4CpXc2DCwT9suoVRHcfp
+    scripts into the repo. Dan's stills page, after hunt round 2 (21 Nov): https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs
   - Owed by others, unchanged: Gil (Paddle price, licence worker + hub line, signed builds on R2, the trial download,
     a real test purchase; and on Nov 22 his `sale.ts` line takes "Wide Beam" out of the bundle with OBDTune), Ilay
     (MANUAL -> /widebeam/#manual), a partner (the film), Yoni (Cloudflare long-cache rule; the cookie banner on
