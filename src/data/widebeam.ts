@@ -10,7 +10,9 @@
  * can't back fails the build instead of shipping.
  *
  * LAUNCH DAY, in this order (plan 2026-11-18 §6; nothing below is done yet):
- *  1. Gil: DL_PLUGINS.widebeam in the licence worker + the R2 builds. Then gateWired: true, phase: 'open' (the build
+ *  1. Gil: DL_PLUGINS.widebeam in the licence worker (DONE 2026-11-19, revlimiter-license 0f241f7; gateWired is
+ *     true) + the R2 builds (owed: until /pit-lane ships them the email says "coming soon" per platform). Then
+ *     phase: 'open' (the build
  *     refuses 'open' without the gate). Send the list one email the day the trial opens: the pre-open words promise
  *     it ("One email when the trial opens"), and nothing sends it by itself. Send it to the WHOLE newsletter list
  *     (launchMailToWholeList), or also mail the people who wrote in under "subject WIDE BEAM".
@@ -20,9 +22,10 @@
  *     - Before the trial opens, fix the worker's WIDE BEAM day-0 email (RevLimiter repo, gumroad-worker/src/worker.js
  *       ~4411-4416, "At 100 your track is exactly as it was"): false, the side below LOW FOCUS is removed at any WIDTH
  *       and the dry is allpass-rotated (plan "Read first", Copy). STEPS[0] here has the true words.
- *  2. Paddle: the price id + priceUsd here, a plugins.ts entry with the same id and price (the build refuses
+ *  2. Paddle (price id, priceUsd, the plugins.ts entry and OWN_ROUTE: DONE by Gil 2026-11-19, below): the price id +
+ *     priceUsd here, a plugins.ts entry with the same id and price (the build refuses
  *     'released' without it: the cart sells only plugins.ts slugs) and systemReq.formats = formatsLine() (the cart
- *     drawer prints it; no AAX), 'widebeam' in OWN_ROUTE (src/pages/[slug].astro; the build refuses the entry without
+ *     drawer prints it; no AAX. Gil's entry still says 'VST3 + AU + AAX on Mac': fix it before 'released'), 'widebeam' in OWN_ROUTE (src/pages/[slug].astro; the build refuses the entry without
  *     it), then phase: 'released'.
  *     - Once downloads exist, 'released' has to come within 30 days of the first download: the worker's day-31
  *       "KEEP WIDE BEAM" email sends people to this page to pay (guidelines-d03).
@@ -49,6 +52,15 @@
  *     stays off /widebeam (BaseLayout's pre-paint gate).
  *  Open/released: the trial forms have no no-JS route (the worker's /download/register reads JSON only). Without the
  *  page script their key stays disabled and a <noscript> line says why (askFor().nojs).
+ *
+ * Commerce, wired while the page stays pre-open (Gil 2026-11-19, Paddle product pro_01m7vhb719rzqnagt7vmm03kwh):
+ *   - gateWired true: the trial form posts {email, plugin, marketing} to the worker's /download/register first, which
+ *     emails the download at once (as src/lib/drift/capture.ts does), then joins the list via /form-once. The worker's
+ *     DL_PLUGINS.widebeam opened with revlimiter-license 0f241f7; until /pit-lane ships the builds the email says
+ *     "coming soon" per platform. The worker must be live before this page is, or the register call has no gate.
+ *   - priceUsd + paddlePriceId: BUY NOW adds to the cart and opens it. plugins.ts has the same id and price (the cart
+ *     only checks out slugs it finds there), [slug].astro OWN_ROUTE has 'widebeam', and the plugins.ts entry has no
+ *     `library`, so WIDE BEAM stays off the home TV until it is meant to be listed.
  */
 import { site } from './site';
 
@@ -61,10 +73,10 @@ export const widebeam = {
    *  released = Paddle sells it (buyable()). */
   phase: 'preopen' as WidebeamPhase,
   trialDays: 30, // README "Licence": a silent 30-day trial from the first load
-  priceUsd: null as number | null,
-  paddlePriceId: null as string | null,
+  priceUsd: 9 as number | null, // = the Paddle price ($9.00 USD); the page shows it only in 'released'
+  paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m' as string | null, // keep equal to plugins.ts widebeam
   /** the licence worker has DL_PLUGINS.widebeam + the R2 builds: the forms post to /download/register first */
-  gateWired: false,
+  gateWired: true, // Gil 2026-11-19 (revlimiter-license 0f241f7); pre-open forms never use it (askFor)
   gateId: 'widebeam',
   /** README "Build": "the PACE wcguid for AAX is not created". false takes AAX off the whole page. */
   aaxReady: false,
