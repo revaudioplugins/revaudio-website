@@ -103,6 +103,9 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       `widebeam` in OWN_ROUTE) and `3c91404` (its handoff). This branch never took them in; they clash in
       `src/data/widebeam.ts`, `src/pages/[slug].astro` and `src/pages/widebeam.astro`. Next, after the run: merge
       origin/feat/widebeam-page in, re-run the gates (the trial form's flow changes with `gateWired: true`), refresh qa.
+    - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
+      it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
+      local branch's upstream was unset the same day, so a bare `git push` can't land there.
   - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
     plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
     film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE
