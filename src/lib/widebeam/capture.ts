@@ -15,6 +15,8 @@
  * gateWired), /download/register answered ok and the visitor accepted cookies. Pre-open none of that is true, so
  * nothing fires.
  */
+import { ScrollTrigger, lenis } from '../motion';
+
 const CONSENT_KEY = 'ra-cookie-consent'; // CookieBanner.astro
 const ADS_CONVERSION = 'AW-18334323184/KDtwCLHa4dIcEPCjvqZE'; // TrialStamp.astro / TrialPlates.astro
 
@@ -22,8 +24,8 @@ type Reply = { ok?: boolean; already?: boolean; error?: string } | null;
 
 export function initCapture(page: HTMLElement) {
   const surfaces = [
-    { form: page.querySelector<HTMLFormElement>('[data-wb-trial]'), status: page.querySelector<HTMLElement>('[data-wb-trial-status]') },
-    { form: page.querySelector<HTMLFormElement>('[data-wb-form]'), status: page.querySelector<HTMLElement>('[data-wb-status]') },
+    { form: page.querySelector<HTMLFormElement>('form[data-wb-trial]'), status: page.querySelector<HTMLElement>('[data-wb-trial-status]') },
+    { form: page.querySelector<HTMLFormElement>('form[data-wb-form]'), status: page.querySelector<HTMLElement>('[data-wb-status]') },
   ];
   const joinAll = (msg: string, from: HTMLElement | null) => {
     for (const s of surfaces) {
@@ -40,6 +42,46 @@ export function initCapture(page: HTMLElement) {
     page.dispatchEvent(new CustomEvent('wb:joined'));
   };
   surfaces.forEach((s) => bindSignup(s.form, s.status, joinAll));
+  keepFieldOnTurn(page);
+}
+
+/**
+ * A turn of the phone (or any width change) while the visitor types in a sign-up field (r-cross-rotate): the svh
+ * heights of the hero and the story change the page's length, the browser clamps the scroll, and ScrollTrigger's
+ * refresh then puts back a raw pixel scrollY, so in Chrome the focused field ended 502 px above the screen sideways and
+ * 2146 px below it upright again. After each refresh, a field that was focused AND fully on screen at the last settled
+ * size is brought back to the middle of the clear band (under the nav, over the cookie banner / phone bar: --wb-lift).
+ * A field the visitor had scrolled away from is left where it is. The record is frozen from a resize until the next
+ * refresh, so the browser's own clamp (a scroll event at the new size) can't overwrite it.
+ */
+function keepFieldOnTurn(page: HTMLElement) {
+  const html = document.documentElement;
+  const field = () => { const a = document.activeElement; return a instanceof HTMLInputElement && page.contains(a) && a.closest('form[data-wb-trial], form[data-wb-form]') ? a : null; };
+  const band = () => {
+    const nav = document.querySelector('nav[data-site-nav], header');
+    const top = Math.max(0, nav ? nav.getBoundingClientRect().bottom : 0);
+    return { top, bottom: innerHeight - (parseFloat(html.style.getPropertyValue('--wb-lift')) || 0) };
+  };
+  const inBand = (el: HTMLElement) => { const r = el.getBoundingClientRect(), b = band(); return r.top >= b.top && r.bottom <= b.bottom; };
+  let kept: HTMLInputElement | null = null, frozen = false, thaw = 0;
+  const note = () => { if (frozen) return; const f = field(); kept = f && inBand(f) ? f : null; };
+  addEventListener('focusin', note);
+  addEventListener('scroll', note, { passive: true });
+  addEventListener('resize', () => {
+    frozen = true;
+    // a resize ScrollTrigger lets pass without a refresh (the mobile toolbar, a height-only change) must not freeze it for good
+    clearTimeout(thaw); thaw = window.setTimeout(() => { frozen = false; note(); }, 1500);
+  });
+  ScrollTrigger.addEventListener('refresh', () => {
+    const f = field();
+    if (frozen && f && f === kept && !inBand(f)) {
+      const r = f.getBoundingClientRect(), b = band();
+      const y = Math.max(0, Math.round(scrollY + r.top - (b.top + b.bottom - r.height) / 2));
+      // Lenis clamps to the page length it last measured (its resize observer hasn't run yet): measure first
+      if (lenis) { lenis.resize(); lenis.scrollTo(y, { immediate: true, force: true }); } else window.scrollTo(0, y);
+    }
+    clearTimeout(thaw); frozen = false; note();
+  });
 }
 
 function consented() {
@@ -61,6 +103,11 @@ function fireConversion() {
  */
 function bindSignup(form: HTMLFormElement | null, status: HTMLElement | null, joinAll: (msg: string, from: HTMLElement | null) => void) {
   if (!form) return;
+  // a trial form waits for this script: no action, its key disabled until now (WbGet.astro)
+  if (form.hasAttribute('data-wb-needs-script')) {
+    form.removeAttribute('data-wb-needs-script');
+    form.querySelector<HTMLButtonElement>('button[type="submit"]')?.removeAttribute('disabled');
+  }
   const field = form.querySelector<HTMLInputElement>('input[type="email"]');
   const described = field?.getAttribute('aria-describedby') ?? '';
   const markField = (bad: boolean) => {

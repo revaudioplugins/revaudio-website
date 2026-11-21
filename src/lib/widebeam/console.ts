@@ -13,7 +13,7 @@
  * The mirror, CORR and the engine key are sound.ts's.
  */
 import { PRESETS, type Store } from './state';
-import type { Face, CueTarget } from './face';
+import { fitLine, onRefit, type Face, type CueTarget } from './face';
 import { deckOn, DECK_MQ } from './drive-to';
 
 const TOGGLE = { frames: 29, cols: 6, rows: 5 };
@@ -54,7 +54,7 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
 
   // ── PRESET ‹ name › ──
   const name = root.querySelector<HTMLElement>('[data-wb-preset-name]');
-  root.querySelectorAll<HTMLButtonElement>('[data-wb-step]').forEach((b) => b.addEventListener('click', () => face.loadPreset(store.preset + Number(b.dataset.wbStep))));
+  root.querySelectorAll<HTMLButtonElement>('[data-wb-step]').forEach((b) => b.addEventListener('click', () => face.stepPreset(Number(b.dataset.wbStep))));
 
   // ── VOLUME: 0-100 on a fader taper (40 dB a decade), 0 = silent ──
   const fader = root.querySelector<HTMLInputElement>('[data-wb-volume]');
@@ -66,7 +66,29 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
     fader.setAttribute('aria-valuetext', v <= 0 ? 'Silent' : `${db.toFixed(1)} dB`);
     audio.setVolume(Number.isFinite(db) ? db : -100);
   };
-  fader?.addEventListener('input', setVol);
+  // a finger on the fader follows the knobs' touch law: it waits until the finger has said which way (8 px). Sideways
+  // sets the level; a vertical swipe is the page's scroll and leaves the level alone; a tap sets it where it lands. A
+  // touch screen's native slider jumps to the finger on touchstart, before any move (r-dash-volswipe: a swipe that began
+  // a quarter across dropped -3.9 dB to -26.3 dB), so the value it proposes is held back until the gesture decides.
+  let tp: { id: number; sx: number; sy: number; v: string; mode: 'pending' | 'turn' | 'off'; want: string | null } | null = null;
+  fader?.addEventListener('pointerdown', (e) => { tp = e.pointerType === 'mouse' ? null : { id: e.pointerId, sx: e.clientX, sy: e.clientY, v: fader.value, mode: 'pending', want: null }; });
+  fader?.addEventListener('pointermove', (e) => {
+    if (!tp || e.pointerId !== tp.id || tp.mode !== 'pending') return;
+    const dx = e.clientX - tp.sx, dy = e.clientY - tp.sy;
+    if (Math.hypot(dx, dy) < 8) return;
+    tp.mode = Math.abs(dx) > Math.abs(dy) ? 'turn' : 'off';
+    if (tp.mode === 'turn' && tp.want !== null) { fader.value = tp.want; setVol(); }
+  });
+  fader?.addEventListener('pointerup', (e) => {
+    if (tp && e.pointerId === tp.id && tp.mode === 'pending' && tp.want !== null) { fader.value = tp.want; setVol(); }
+    tp = null;
+  });
+  // the page took the swipe: the value the slider jumped to goes back (a sideways drag already applied keeps its level)
+  fader?.addEventListener('pointercancel', () => { if (tp && tp.mode !== 'turn') fader.value = tp.v; tp = null; });
+  fader?.addEventListener('input', () => {
+    if (tp && tp.mode !== 'turn') { tp.want = fader.value; fader.value = tp.v; return; }
+    setVol();
+  });
   setVol();
 
   const paint = () => {
@@ -75,8 +97,10 @@ export function initConsole(page: HTMLElement, store: Store, face: Face, audio: 
     keyOff?.setAttribute('aria-pressed', String(!s.power));
     root.classList.toggle('is-original', !s.power);
     mono?.setAttribute('aria-pressed', String(s.mono));
-    if (name) name.textContent = PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
+    const nm = PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
+    if (name && name.textContent !== nm) { name.textContent = nm; fitLine(name); }
   };
+  if (name) { onRefit(() => fitLine(name)); new ResizeObserver(() => fitLine(name)).observe(name); }
   store.on((s, ch) => { if ('power' in ch) kickBat(); paint(); });
   paint();
 

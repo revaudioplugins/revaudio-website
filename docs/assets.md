@@ -21,6 +21,8 @@ Files in `public/` ship exactly as they are, under the same name. Only these go 
 
 A picture in `public/` is WebP (or JPG for a photo). A PNG there is a master that was never converted.
 
+One sound exception: /widebeam's four demo clips live in `src/assets/widebeam/clips/` and are imported (`?url`, so each gets a hashed `/_astro/` name and a changed clip gets a new URL), unlike `public/audio/`; they are cut from Yoni's renders already live on /revfx, /radio-roulette and /gas by `tools/widebeam-clips/`.
+
 ## Two pages that are copied in whole
 
 - `tools/_gas2-scene/` → `/gas2/` (`tools/gas2page/integration.mjs`). PNG masters stay beside the WebP the page loads;

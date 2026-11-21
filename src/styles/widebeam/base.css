@@ -95,7 +95,7 @@
 [data-wb-reveal].is-in { opacity: 1; transform: none; }
 
 .wb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-.wb-head > p, .wb-notify-card > p { margin-left: auto; margin-right: auto; }
+.wb-head > p { margin-left: auto; margin-right: auto; }
 
 /* phones: no readable text under 13 px (mobile-10). The meter's own print (CORRELATION) is part of a drawn part and
    stays; the lanes that redraw a part bring its print up with it. */
@@ -105,23 +105,10 @@
   }
 }
 
-/* the dash mirror's print in the house mono (lane F, gate F fix). The mono is wider than the old pixel face, so the
-   caption and the idle hint are sized by the mirror's own width, not the window's: the mirror is narrow on phones and
-   again at 901-1100 px, where the console goes two-column. The caption stays on one line (the long label gives way
-   with an ellipsis, CORR never does) and the hint keeps clear of it. Above 440 px of mirror (1141 and up) nothing
-   changes. Lives here, not in drive.css (lane D's file), hence the extra class in each selector. */
+/* the console's rear-view mirror (WbConsole .wb-con-mirror.wb-mirror) keeps its inline-size containment: the console
+   grid sizes it without its content's width at 901-1100 px. Its old figcaption and idle-hint rules went with the
+   figure (lane D's console has neither). */
 .wb-page .wb-mirror { container-type: inline-size; }
-.wb-page .wb-mirror figcaption { gap: 12px; white-space: nowrap; }
-.wb-page .wb-mirror figcaption > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-@container (max-width: 440px) {
-  .wb-page .wb-mirror figcaption { padding: 8px 12px; font-size: var(--wb-fine-min); letter-spacing: .04em; }
-  .wb-page:not(.is-playing) figure.wb-mirror::after {
-    padding: 0 12px 32px; font-size: var(--wb-fine-min); letter-spacing: .06em; line-height: 1.35; text-align: center; text-wrap: balance;
-  }
-}
-@container (max-width: 280px) {
-  .wb-page .wb-mirror figcaption { gap: 8px; letter-spacing: 0; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   [data-wb-reveal] { opacity: 1; transform: none; transition: none; }

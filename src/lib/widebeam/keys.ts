@@ -8,7 +8,7 @@
  * The flash fires at most once a second (WCAG 2.3.1, motion-02, a11y-04), never under reduced motion or the site's high
  * contrast, and sits on its own layer from load (will-change, motion-15).
  */
-import { PRESETS, type Store } from './state';
+import type { Store } from './state';
 import type { Face } from './face';
 
 export function initKeys(page: HTMLElement, store: Store, face: Face, reduced: boolean) {
@@ -22,7 +22,7 @@ export function initKeys(page: HTMLElement, store: Store, face: Face, reduced: b
     const act: Record<string, () => void> = {
       h: () => store.set({ high: !s.high }, 'key'), m: () => store.set({ mono: !s.mono }, 'key'),
       s: () => store.set({ side: !s.side }, 'key'), p: () => store.set({ power: !s.power }, 'key'),
-      ']': () => face.loadPreset((store.preset + 1) % PRESETS.length), '[': () => face.loadPreset((store.preset + PRESETS.length - 1) % PRESETS.length),
+      ']': () => face.stepPreset(1), '[': () => face.stepPreset(-1),
     };
     const f = act[e.key.toLowerCase()];
     if (f) { e.preventDefault(); f(); }

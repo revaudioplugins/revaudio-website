@@ -55,6 +55,9 @@ export interface Store {
 export function createStore(): Store {
   let s: WbParams = { ...DEFAULTS };
   const fns = new Set<Listener>();
+  // the preset name the listeners last heard: a load whose values equal the current ones (Default -> Factory Cruise)
+  // moves no knob, but its new name (or a cleared '*') is still news, so the console, the deck and the cards repaint
+  let told = { preset: 0, edited: false };
   const store: Store = {
     preset: 0,
     edited: false,
@@ -70,9 +73,10 @@ export function createStore(): Store {
         }
         if (v !== s[k]) (changed as any)[k] = v;
       }
-      if (!Object.keys(changed).length) return;
+      if (!Object.keys(changed).length && told.preset === store.preset && told.edited === store.edited) return;
       s = { ...s, ...changed };
       if (src !== 'preset' && src !== 'init' && ['width', 'focus', 'mix', 'tilt', 'reach', 'high'].some((k) => k in changed)) store.edited = true;
+      told = { preset: store.preset, edited: store.edited };
       fns.forEach((f) => f(s, changed, src));
     },
     on(fn) { fns.add(fn); return () => fns.delete(fn); },

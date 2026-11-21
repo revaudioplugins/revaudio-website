@@ -16,6 +16,7 @@
  */
 import { driveTo } from './drive-to';
 import { stopForFilm } from './sound';
+import { driveToAsk } from './furniture';
 
 const consented = () => { try { return localStorage.getItem('ra-cookie-consent') === 'accepted'; } catch { return false; } };
 const track = (name: string) => {
@@ -80,6 +81,10 @@ export function initManual(page: HTMLElement) {
     end.setAttribute('hidden', '');
     v.currentTime = 0; v.play().catch(() => {}); v.focus({ preventScroll: true });
   });
+
+  // the line under the manual (and the film's end card): its link goes to the nearer sign-up form, one mover. After a
+  // sign-up the line becomes the done message (capture.ts, [data-wb-ask]) and the end card's key has no form to reach.
+  sec.querySelectorAll<HTMLAnchorElement>('[data-wb-manual-line] a, [data-wb-manual-ask]').forEach((a) => a.addEventListener('click', (e) => driveToAsk(page, e)));
 
   sec.querySelectorAll<HTMLAnchorElement>('[data-wb-chapter]').forEach((a) => a.addEventListener('click', (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;

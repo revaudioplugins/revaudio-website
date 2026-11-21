@@ -6,7 +6,7 @@
  *       │            └─ HP@focus (LR4) ─ velvet decorrelator ─ −6 dB < 1.2 kHz ─ REACH ─┐│
  *       └─ S = (L−R)/2 ─ HP@focus (LR4) ─ TILT shelves ─ WIDTH ──────────────────────────┴┘
  *       └───────────────────────────────────────────────────────────────────────────────── dry (× 1−MIX, or all of it with POWER off)
- *   wet + dry ─ master ─ limiter ─ −0.3 dBFS ceiling ─┬─ (the meter tap: CORR, the mirror) ─ VOLUME ─ out
+ *   wet + dry ─ MONO / SIDE (on the blend) ─ master ─ limiter ─ −0.3 dBFS ceiling ─┬─ (the meter tap: CORR, the mirror) ─ VOLUME ─ out
  *
  * The limiter and the ceiling sit after the A/B, so ORIGINAL (POWER off) and WIDE BEAM go through the same output, and no
  * setting clips (demo-d02). The beam is the plugin's: its amount (0.5 at REACH 100) and halved below 1.2 kHz, which keeps
@@ -73,7 +73,12 @@ export class WideBeamEngine {
     const gain = (v = 1, m = true) => { const g = ctx.createGain(); g.gain.value = v; return m ? mono(g) as GainNode : g; };
     const hp = () => { const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.Q.value = Math.SQRT1_2; return mono(f) as BiquadFilterNode; };
 
+    // the input is always stereo, by the speaker rules: a 1-channel file (a voice memo, a mono bounce) plays as dual mono,
+    // centred, as a DAW plays it on a stereo track (a 'max' input would hand the splitter one channel, which it up-mixes
+    // discretely: L = the signal, R = silence, the whole wet path leaning left: r-dash-monofile); a 5.1 file folds down to
+    // L / R (its centre at -3 dB in both, checked offline)
     this.input = gain(1, false);
+    this.input.channelCount = 2; this.input.channelCountMode = 'explicit'; this.input.channelInterpretation = 'speakers';
     const split = ctx.createChannelSplitter(2);
     this.input.connect(split);
 
@@ -96,21 +101,32 @@ export class WideBeamEngine {
     const beamG = gain(0);
     mid.connect(bHp1).connect(bHp2).connect(conv).connect(beamShelf).connect(beamG);
 
-    const sideBus = gain(1), sideOut = gain(1), midOut = gain(1);
-    widthG.connect(sideBus); beamG.connect(sideBus); sideBus.connect(sideOut);
-    mid.connect(midOut);
+    const sideBus = gain(1);
+    widthG.connect(sideBus); beamG.connect(sideBus);
 
-    const L = gain(1), R = gain(1), sideNeg = gain(-1);
-    midOut.connect(L); midOut.connect(R);
-    sideOut.connect(L); sideOut.connect(sideNeg).connect(R);
-    const merge = ctx.createChannelMerger(2);
-    L.connect(merge, 0, 0); R.connect(merge, 0, 1);
-
+    // mid + side back to L / R: L = M + S, R = M − S
+    const toLR = (m: AudioNode, s: AudioNode) => {
+      const L = gain(1), R = gain(1), sNeg = gain(-1), merge = ctx.createChannelMerger(2);
+      m.connect(L); m.connect(R); s.connect(L); s.connect(sNeg).connect(R);
+      L.connect(merge, 0, 0); R.connect(merge, 0, 1);
+      return merge;
+    };
     const wet = gain(1, false), dry = gain(0, false);
-    merge.connect(wet);
+    toLR(mid, sideBus).connect(wet);
     this.input.connect(dry);
     const out = gain(1, false);
     wet.connect(out); dry.connect(out);
+
+    // MONO / SIDE act on the whole blend, after MIX, as in the plugin (PluginProcessor.cpp: out = dry + (wet − dry) × mix,
+    // then MONO sums it and SIDE solos its (L − R) / 2): at MIX 35 the dry share is mono or side-only too. Both open = the
+    // blend unchanged (M + S = L, M − S = R).
+    const oSplit = ctx.createChannelSplitter(2);
+    out.connect(oSplit);
+    const oMid = gain(0.5), oSide = gain(0.5), oSideInv = gain(-1), midOut = gain(1), sideOut = gain(1);
+    oSplit.connect(oMid, 0); oSplit.connect(oMid, 1);
+    oSplit.connect(oSide, 0); oSplit.connect(oSideInv, 1); oSideInv.connect(oSide);
+    oMid.connect(midOut); oSide.connect(sideOut);
+    const monitored = toLR(midOut, sideOut);
 
     // the output stage, the same for ORIGINAL and WIDE BEAM: master, a fast limiter, then a hard ceiling at -0.3 dBFS
     // (a soft knee from -6 dBFS; the limiter keeps the signal out of it almost always)
@@ -120,7 +136,7 @@ export class WideBeamEngine {
     const pre = gain(0.5, false), post = gain(2, false);
     const shaper = ctx.createWaveShaper(); shaper.curve = ceilingCurve(); shaper.oversample = 'none';
     this.output = gain(1, false);
-    out.connect(this.master).connect(limiter).connect(pre).connect(shaper).connect(post).connect(this.output).connect(ctx.destination);
+    monitored.connect(this.master).connect(limiter).connect(pre).connect(shaper).connect(post).connect(this.output).connect(ctx.destination);
 
     // the meter tap: after the ceiling, before VOLUME (the mirror and CORR read the sound, not the monitor level)
     const meterSplit = ctx.createChannelSplitter(2);
@@ -151,9 +167,10 @@ export class WideBeamEngine {
     to(n.lo.gain, -db); to(n.hi.gain, db);
     to(n.widthG.gain, widthGain(p.width));
     to(n.beamG.gain, beamAmount(p));
-    // listening switches: SIDE wins over MONO (README); both act only while POWER is on
-    to(n.midOut.gain, p.side ? 0 : 1);
-    to(n.sideOut.gain, p.mono && !p.side ? 0 : 1);
+    // listening switches, on the blend: SIDE wins over MONO (README); with POWER off the output is the dry whatever they
+    // say (the plugin's POWER fade comes after them)
+    to(n.midOut.gain, p.power && p.side ? 0 : 1);
+    to(n.sideOut.gain, p.power && p.mono && !p.side ? 0 : 1);
     const mix = p.mix / 100;
     to(n.wet.gain, p.power ? mix * cruise(p) : 0);
     to(n.dry.gain, p.power ? 1 - mix : 1);

@@ -50,8 +50,11 @@ const filmTitle = `WIDE BEAM ${m.title}`;
 const headOf = (id: string) => STEPS.find((s) => s.id === id)?.h ?? '';
 const WORDS = ['none', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const timed = m.chapters.filter((c) => c.at != null).length;
-const note = !film || !timed
+// with the film in but no chapter timed yet, the chapters still go to the road, and the note no longer says "until"
+const note = !film
   ? 'Until the film is ready, each chapter takes you to that step of the stereo road above.'
+  : !timed
+  ? 'Each chapter takes you to that step of the stereo road above.'
   : timed === m.chapters.length
     ? 'Each chapter starts the film at that step.'
     : 'A chapter starts the film at that step, or takes you to that step of the stereo road above.';
@@ -94,7 +97,7 @@ const paras = (m.transcript ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(
           )}
         </div>
       </div>
-      <p class="wb-manual-ask" data-wb-cta>{ask.manualLine} <a href="#wb-get">{ask.key}</a></p>
+      <p class="wb-manual-ask" data-wb-cta data-wb-ask data-wb-manual-line>{ask.manualLine} <a href="#wb-get">{ask.key}</a></p>
       {paras.length > 0 && (
         <details class="wb-manual-transcript">
           <summary>Read the transcript</summary>

@@ -16,10 +16,16 @@ body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
 
 /* ---------- the SOUND key ---------- */
 /* .wb-sound-home is the key's resting corner without a transition (furniture.ts adds it next to the key and reads it):
-   while the key glides on `bottom` (the bar leaving at the footer), the key's own computed bottom is a value in
-   between, and a ride measured from it left the key over the footer's links once the glide ended. The two share their
-   right / bottom here and in the round-key block below. */
-.wb-sound, .wb-sound-home { position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + var(--wb-edge, 0px)); }
+   while the key glides on the stack (the bar leaving at the footer), the key's own box is a value in between, and a
+   ride measured from it left the key over the footer's links once the glide ended. The two share their right / bottom /
+   translate here and in the round-key block below.
+   The stack lifts the key with `translate`, not `bottom` (stage 4): a glide on `bottom` is layout, and each banner
+   coming or going counted as layout shift (G11 CLS 0.0142 at 390x844, 0.0135 of it this key). The safe area stays in
+   `bottom`; the lift above it is max(stack - inset, 0), so the key rests where it did. */
+.wb-sound, .wb-sound-home {
+  position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  translate: 0 calc(env(safe-area-inset-bottom, 0px) - var(--wb-edge, 0px));
+}
 .wb-sound-home { width: 0; height: 0; visibility: hidden; pointer-events: none; }
 .wb-sound {
   z-index: 50;
@@ -28,14 +34,14 @@ body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
   color: var(--ivory-2); background: rgba(14, 12, 10, .72); border: 1px solid rgba(201, 163, 92, .35);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 8px 22px rgba(4, 3, 2, .5);
   transform: translate(0, var(--wb-sound-dy, 0px));
-  transition: color .2s, border-color .2s, bottom .28s cubic-bezier(.22, 1, .36, 1), opacity .2s, visibility 0s;
+  transition: color .2s, border-color .2s, translate .28s cubic-bezier(.22, 1, .36, 1), opacity .2s, visibility 0s;
 }
 /* riding a moving edge (the footer coming up) follows the scroll frame by frame; a jump (aside, back) glides */
-.wb-sound.is-gliding { transition: color .2s, border-color .2s, bottom .28s cubic-bezier(.22, 1, .36, 1), transform .28s cubic-bezier(.22, 1, .36, 1); }
+.wb-sound.is-gliding { transition: color .2s, border-color .2s, translate .28s cubic-bezier(.22, 1, .36, 1), transform .28s cubic-bezier(.22, 1, .36, 1); }
 /* stepped aside: only ever while the sound is off (furniture.ts never sets it while playing) */
 .wb-sound.is-aside {
   transform: translate(calc(100% + 32px), var(--wb-sound-dy, 0px)); visibility: hidden; pointer-events: none;
-  transition: transform .24s cubic-bezier(.4, 0, 1, 1), visibility 0s .24s, bottom .28s cubic-bezier(.22, 1, .36, 1);
+  transition: transform .24s cubic-bezier(.4, 0, 1, 1), visibility 0s .24s, translate .28s cubic-bezier(.22, 1, .36, 1);
 }
 @media (hover: hover) and (pointer: fine) {
   .wb-sound:hover { color: var(--ivory); border-color: var(--brass); }
@@ -55,7 +61,7 @@ body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
 /* phones, and any touch screen (a phone held sideways is 844 px wide: the 115x36 pill was under the 44 px target): a
    44 px round key, the EQ bars as its mark; the words stay in the DOM as its name (clipped, not removed) */
 @media (max-width: 700px), (pointer: coarse) {
-  .wb-sound, .wb-sound-home { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + var(--wb-edge, 0px)); }
+  .wb-sound, .wb-sound-home { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
   .wb-sound { width: 44px; height: 44px; padding: 0; gap: 0; justify-content: center; }
   .wb-sound .wb-eq { height: 14px; gap: 3px; }
   .wb-sound .wb-eq i { width: 3px; height: 14px; }
@@ -94,16 +100,27 @@ body:has(#cookie-banner.cb--visible) .wb-bar { transform: translateY(105%); visi
   .wb-bar-key { width: auto; flex: none; }
   .wb-bar-micro { min-width: 0; text-align: left; }
 }
+/* ...but the row holds the line on one row only from about 520 px (key 198 + gap 16 + line 276 + padding 32). Narrower
+   (a laptop at 300-400 % zoom: 380x212, 320x256, 285x159) the line was squeezed into a column beside the key, 3 to 9
+   lines, and the bar grew to 63 / 96 / 163 px: at 285x159 it covered the whole screen (r-asks-zoombar). There the key
+   carries the ask alone. */
+@media (max-width: 539px) and (orientation: landscape) and (max-height: 500px) {
+  .wb-bar-micro { display: none; }
+}
 
 /* ---------- the cart FAB (<= 700 px, the house CartFab) on /widebeam ---------- */
 @media (max-width: 700px) {
-  body:has(.wb-page) .cart-fab.cart-fab { bottom: calc(16px + var(--wb-edge, 0px)); transition: bottom .28s cubic-bezier(.22, 1, .36, 1), transform .24s cubic-bezier(.4, 0, 1, 1); }
+  body:has(.wb-page) .cart-fab.cart-fab { bottom: calc(16px + var(--wb-edge, 0px)); transition: bottom .28s cubic-bezier(.22, 1, .36, 1), transform .24s cubic-bezier(.4, 0, 1, 1), visibility 0s; }
   /* an empty cart has nothing to open: off the edge until a cart badge shows a count (mobile-08). Read ANY badge, not
      the FAB's own: Cart.astro's first sync() runs before CartFab is in the DOM, so the FAB's badge stays hidden on a
      load with items until the next add (the header badge is synced) */
   body:has(.wb-page):not(:has([data-cart-badge]:not([hidden]))) .cart-fab.cart-fab,
   /* over a watched block, an ask or the footer: off the edge until it has passed (furniture.ts) */
-  html.wb-fab-aside body .cart-fab.cart-fab { transform: translateX(calc(-100% - 24px)); pointer-events: none; }
+  html.wb-fab-aside body .cart-fab.cart-fab {
+    transform: translateX(calc(-100% - 24px)); pointer-events: none;
+    /* off the edge is out of the tab order too (G10: Tab landed on an "Open cart" no one could see), once it has slid */
+    visibility: hidden; transition: bottom .28s cubic-bezier(.22, 1, .36, 1), transform .24s cubic-bezier(.4, 0, 1, 1), visibility 0s .24s;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -114,3 +131,8 @@ body:has(#cookie-banner.cb--visible) .wb-bar { transform: translateY(105%); visi
 /* high contrast: no ambient loop (the EQ bars hold still) */
 html.hc .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; transform: scaleY(.66); }
 html.hc .wb-sound { background: #0b0a09; }
+/* forced colours: the EQ bars are the round key's only mark, and forcing paints them the key's own fill (an empty
+   circle on a light theme). They take the key's text colour. */
+@media (forced-colors: active) {
+  .wb-eq i { forced-color-adjust: none; background: ButtonText; }
+}

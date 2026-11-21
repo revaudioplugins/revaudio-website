@@ -9,6 +9,9 @@
  * THE INTRO RULE (plan 2026-11-18 H.1; hero-04/12/13, perf-03/06/08, video-12):
  *  - not playing 2.5 s after start() -> straight to the road and the title (a bail);
  *  - playing -> the title at video 5 s or 6.5 s after play(), whichever comes first; a stall over 3 s is a bail;
+ *  - the first run counts that 6.5 s from NAVIGATION (Part 1 §1: on a slow line the name is up by about 6.5 s at the
+ *    latest): a page script that lands late has only what is left of it, a film not yet playing when it runs out is a
+ *    bail, and a script that lands with under 2 s of it left plays no film at all (the road, the title, Replay);
  *  - a hidden tab waits for visibilitychange before it starts;
  *  - an error on the last <source> means no film at all: a bail, and no Replay;
  *  - a bail drops the sources and calls load(), so nothing keeps downloading; Replay puts them back;
@@ -19,7 +22,8 @@
  * module never runs; `is-run` stands it down once the module is in charge.
  */
 const REVEAL_AT = 5.0; // video seconds
-const TITLE_WALL = 6500; // ms after play()
+const TITLE_WALL = 6500; // ms after play(); on the first run, after navigation start
+const FILM_MIN = 2000; // ms: the first run needs this much of the wall left to play the film (the headlights at ~1.2 s)
 const PLAY_DEADLINE = 2500; // ms after start()
 const STALL = 3000; // ms
 
@@ -66,9 +70,15 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
   const last = sources[sources.length - 1];
 
   let running = false, done = true, playing = false, noFilm = false, dropped = slow;
+  // the first start counts from navigation (performance.now() = ms since it began); a tab opened in the background
+  // counts from the moment it is seen, and Replay always has the full wall
+  let fromNav = document.visibilityState !== 'hidden';
   let watchdog = 0, stall = 0, wall = 0, pauseT = 0;
   const clear = () => { clearTimeout(watchdog); clearTimeout(stall); clearTimeout(wall); clearTimeout(pauseT); };
-  const titleNow = () => { reveal(false); hero.classList.remove('is-hush'); };
+  // a replay's hush: the column is out of reach as well as out of sight (no click, no Tab, no reader) until the title
+  // comes back; hero.css hides it after its .3 s fade
+  const hush = (on: boolean) => { hero.classList.toggle('is-hush', on); if (inner) inner.inert = on; };
+  const titleNow = () => { reveal(false); hush(false); };
   const frameNow = (): Frame => {
     const s = sources.find((x) => x.src === video.currentSrc);
     const f = s?.dataset.wbFrame?.split(' ').map(Number);
@@ -85,7 +95,7 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
     const hadFocus = document.activeElement === skip;
     reveal(false);
     if (!fast) hooks.handoff(frameNow()); // a skip or a bail has no car on the last frame: no tail lights
-    hero.classList.remove('is-intro', 'is-hush');
+    hero.classList.remove('is-intro'); hush(false); // before the focus below: an inert title can't take it
     hero.classList.toggle('is-intro-fast', fast);
     video!.classList.add('is-gone');
     if (fast) pauseT = window.setTimeout(() => { if (!running) { video!.pause(); drop(); } }, 450);
@@ -99,12 +109,15 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
     restore();
     done = false; running = true; playing = false;
     hero.classList.add('is-intro');
-    if (revealed) hero.classList.add('is-hush'); // a replay: the title steps back until the car leaves
+    if (revealed) hush(true); // a replay: the title steps back until the car leaves
     if (replay) replay.hidden = true;
     video!.classList.remove('is-gone');
     try { video!.currentTime = 0; } catch {}
     watchdog = window.setTimeout(() => { if (!playing) finish(true); }, PLAY_DEADLINE);
-    wall = window.setTimeout(() => { if (running) titleNow(); }, TITLE_WALL);
+    const left = fromNav ? Math.max(0, TITLE_WALL - performance.now()) : TITLE_WALL;
+    fromNav = false;
+    // the wall: the title comes now; a film that has not started by then never will (no car after the name)
+    wall = window.setTimeout(() => { if (!running) return; if (playing) titleNow(); else finish(true); }, left);
     video!.play().catch(() => finish(true));
   }
 
@@ -119,7 +132,10 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && running) finish(true); });
   replay?.addEventListener('click', () => { start(); if (running) skip?.focus({ preventScroll: true }); });
 
-  if (seen || deep || late) {
+  // the page script landed too late for the film to play before the name is due (a slow line): no film, no download
+  const tooLate = fromNav && performance.now() > TITLE_WALL - FILM_MIN;
+  if (seen || deep || late || tooLate) {
+    fromNav = false; // a Replay from here gets the full wall
     video.classList.add('is-gone');
     reveal(true);
     if (replay) replay.hidden = false;

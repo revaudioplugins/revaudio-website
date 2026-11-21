@@ -42,7 +42,9 @@ test.describe('/widebeam honesty', () => {
     if (!widebeam.aaxReady) expect(text, 'AAX named while aaxReady is false').not.toMatch(/AAX/);
     expect(text, '"Buy now"').not.toMatch(/Buy now/i);
     expect(text, '"Notify me"').not.toMatch(/Notify me/i);
-    expect(text, 'CRUISE "Always on"').not.toMatch(/Always on/);
+    // CRUISE is always on with no control since 0.10.0 and TRACTION is gone (README): the stale claims are 0.9.0's switches
+    expect(text, 'CRUISE as a switch').not.toMatch(/CRUISE[^.]{0,40}\b(is a switch|switch(es)? (it )?off|turn(s)? (it )?off|on\/off|off by default)|\b(switch|turn) (CRUISE|TRACTION) (on|off)/i);
+    expect(text, 'TRACTION as a control').not.toMatch(/TRACTION(?! (is gone|was removed|is removed|has gone))/);
     if (!buyable()) {
       await expect(page.locator('[data-wb-page] [data-add-to-cart]')).toHaveCount(0);
       expect(text, 'a BUY note').not.toMatch(/Checkout opens on launch day|rolls straight into the full version/i);
@@ -78,10 +80,16 @@ test.describe('/widebeam behaviour', () => {
 
   test('the Owner\'s Manual anchor is there and /widebeam/#manual lands on it', async ({ page }) => {
     await open(page, '/widebeam/#manual', 3500);
-    const top = await page.evaluate(() => { const m = document.getElementById('manual'); return m ? Math.round(m.getBoundingClientRect().top) : null; });
-    expect(top, '#manual section').not.toBeNull();
-    expect(top!, '#manual should land under the nav').toBeGreaterThanOrEqual(-4);
-    expect(top!, '#manual should land under the nav').toBeLessThan(200);
+    // the manual's heading lands under the nav: the section itself lands with its top padding above the screen
+    // (manual.css scroll-margin-top), so the heading, the screen and its strap fit together on a 1141x636 laptop
+    const r = await page.evaluate(() => {
+      const h = document.querySelector('#manual #wb-manual-h') ?? document.querySelector('#manual h2');
+      const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
+      return h ? { top: Math.round(h.getBoundingClientRect().top), nav } : null;
+    });
+    expect(r, '#manual heading').not.toBeNull();
+    expect(r!.top, '#manual should land with its heading under the nav').toBeGreaterThanOrEqual(r!.nav - 4);
+    expect(r!.top, '#manual should land with its heading under the nav').toBeLessThan(200);
   });
 
   test('the letter keys act only inside the dash', async ({ page, isMobile }) => {

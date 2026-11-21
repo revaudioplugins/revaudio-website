@@ -16,11 +16,16 @@
 import { getImage } from 'astro:assets';
 import introPosterImg from '../../assets/widebeam/intro-poster.jpg';
 import introEndImg from '../../assets/widebeam/intro-end.jpg';
+import introEndPortraitImg from '../../assets/widebeam/intro-end-portrait.jpg';
 import { widebeam, askFor, heroLine, signature, type WidebeamPhase } from '../../data/widebeam';
 
 const introPoster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
 // the hero's road after the intro: the video's last frame with the car painted out, so the look never changes
 const roadStill = await Promise.all([1280, 1920].map((width) => getImage({ src: introEndImg, format: 'webp', width, quality: 72 })));
+// an upright phone: the same centre 680x1080 the portrait film shows (PORTRAIT_FRAME), at full size. The hero box is
+// scaled by its HEIGHT there, so the landscape files were 3.3x upscaled (1280w at DPR 3) and went soft when the film
+// ended; this one matches the film's own 2.2x, and weighs less than the 1280w file.
+const roadStillPortrait = await getImage({ src: introEndPortraitImg, format: 'webp', width: 680, quality: 72 });
 
 // the phase drives the key (askFor). The shell passes nothing (the data file's phase); a fixture page may pass
 // phase="open" to render the open-phase hero without touching the data file.
@@ -37,7 +42,10 @@ const PORTRAIT_FRAME = '620 0 680 1080';
 ---
 <!-- ============ HERO: the night road ============ -->
 <section class="wb-hero" aria-labelledby="wb-title">
-  <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
+  <picture>
+    <source media={PORTRAIT} srcset={roadStillPortrait.src} />
+    <img class="wb-still" src={roadStill[1].src} srcset={`${roadStill[0].src} 1280w, ${roadStill[1].src} 1920w`} sizes="100vw" alt="" aria-hidden="true" decoding="async" fetchpriority="high" />
+  </picture>
   <canvas class="wb-night" data-wb-night aria-hidden="true"></canvas>
   <video class="wb-intro" data-wb-intro muted playsinline preload="none" poster={introPoster.src} aria-hidden="true" tabindex="-1">
     <source src="/widebeam/intro-portrait-1080.mp4" type="video/mp4" media={PORTRAIT} data-wb-frame={PORTRAIT_FRAME} data-wb-tier="hi" />
@@ -58,7 +66,8 @@ const PORTRAIT_FRAME = '620 0 680 1080';
     <div class="wb-hero-keys" data-wb-hero-in>
       {trialKey ? (
         <>
-          <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-get" data-wb-trial><span data-face>{trialKey}</span></a>
+          {/* a plain link to the plate: [data-wb-trial] is the plate FORM's hook (capture.ts binds the first one), never put it here */}
+          <a class="rv-btn rv-btn--lg rv-btn--shine" href="#wb-get"><span data-face>{trialKey}</span></a>
           <a class="wb-hero-drive" href="#wb-drive" data-wb-start data-wb-demo data-wb-drive-key>Take it for a drive</a>
         </>
       ) : (

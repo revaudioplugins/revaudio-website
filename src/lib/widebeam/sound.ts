@@ -20,7 +20,7 @@
  */
 import { WideBeamEngine, type WbSource } from './audio';
 import type { Store } from './state';
-import type { Face } from './face';
+import { fitLine, onRefit, type Face } from './face';
 import { initConsole } from './console';
 import { initDeck } from './deck';
 // the demo clips (D.3, Dan's pick P3 B): Vite gives each a hashed /_astro/ name, so a returning visitor keeps it for a
@@ -64,6 +64,7 @@ export const TRACKS: Track[] = [
 // the deck's knobs are range inputs: an act on one is an act on the demo (the console's VOLUME fader is not)
 const NEVER = '[data-wb-manual], form, input:not([data-wb-deck-k]), textarea, select, label, iframe, video, [data-wb-sound], [data-wb-play], [data-wb-track-step]';
 const ACT_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End']);
+const ADJUSTS = '[role="slider"], input[type="range"]';
 
 export function initSound(page: HTMLElement, store: Store, face: Face, ignite: () => void) {
   let engine: WideBeamEngine | null = null, userStopped = false, token = 0, volumeDb = -3.9, stops = 0;
@@ -92,6 +93,19 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     }
     return engine;
   };
+  // Chrome and Firefox start their audio service inside the first `new AudioContext()`: a 100-210 ms freeze of the page
+  // on the first touch (G3 timing; measured on a bare page too). Asking for the device list starts that service off the
+  // main thread, so the context opens in ~3 ms later (it needs ~300 ms' start). Asked once, never at load: when the
+  // visitor's own scroll brings the face on screen, or a pointer or the focus reaches a control that can start the sound.
+  // No AudioContext, no sound, the answer is dropped unread.
+  let warmed = false;
+  const warm = () => { if (warmed || engine) return; warmed = true; try { navigator.mediaDevices?.enumerateDevices?.().catch(() => {}); } catch {} };
+  const WARM_ON = '[data-wb-demo], [data-wb-sound], [data-wb-play]';
+  const warmIf = (e: Event) => { if ((e.target as Element | null)?.closest?.(WARM_ON)) warm(); };
+  new IntersectionObserver(([e], io) => { if (e.isIntersecting && scrollY > 2) { warm(); io.disconnect(); } }, { threshold: [0, 0.25, 0.5, 0.75, 1] }).observe(faceEl);
+  page.addEventListener('pointerover', warmIf, { passive: true });
+  page.addEventListener('focusin', warmIf);
+  page.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') warmIf(e); }, { passive: true, capture: true }); // a finger acts on release
   const unlock = (e: WideBeamEngine) => (e.ctx.state === 'running' ? Promise.resolve() : e.ctx.resume().catch(() => {}));
   const faceShown = () => { const r = faceEl.getBoundingClientRect(); return r.height ? Math.max(0, Math.min(innerHeight, r.bottom) - Math.max(0, r.top)) / r.height : 0; };
 
@@ -146,10 +160,33 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
     return el;
   };
   const act = (el: HTMLElement | null) => { if (el) start(el.matches('[data-wb-start]')); };
-  page.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) act(demoOf(e.target)); }, true);
+  // a modified click on a link ("Take it for a drive", a card's link) is the browser's: a new tab or window, Ctrl's menu
+  // on a Mac. A modified press on a knob still counts (Shift / Alt is the fine drag).
+  const browsers = (e: MouseEvent, el: HTMLElement | null) => !!el?.matches('a[href]') && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey);
+  // the glove box lane drags sideways with a mouse (presets.ts): a press on a card counts only as a click that did not
+  // drag the lane (more than 4 px, presets.ts's own threshold), so a drag never starts the sound (r-dash-lanedrag).
+  // (Here, not in presets.ts's swallow: this capture listener on the page runs before the lane's.)
+  let laneDown: { x: number; y: number } | null = null;
+  page.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    const el = demoOf(e.target);
+    if (el?.closest('[data-wb-lane]')) { laneDown = { x: e.clientX, y: e.clientY }; return; }
+    if (!browsers(e, el)) act(el);
+  }, true);
   page.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') act(demoOf(e.target)); }, true);
-  page.addEventListener('click', (e) => act(demoOf(e.target)), true);
-  page.addEventListener('keydown', (e) => { if (ACT_KEYS.has(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) act(demoOf(e.target)); }, true);
+  page.addEventListener('click', (e) => {
+    const el = demoOf(e.target), down = laneDown;
+    laneDown = null;
+    if (browsers(e, el)) return;
+    if (down && el?.closest('[data-wb-lane]') && Math.abs(e.clientX - down.x) > 4) return;
+    act(el);
+  }, true);
+  // a scroll key acts only on a control it adjusts (the face's sliders, the deck's ranges): on a link, a card or a key
+  // (the hero's "Take it for a drive", a glove card, MONO CHECK) it scrolls the page, so it never starts the sound (P2 B)
+  page.addEventListener('keydown', (e) => {
+    if (!ACT_KEYS.has(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if ((e.target as Element | null)?.matches?.(ADJUSTS)) act(demoOf(e.target));
+  }, true);
   // a screen reader's adjust on a deck knob (a native range) sends no key: its input event is the act (a script's own
   // value change sends none)
   page.addEventListener('input', (e) => { if ((e.target as Element)?.matches?.('input[data-wb-deck-k]')) act(demoOf(e.target)); }, true);
@@ -188,8 +225,10 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
       n.style.fontSize = '';
       const w = n.clientWidth - 12, px = parseFloat(getComputedStyle(n).fontSize) || 14;
       if (w > 0 && t.length * 0.6 * px > w - 1) n.style.fontSize = `${Math.max(11, Math.floor(((w - 1) / t.length / 0.6) * 10) / 10)}px`; // 1 px spare: no ellipsis on a rounding
+      fitLine(n, n.style.fontSize); // and a visitor's own wider text spacing (WCAG 1.4.12)
     }
   }
+  onRefit(paintTrack);
   const decoded = new Map<number, Promise<AudioBuffer>>();
   const bufferOf = (i: number, e: WideBeamEngine) => {
     let p = decoded.get(i);
@@ -244,7 +283,7 @@ export function initSound(page: HTMLElement, store: Store, face: Face, ignite: (
       if (!(mirrorOn || faceOn)) return; // asleep until one is on screen again
       const { corr, level } = engine.measure();
       if (faceOn) face.setCorrelation(level > 1e-4 ? corr : 0);
-      if (corrRead) corrRead.textContent = level > 1e-4 ? (corr >= 0 ? '+' : '') + corr.toFixed(2) : '--';
+      if (corrRead) { const t = level > 1e-4 ? (corr >= 0 ? '+' : '') + corr.toFixed(2) : '--'; if (corrRead.textContent !== t) corrRead.textContent = t; }
       if (mirrorOn && sctx && scope) {
         const w = scope.width, h = scope.height, [L, R] = engine.scope();
         sctx.globalCompositeOperation = 'destination-out';

@@ -96,6 +96,20 @@
   .wb-plate { --wb-ps: .36; }
 }
 
+/* forced colours (Windows High Contrast): the plate's photos go, as the hero's road does (hero.css). A browser keeps
+   url() images in forced colours but repaints the focus ring in the theme's own colour, so in a light theme the navy
+   ring landed on the dark leather and steel at 1.1-1.8:1 (r-base-forced). The plate becomes the system's Canvas with
+   a thin CanvasText rule at the same box size, so nothing moves. border-color is Canvas, not transparent: forcing
+   paints a transparent border CanvasText (a 20-89 px black frame); a system colour is kept. Gradients need nothing:
+   Chrome drops them in forced colours (the page's own gradient computes to none there). */
+@media (forced-colors: active) {
+  .wb-plate { border-image: none; border-color: Canvas; background: Canvas; box-shadow: none; outline: 1px solid CanvasText; outline-offset: -1px; }
+  .wb-plate::before, .wb-plate--strap::after, .wb-plate--badge::after { background: none; }
+  /* the console's and the deck's LCD-blue arrows (drive.css .wb-con-step) were drawn for the dark plate: forcing leaves
+     an SVG stroke alone, so on the Canvas they would fade to a pale blur. They take the button's own system colour. */
+  .wb-plate .wb-con-step svg { stroke: ButtonText; filter: none; }
+}
+
 /* ---------- single parts (block boxes: give them a width, the height follows) ---------- */
 .wb-part-lamp-l,
 .wb-part-lamp-r,
@@ -103,6 +117,17 @@
 .wb-part-meter,
 .wb-part-cap,
 .wb-part-badge { position: relative; display: block; background-position: 0 0; background-size: 100% 100%; background-repeat: no-repeat; }
+
+/* below-the-fold art waits until it is about a screen away (r-base-foldart): every one of these parts sits under the
+   first view on every size, and as CSS backgrounds they loaded with the page (lamps 2 x 31 KB at the closer, road 33,
+   meter 8, cap 8). init.ts marks each part [data-wb-near] 3/4 of a screen ahead of the reader (IntersectionObserver
+   rootMargin 75%); the box keeps its size (aspect-ratio), so nothing moves when the art lands. Only with scripting:
+   without JS, or where the query is unknown, the art loads as before. Other areas opt in with [data-wb-defer] on an
+   element and their own :not([data-wb-near]) rule. The plate (just under the fold, and its border-image would fall
+   back to a solid currentColor frame) is not deferred. */
+@media (scripting: enabled) {
+  :is(.wb-part-lamp-l, .wb-part-lamp-r, .wb-part-road, .wb-part-meter, .wb-part-cap):not([data-wb-near]) { background-image: none; }
+}
 
 /* the headlamps. --wb-lamp is the lens exposure only (the brass bezel never dims): 0.1 off, 1 the photo, ~1.6 full
    beam. The lens copy is clipped to the face's own lens rectangle (face.ts wbLensL / wbLensR). */

@@ -31,7 +31,9 @@ let active = 0;
 export const isDriving = () => active !== 0;
 
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
-const navH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
+/** the site nav's real height: --site-nav-h (Header.astro sets it live: 58 px on an upright phone, 41 on a laptop), then
+ *  the static --nav-h (44) where the header script has not run (r-dash-navh) */
+export const navH = () => { const cs = getComputedStyle(document.documentElement); return parseFloat(cs.getPropertyValue('--site-nav-h')) || parseFloat(cs.getPropertyValue('--nav-h')) || 44; };
 // the layout position (offsets ignore transforms; the dash rises with one)
 const docTop = (el: HTMLElement) => { let y = 0; for (let e: HTMLElement | null = el; e; e = e.offsetParent as HTMLElement | null) y += e.offsetTop; return y; };
 const faceOf = (t: HTMLElement) => (t.matches('[data-wb-face]') ? t : t.querySelector<HTMLElement>('[data-wb-face]') ?? t.closest('#wb-drive')?.querySelector<HTMLElement>('[data-wb-face]') ?? null);

@@ -14,10 +14,11 @@
  *   - over a watched block ([data-wb-watch], watch()) or an ask ([data-wb-cta], ctaZone()) it slides off the right edge,
  *     but ONLY while the sound is off: while sound plays it is the only stop control and never leaves the screen.
  * The cart FAB (<= 700 px, the house CartFab): rides the stack; off the edge while the cart is empty (CSS), and over a
- *   watched block, an ask or the footer (html.wb-fab-aside).
+ *   watched block, an ask, the phone deck ([data-wb-deck] while deckOn()) or the footer (html.wb-fab-aside).
  * The phone bar ([data-wb-bar], <= 900 px): askFor().sticky; away while any [data-wb-cta], the manual
  *   ([data-wb-manual]) or the footer is on screen (a sign-up form counts while its key is whole on screen or any of its
- *   email field is: the closer's field enters from the bottom edge, where the bar sits), while an email field has
+ *   email field is: the closer's field enters from the bottom edge, where the bar sits), while the visitor drives the
+ *   phone deck (until the dash has left the screen), while an email field has
  *   focus, after a sign-up (html[data-wb-joined], capture.ts) and (CSS) while the cookie banner is up. Its key goes to
  *   the nearer sign-up form (the plate's or the closer's).
  *
@@ -26,7 +27,7 @@
  */
 import type { Store } from './state';
 import { onChange, isPlaying } from './sound';
-import { driveTo } from './drive-to';
+import { driveTo, deckOn, DECK_MQ, navH } from './drive-to';
 
 const extraWatch = new Set<HTMLElement>();
 const extraCta = new Set<HTMLElement>();
@@ -36,6 +37,20 @@ let refresh: (() => void) | null = null;
 export function watch(el: HTMLElement) { extraWatch.add(el); refresh?.(); }
 /** an ask zone: the phone bar steps away while `el` is on screen (and the SOUND key / FAB step aside over it) */
 export function ctaZone(el: HTMLElement) { extraCta.add(el); refresh?.(); }
+
+/** A link to the ask (the phone bar's key, the line under the manual): one mover (stops Lenis's own anchor handling)
+ *  to the NEARER sign-up form (beside the closer the plate is a 6,700 px trip back up), then its field takes focus.
+ *  Without JS, or once both forms are gone (a sign-up), the link's own href is left alone. */
+export function driveToAsk(page: HTMLElement, e: MouseEvent) {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const away = (f: HTMLElement) => { const r = f.getBoundingClientRect(); return Math.abs(r.top + r.height / 2 - innerHeight / 2); };
+  const form = [...page.querySelectorAll<HTMLFormElement>('form[data-wb-cta]')].filter((f) => !f.hidden)
+    .reduce<HTMLFormElement | null>((a, b) => (!a || away(b) < away(a) ? b : a), null);
+  if (!form) return;
+  e.preventDefault(); e.stopPropagation();
+  const field = form.querySelector<HTMLInputElement>('input[type="email"]');
+  driveTo(form, { align: 'face', onArrive: () => field?.focus({ preventScroll: true }) });
+}
 
 export function initFurniture(page: HTMLElement, store: Store, reduced: boolean) {
   const html = document.documentElement;
@@ -90,14 +105,40 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
     new ResizeObserver(read).observe(banner, { box: 'border-box' }); // its padding holds the safe-area inset
     read();
   }
-  if (bar) new ResizeObserver(() => { barH = bar.offsetHeight; setLift(); }).observe(bar, { box: 'border-box' });
+  // setBar too: its height decides whether the bar may show at all (tooTall); `setBar` is declared below, read at call time
+  if (bar) new ResizeObserver(() => { barH = bar.offsetHeight; setBar(); setLift(); }).observe(bar, { box: 'border-box' });
 
   // ── the phone bar ──
   const hits = new Set<Element>();
   let typing = false;
+  // the dash on an upright phone (the deck, D7 B): its controls run the full width down to the bottom edge, where the
+  // bar sits (stage 4, i04: at the drive's landing the bar covered HIGH BEAM, MONO, SIDE, POWER at 390x844 and LOW FOCUS,
+  // MIX, REACH at 360x740). So while the visitor DRIVES the deck (a drive landed on the dash, an act on one of its
+  // controls, or the focus inside #wb-drive) the bar leaves, until the dash is off screen. A visitor only scrolling past
+  // keeps the ask (G9: leaving over the whole dash cost 12 of 50 scroll steps at 390, 62 % against the 80 % floor).
+  // An act counts as sound.ts counts one: a mouse on press, a finger on release (a scroll swipe that starts on a control
+  // ends in pointercancel, never a release), and only on a control ([data-wb-demo]).
+  const dashSec = page.querySelector<HTMLElement>('#wb-drive');
+  let dashOn = false, driving = false;
+  const drive = () => { if (dashOn && deckOn() && !driving) { driving = true; setBar(); } };
+  const onControl = (e: Event) => !!(e.target as Element | null)?.closest?.('[data-wb-demo]');
+  if (dashSec) {
+    new IntersectionObserver(([e]) => { dashOn = e.isIntersecting; if (!dashOn) driving = false; setBar(); }).observe(dashSec);
+    dashSec.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && onControl(e)) drive(); }, true);
+    dashSec.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse' && onControl(e)) drive(); }, true);
+    dashSec.addEventListener('input', (e) => { if (onControl(e)) drive(); }, true); // a screen reader's adjust on a deck knob
+    dashSec.addEventListener('focusin', drive);
+    window.addEventListener('wb:drive', (e) => { const d = (e as CustomEvent).detail; if (d?.phase === 'arrive' && d.face) drive(); });
+  }
+  // a bar that would take over 40 % of the room under the nav hides the page it points into (a laptop at 400 % zoom,
+  // 285x159: even the key alone is 60 of the 115 px under the nav), so it stays away there (r-asks-zoombar)
+  const tooTall = () => {
+    const nav = navH();
+    return barH > (innerHeight - nav) * 0.4;
+  };
   const setBar = () => {
     if (!bar) return;
-    const away = hits.size > 0 || typing || html.hasAttribute('data-wb-joined');
+    const away = hits.size > 0 || typing || html.hasAttribute('data-wb-joined') || (driving && dashOn && deckOn()) || tooTall();
     bar.classList.toggle('is-away', away);
     const up = !away && barMq.matches;
     if (up !== barUp) { barUp = up; setLift(); }
@@ -131,24 +172,16 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
   new MutationObserver(setBar).observe(html, { attributes: true, attributeFilter: ['data-wb-joined'] });
   window.addEventListener('pageshow', (e) => { if ((e as PageTransitionEvent).persisted) observeBar(); }); // Safari bfcache
   barMq.addEventListener('change', () => { setBar(); setLift(); });
+  matchMedia(DECK_MQ).addEventListener('change', () => setBar()); // a phone turned: the deck comes or goes
   // the bar's key: one mover (stop Lenis's own anchor handling), to the NEARER sign-up form (beside the closer it was a
   // 6,700 px trip back up to the plate), then the field takes focus. Without JS its href goes to the plate.
-  const barKey = bar?.querySelector<HTMLAnchorElement>('[data-wb-bar-key]');
-  barKey?.addEventListener('click', (e) => {
-    const away = (f: HTMLElement) => { const r = f.getBoundingClientRect(); return Math.abs(r.top + r.height / 2 - innerHeight / 2); };
-    const form = [...page.querySelectorAll<HTMLFormElement>('form[data-wb-cta]')].filter((f) => !f.hidden)
-      .reduce<HTMLFormElement | null>((a, b) => (!a || away(b) < away(a) ? b : a), null);
-    if (!form) return;
-    e.preventDefault(); e.stopPropagation();
-    const field = form.querySelector<HTMLInputElement>('input[type="email"]');
-    driveTo(form, { align: 'face', onArrive: () => field?.focus({ preventScroll: true }) });
-  });
+  bar?.querySelector<HTMLAnchorElement>('[data-wb-bar-key]')?.addEventListener('click', (e) => driveToAsk(page, e));
 
   // ── the SOUND key and the FAB: where they may sit ──
   const overlaps = (a: DOMRect, b: DOMRect, pad = 0) => a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
   const visibleRect = (el: HTMLElement) => { const r = el.getBoundingClientRect(); return r.height > 0 && r.bottom > 0 && r.top < innerHeight ? r : null; };
-  // the key's resting corner, read from a twin with the key's right / bottom and no transition (furniture.css): the
-  // key's own computed bottom is a value in between while it glides on the stack (the bar leaving at the footer), and
+  // the key's resting corner, read from a twin with the key's right / bottom / translate and no transition (furniture.css):
+  // the key's own box is a value in between while it glides on the stack (the bar leaving at the footer), and
   // a ride measured from it put the key over the footer's links once the glide ended
   const homeOf = key ? Object.assign(document.createElement('i'), { className: 'wb-sound-home' }) : null;
   if (key && homeOf) { homeOf.setAttribute('aria-hidden', 'true'); key.after(homeOf); }
@@ -159,7 +192,7 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
       const w = key.offsetWidth, h = key.offsetHeight;
       const corner = homeOf.getBoundingClientRect();
       const home = new DOMRect(corner.right - w, corner.bottom - h, w, h);
-      const nav = parseFloat(getComputedStyle(html).getPropertyValue('--nav-h')) || 44;
+      const nav = navH();
       const playing = isPlaying() || key.getAttribute('aria-pressed') === 'true';
       // ride: the footer, the focused control
       let dy = 0;
@@ -185,8 +218,8 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
       dy = Math.round(dy);
       // a ride the scroll made follows it at once: the page under the key moved with the scroll (a glide from the old
       // place crossed the footer's links after a jump to the end). One the scroll didn't make glides: the stack (the
-      // same .28 s curve as the key's own glide on `bottom`, so riding the footer the two mostly cancel while the bar
-      // leaves), a focused control, stepping aside
+      // same .28 s curve as the key's own glide on the stack (`translate`), so riding the footer the two mostly cancel
+      // while the bar leaves), a focused control, stepping aside
       const scrolled = Math.abs(scrollY - lastY) > 1;
       const glide = aside !== lastAside || (dy !== lastDy && !scrolled);
       key.classList.toggle('is-gliding', glide && !reduced);
@@ -199,7 +232,10 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
       const w = fab.offsetWidth, h = fab.offsetHeight;
       const home = new DOMRect(parseFloat(cs.left) || 16, innerHeight - (parseFloat(cs.bottom) || 16) - h, w, h);
       let aside = false;
-      for (const el of [...watched(), ...asks(), ...(footer ? [footer] : [])]) {
+      // the phone deck too (the FAB only): its controls run down to the bottom-left corner, and the drive lands with
+      // HIGH BEAM / LOW FOCUS under the FAB, where a tap opened the cart (stage 4, r-asks-fabdeck)
+      const deck = deckOn() ? page.querySelector<HTMLElement>('[data-wb-deck]') : null;
+      for (const el of [...watched(), ...asks(), ...(deck ? [deck] : []), ...(footer ? [footer] : [])]) {
         const wr = visibleRect(el);
         if (wr && overlaps(home, wr, 8)) { aside = true; break; }
       }
@@ -207,9 +243,10 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
     } else html.classList.remove('wb-fab-aside');
   }
   addEventListener('scroll', schedule, { passive: true });
-  addEventListener('resize', () => { setLift(); schedule(); });
-  // a glide on `bottom` ends after the scroll has stopped: measure once more at rest (the FAB reads its own bottom)
-  for (const el of [key, fab]) el?.addEventListener('transitionend', (e) => { if (e.target === el && e.propertyName === 'bottom') schedule(); });
+  addEventListener('resize', () => { setBar(); setLift(); schedule(); });
+  // a glide on the stack (the key's `translate`, the FAB's `bottom`) ends after the scroll has stopped: measure once more
+  // at rest (the FAB reads its own bottom)
+  for (const el of [key, fab]) el?.addEventListener('transitionend', (e) => { if (e.target === el && (e.propertyName === 'bottom' || e.propertyName === 'translate')) schedule(); });
   onChange(() => schedule());
   // sound.ts sets aria-pressed itself: follow it too (a play / stop from any key)
   if (key) new MutationObserver(schedule).observe(key, { attributes: true, attributeFilter: ['aria-pressed'] });

@@ -18,7 +18,10 @@
  * fonts are in (motion-08, a11y-09). Otherwise the drawn values ease across step edges like the sources do (motion-16).
  */
 import { ScrollTrigger, reducedMotion } from '../motion';
-import { cruise, widthGain, DEFAULTS, type WbParams } from './audio';
+import { beamAmount, cruise, widthGain, DEFAULTS, type WbParams } from './audio';
+// the live nav height (--site-nav-h: 58 px on an upright phone, 41 on a laptop), the one driveTo lands a mark under:
+// the static --nav-h (44) put every chapter landing 14 px off its step's middle on a phone
+import { navH } from './drive-to';
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -38,6 +41,9 @@ const SRC = [
   { n: 'HATS', pan: 0.3, f: 8000, r: 9, c: '#e8e2d4', mono: false },
   { n: 'RIDE', pan: -0.36, f: 6000, r: 10, c: '#e8e2d4', mono: false },
 ];
+
+// the source labels printed first where two would meet
+const PRINT_FIRST = ['KICK', 'VOCAL', 'BASS', 'GTR L', 'GTR R'];
 
 type P = WbParams & { label: string; read: string };
 
@@ -85,7 +91,6 @@ export function initStory(section: HTMLElement) {
 
   // ── the line that lights a step, and each step's landing mark ──
   let line = 0;
-  const navH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
   const measure = () => {
     const top = parseFloat(getComputedStyle(stage).top) || navH();
     const stacked = getComputedStyle(stage).position === 'sticky' && stage.offsetWidth > section.offsetWidth * 0.8;
@@ -140,13 +145,20 @@ export function initStory(section: HTMLElement) {
     return clamp(c, -1, 1);
   }
 
+  // LEVEL against the original, on the plugin's own typical mix (side ~ -6 dB under mid: energy 1 + 0.25, the law CRUISE
+  // is built on, PluginProcessor.cpp AUTO GAIN): the side scales with WIDTH, HIGH BEAM adds its amount squared, MONO keeps
+  // the mid only. CRUISE is on from the first load (widebeam.ts step 06), so the number is always the trimmed one; the
+  // bar's red part is the level without it. TILT is left out: what it does to the level depends on the mix's spectrum,
+  // which this law does not model (and CRUISE does not follow TILT, widebeam.ts limits).
   function paintHud() {
     lcd.textContent = cur.read;
-    const g = cruise(cur), raw = 20 * Math.log10(Math.max(1, widthGain(cur.width)) * 0.55 + 0.45);
-    const db = cur.label === 'CRUISE' ? raw + 20 * Math.log10(g) : raw;
+    const w = widthGain(cur.width), r = beamAmount(cur);
+    const raw = 10 * Math.log10((cur.mono ? 1 : 1 + 0.25 * w * w + r * r) / 1.25);
+    let db = raw + 20 * Math.log10(cruise(cur));
+    if (Math.abs(db) < 0.05) db = 0;
     lvl.style.setProperty('--lv', String(clamp(0.62 + db / 12, 0, 1)));
     lvl.style.setProperty('--raw', String(clamp(0.62 + raw / 12, 0, 1)));
-    lvlRead.textContent = `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
+    lvlRead.textContent = `${db > 0 ? '+' : ''}${db.toFixed(1)} dB`;
     section.dataset.step = cur.label;
     if (!still) go();
   }
@@ -159,7 +171,7 @@ export function initStory(section: HTMLElement) {
     const v = shown, focus = Math.exp(v.focusLn);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    const hz = H * 0.408, cx = W * 0.498, small = W < 420;
+    const hz = H * 0.408, cx = W * 0.498;
     const half = (y: number) => W * 0.51 * Math.max(0, (y - hz) / (H - hz));
     const yOf = (f: number) => lerp(H * 0.97, hz + 6, Math.log(f / 20) / Math.log(1000));
     const font = (w: number) => `${w} 13px Oswald, sans-serif`; // the 13 px floor for print (mobile-10)
@@ -178,32 +190,26 @@ export function initStory(section: HTMLElement) {
     ctx.beginPath(); ctx.moveTo(cx - half(H) * spread, H); ctx.lineTo(cx - W * 0.03 * spread, hz + 2); ctx.lineTo(cx + W * 0.03 * spread, hz + 2); ctx.lineTo(cx + half(H) * spread, H); ctx.closePath(); ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
 
-    // frequency marks across the road, labelled on the verge (labels at least 15 px apart)
-    ctx.font = font(500); ctx.textAlign = 'right';
-    let lastY = Infinity;
+    // frequency marks across the road (their numbers go on the verge later, over the glows)
+    const marks: [number, number][] = [];
     for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000]) {
       const y = yOf(f);
       ctx.strokeStyle = 'rgba(232,200,120,.16)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.stroke();
-      if (lastY - y < 15) continue;
-      lastY = y;
-      ctx.fillStyle = 'rgba(232,200,120,.85)';
-      ctx.fillText(f >= 1000 ? f / 1000 + 'k' : String(f), cx - half(y) - 6, y + 4);
+      marks.push([f, y]);
     }
 
     // LOW FOCUS: everything nearer than this line is kept on the centre line
-    if (focus > 25) {
-      const y = yOf(focus);
+    const focusY = focus > 25 ? yOf(focus) : NaN;
+    if (!Number.isNaN(focusY)) {
+      const y = focusY;
       ctx.strokeStyle = 'rgba(232,200,120,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(232,200,120,.1)';
       ctx.beginPath(); ctx.moveTo(cx - half(y), y); ctx.lineTo(cx + half(y), y); ctx.lineTo(cx + half(H), H); ctx.lineTo(cx - half(H), H); ctx.closePath(); ctx.fill();
-      ctx.font = font(500); ctx.fillStyle = '#f3dca0'; ctx.textAlign = 'left';
-      ctx.fillText(`LOW FOCUS ${Math.round(focus)} Hz`, Math.min(cx + half(y) + 6, W - (small ? 118 : 130)), y - 5);
     }
 
     // the sources (eased toward their target pans; a still snaps them)
-    ctx.textAlign = 'center';
     const scale = clamp(H / 260, 0.5, 1.2);
     const draws: [number, number, (typeof SRC)[number]][] = [];
     SRC.forEach((s, i) => {
@@ -217,25 +223,44 @@ export function initStory(section: HTMLElement) {
         for (const m of [-1, 1]) draws.push([cx + m * sp * half(y) * 0.92, y, { ...s, r: s.r * 0.7, n: '' }]);
       }
     });
-    const labels: [number, number, number][] = []; // x, y, half width of each label drawn: twins that meet share one
+    // every glow first, so no later glow ('lighter') washes out a label printed before it
+    ctx.globalCompositeOperation = 'lighter';
     for (const [x, y, s] of draws) {
       const pulse = still ? 1 : 1 + 0.06 * Math.sin(t * 4 + x * 0.05);
       const r = s.r * scale * pulse * (0.6 + 0.5 * (y - hz) / (H - hz));
       const g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.6);
       g.addColorStop(0, s.c); g.addColorStop(0.35, s.c + '88'); g.addColorStop(1, s.c + '00');
-      ctx.globalCompositeOperation = 'lighter';
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, Math.PI * 2); ctx.fill();
-      ctx.globalCompositeOperation = 'source-over';
-      if (s.n) {
-        ctx.font = font(600);
-        const hw = ctx.measureText(s.n).width / 2 + 3;
-        if (!labels.some(([lx, ly, lw]) => Math.abs(lx - x) < lw + hw && Math.abs(ly - y) < 14)) {
-          labels.push([x, y, hw]);
-          // ivory print with a dark keyline: it reads on a bright source and on the dark road alike
-          ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(10,8,6,.85)'; ctx.strokeText(s.n, x, y + 4);
-          ctx.fillStyle = '#efe6d2'; ctx.fillText(s.n, x, y + 4);
-        }
-      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    // then the print, over every glow, each with a dark keyline (it reads on a bright source and on the dark road alike).
+    // One list of the boxes already printed: the LOW FOCUS label first (step 02 is about it, so it always shows), then
+    // the sources (twins that meet share one), then the axis numbers wherever they are clear of both.
+    const boxes: [number, number, number, number][] = []; // left, top, right, bottom
+    const print = (s: string, x: number, y: number, fill: string, weight: number, align: CanvasTextAlign, always = false) => {
+      ctx.font = font(weight); ctx.textAlign = align;
+      const w = ctx.measureText(s).width, l = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x, top = y - 11, bot = y + 3;
+      if (!always && boxes.some(([L, T, R, B]) => l < R + 6 && l + w > L - 6 && top < B && bot > T)) return false;
+      boxes.push([l, top, l + w, bot]);
+      ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(10,8,6,.88)'; ctx.strokeText(s, x, y);
+      ctx.fillStyle = fill; ctx.fillText(s, x, y);
+      return true;
+    };
+    if (!Number.isNaN(focusY)) {
+      // under the dashed line, on the right verge (or flush with the window's right edge when the verge is off it): what
+      // is nearer than LOW FOCUS sits on the centre line, so that side is clear (above the line it ran into GTR R)
+      const s = `LOW FOCUS ${Math.round(focus)} Hz`;
+      ctx.font = font(500);
+      print(s, Math.min(cx + half(focusY) + 6, W - 4 - ctx.measureText(s).width), Math.min(focusY + 16, H - 4), '#f3dca0', 500, 'left', true);
+    }
+    // where labels meet (a mono pile, a 360 px window), the ones the steps talk about win: KICK and VOCAL first
+    const rank = (n: string) => { const i = PRINT_FIRST.indexOf(n); return i < 0 ? PRINT_FIRST.length : i; };
+    for (const [x, y, s] of draws.filter((d) => d[2].n).sort((a, b) => rank(a[2].n) - rank(b[2].n))) print(s.n, x, y + 4, '#efe6d2', 600, 'center');
+    let lastY = Infinity;
+    for (const [f, y] of marks) {
+      if (lastY - y < 15) continue; // axis numbers at least 15 px apart
+      if (print(f >= 1000 ? f / 1000 + 'k' : String(f), cx - half(y) - 6, y + 4, 'rgba(232,200,120,.85)', 500, 'right')) lastY = y;
     }
 
     // the correlation needle (mass-spring like the face's; a still snaps it)

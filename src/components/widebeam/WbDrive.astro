@@ -22,6 +22,10 @@ import WbConsole from './WbConsole.astro';
 import WbDeck from './WbDeck.astro';
 import { DASH } from '../../data/widebeam';
 
+// the encode: strips at q72, the plate at q80 (were 80 / 84, stage 4: 246 KB off the L1440 full visit, G11's 3.3 MB bar;
+// SSIM against the lossless frames 0.977-0.984 for 0.981-0.987 on the strips, 0.974 for 0.978 on the plate). The page's
+// own `art` (widebeam.astro) uses the same two numbers, so the full tier stays one file.
+const Q_STRIP = 72, Q_PLATE = 80;
 // [part, source, grid columns]: a tier keeps every frame whole (the frame width x the columns)
 const STRIPS: [string, ImageMetadata, number][] = [
   ['width', widthImg, 11], ['focus', focusImg, 12], ['mix', mixImg, 11], ['toggle', toggleImg, 6], ['power', powerImg, 4], ['wheel', wheelImg, 9],
@@ -32,15 +36,15 @@ for (const [part, src, cols] of STRIPS) {
   tiers[part] = [];
   for (const f of [0.5, 0.75]) {
     const w = Math.round(frame * f) * cols;
-    tiers[part].push([Math.round(frame * f), (await getImage({ src, format: 'webp', width: w, quality: 80 })).src]);
+    tiers[part].push([Math.round(frame * f), (await getImage({ src, format: 'webp', width: w, quality: Q_STRIP })).src]);
   }
   // the full tier: exactly the page's own transform (widebeam.astro), so it is one file
-  tiers[part].push([frame, (await getImage({ src, format: 'webp', quality: 80 })).src]);
+  tiers[part].push([frame, (await getImage({ src, format: 'webp', quality: Q_STRIP })).src]);
 }
 tiers.base = [
-  [1536, (await getImage({ src: baseImg, format: 'webp', width: 1536, quality: 84 })).src],
-  [2304, (await getImage({ src: baseImg, format: 'webp', width: 2304, quality: 84 })).src],
-  [baseImg.width, (await getImage({ src: baseImg, format: 'webp', quality: 84 })).src],
+  [1536, (await getImage({ src: baseImg, format: 'webp', width: 1536, quality: Q_PLATE })).src],
+  [2304, (await getImage({ src: baseImg, format: 'webp', width: 2304, quality: Q_PLATE })).src],
+  [baseImg.width, (await getImage({ src: baseImg, format: 'webp', quality: Q_PLATE })).src],
 ];
 const stills = await Promise.all([640, 960, 1280, 1536].map((width) => getImage({ src: stillImg, format: 'webp', width, quality: 74 })));
 const stillSrcset = stills.map((s, i) => `${s.src} ${[640, 960, 1280, 1536][i]}w`).join(', ');
@@ -50,13 +54,16 @@ const stillSrcset = stills.map((s, i) => `${s.src} ${[640, 960, 1280, 1536][i]}w
   <header class="wb-head" data-reveal="fade">
     <p class="wb-eyebrow">THE DASH · LIVE</p>
     <h2 id="wb-drive-h">{DASH.head} <em>{DASH.headEm}</em></h2>
-    <p class="wb-headsub">{DASH.sub}</p>
+    <p class="wb-headsub"><span class="wb-headsub-pointer">{DASH.sub}</span><span class="wb-headsub-touch">{DASH.subTouch}</span></p>
   </header>
 
   <div class="wb-dash-wrap">
     <div class="wb-dash" data-wb-dash>
       <div class="wb-face is-cold" data-wb-face data-wb-art={JSON.stringify(tiers)}>
-        <img class="wb-dash-still" src={stills[1].src} srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+        <!-- the still loads a screen ahead of the reader, not on first view (r-base-foldart: loading=lazy's own margin took it
+             at load): init.ts nearArt() swaps data-src / data-srcset in on [data-wb-defer]. With JS off, the <noscript> copy. -->
+        <img class="wb-dash-still" data-wb-defer data-src={stills[1].src} data-srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" decoding="async" />
+        <noscript><img class="wb-dash-still" src={stills[1].src} srcset={stillSrcset} sizes="(min-width: 1100px) 1100px, (min-width: 901px) 75vw, 100vw" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async" /></noscript>
       </div>
       <!-- beside the face, not in it: on an upright phone the face is inert, and so would be a live region inside it -->
       <span class="sr-only" data-wb-announce aria-live="polite"></span>

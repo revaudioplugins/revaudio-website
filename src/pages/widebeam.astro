@@ -17,11 +17,13 @@
  * The face in #wb-drive is the plugin's own art: a clean 2x capture of Source/ui (every moving part hidden) with the
  * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
  * sketch after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
- * The face art is resolved here because the boot reads it from data-art and the head preloads the plate.
+ * The face art is resolved here because the boot reads it from data-art. Nothing preloads the plate: face.ts loads the
+ * face art in the tier it needs once the dash nears, so the intro owns the first seconds (perf-01, G11).
  */
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { assertWidebeamConfig } from '../data/widebeam';
+import { plugins } from '../data/plugins';
+import { widebeam, askFor, assertWidebeamConfig } from '../data/widebeam';
 import WbFlash from '../components/widebeam/WbFlash.astro';
 import WbSound from '../components/widebeam/WbSound.astro';
 import WbHero from '../components/widebeam/WbHero.astro';
@@ -42,13 +44,19 @@ import toggleImg from '../assets/widebeam/switch-toggle2.webp';
 import powerImg from '../assets/widebeam/power-rocker.webp';
 import wheelImg from '../assets/widebeam/level-wheel.webp';
 
-// a phase the page can't back fails the build (src/data/widebeam.ts)
-assertWidebeamConfig();
+// the social card (public/og/widebeam.png, 1200x630): the lit dash beside the WIDE BEAM lockup and the hero line, shot
+// from this page itself (stage 4, H.5). JSON-LD and the 153-character listing description wait for launch (step 5).
+// a phase the page can't back fails the build (src/data/widebeam.ts), and so does a Buy key the cart can't check out
+// (Cart.astro sells only plugins.ts slugs with a paddlePriceId, at introPriceUsd ?? regularPriceUsd)
+assertWidebeamConfig(widebeam, undefined, Object.fromEntries(plugins.map((p) => [p.slug, { paddlePriceId: p.paddlePriceId ?? null, priceUsd: p.introPriceUsd ?? p.regularPriceUsd }])));
+// the description follows the phase: a shared link never says "Coming soon" while the trial or the Buy key is live
+const description = `WIDE BEAM is a stereo-width plugin fronted by a pair of classic car headlights. Open the image with WIDTH, keep the bass centred with LOW FOCUS, spread a mono source with HIGH BEAM. ${askFor().metaTail}`;
 
 // filmstrips keep their full frame size (the grid maths needs every frame whole); only re-encoded
-const webp = (src: ImageMetadata, quality = 80) => getImage({ src, format: 'webp', quality });
+// q72 strips / q80 plate: the same two numbers as WbDrive.astro's tiers (its full tier must be this same file)
+const webp = (src: ImageMetadata, quality = 72) => getImage({ src, format: 'webp', quality });
 const art = {
-  base: (await webp(baseImg, 84)).src,
+  base: (await webp(baseImg, 80)).src,
   width: (await webp(widthImg)).src,
   focus: (await webp(focusImg)).src,
   mix: (await webp(mixImg)).src,
@@ -59,10 +67,10 @@ const art = {
 ---
 <BaseLayout
   title="WIDE BEAM: stereo width you can see"
-  description="WIDE BEAM is a stereo-width plugin fronted by a pair of classic car headlights. Open the image with WIDTH, keep the bass centred with LOW FOCUS, spread a mono source with HIGH BEAM. Coming soon from RevAudio."
+  description={description}
+  ogImage="/og/widebeam.png"
   index={false}
 >
-  <link slot="head" rel="preload" as="image" href={art.base} type="image/webp" />
   <div class="wb-page" data-wb-page data-art={JSON.stringify(art)}>
     <WbFlash />
     <WbSound />

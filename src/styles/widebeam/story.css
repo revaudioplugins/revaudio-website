@@ -2,8 +2,15 @@
    plate (parts.css; art-02, D4 C). Two columns on a laptop and on a phone held sideways; on an upright phone the stage
    sits on top (at most 45 svh) and every step takes the free height under it (story.ts sets --wb-story-free). */
 /* ---------- STORY ---------- */
-.wb-story { position: relative; padding: var(--wb-gap) 0 40px; }
-.wb-story-grid { max-width: 1240px; margin: 50px auto 0; padding: 0 16px; display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(20px, 4vw, 60px); }
+/* no bottom padding: the gap to the manual is the house var(--wb-gap) like every other seam (an extra 40 px here left a
+   dead band, r-road-gap) */
+.wb-story { position: relative; padding: var(--wb-gap) 0 0; }
+/* the side gutters clear a notch or a rounded corner on a phone held sideways (the page asks for viewport-fit=cover) */
+.wb-story-grid {
+  --wb-story-gl: max(16px, env(safe-area-inset-left, 0px)); --wb-story-gr: max(16px, env(safe-area-inset-right, 0px));
+  max-width: 1240px; margin: 50px auto 0; padding: 0 var(--wb-story-gr) 0 var(--wb-story-gl);
+  display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(20px, 4vw, 60px);
+}
 
 /* the stage: centred in the screen under the nav while the steps scroll past */
 .wb-story-stage {
@@ -21,7 +28,7 @@
 
 .wb-story-gauges { display: grid; grid-template-columns: 1fr minmax(0, 34%); gap: 14px; align-items: center; margin-top: 12px; }
 .wb-story-meter { width: 100%; }
-/* LEVEL: always at full strength (a11y-10); the bar shows the raw level and, at CRUISE, the trimmed one */
+/* LEVEL: always at full strength (a11y-10); the bar shows the level without CRUISE (red) and the trimmed one (green) */
 .wb-level { display: grid; gap: 6px; justify-items: start; font-family: var(--wb-read); color: var(--ivory-2); }
 .wb-level small { font-size: .9rem; }
 .wb-level-bar { position: relative; width: min(100%, 180px); height: 8px; border-radius: 4px; background: #0a0908; box-shadow: inset 0 0 0 1px #2a251e, 0 1px 0 rgba(255, 240, 210, .06); overflow: hidden; }
@@ -47,7 +54,8 @@
 @media (max-width: 900px) {
   .wb-story-grid { grid-template-columns: 1fr; gap: 0; margin-top: 32px; }
   .wb-story-stage {
-    z-index: 2; height: auto; max-height: 45svh; margin: 0 -16px; padding: 6px 16px 8px;
+    z-index: 2; height: auto; max-height: 45svh; margin: 0 calc(-1 * var(--wb-story-gr)) 0 calc(-1 * var(--wb-story-gl));
+    padding: 6px var(--wb-story-gr) 8px var(--wb-story-gl);
     background: #110f0c; box-shadow: 0 10px 14px -8px rgba(8, 6, 4, .9);
   }
   .wb-story-panel { --wb-ps: .24; --wb-plate-pad: 6px 8px 8px; }
@@ -70,11 +78,14 @@
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 600px) {
   /* the text column gets half the width and the number shares a row with the label (the upright grid), so the longest
      step stays whole on the 346 px screen for a while (mobile-02 sideways) */
-  .wb-story-grid { grid-template-columns: 1fr 1fr; margin-top: 28px; gap: 20px; }
-  .wb-story-stage { height: calc(100svh - var(--nav-h, 44px)); max-height: none; margin: 0; padding: 0; background: none; box-shadow: none; }
+  /* the stage and each step centre in the band between the nav and the phone bar (one 60 px row here, furniture.css,
+     over the home bar), not in the whole screen: centred in the screen, the step's last lines ran under the bar
+     (r-road-notch). A fixed floor, not the bar's live height: the bar comes and goes, and the text must not jump. */
+  .wb-story-grid { --wb-story-floor: calc(60px + env(safe-area-inset-bottom, 0px)); grid-template-columns: 1fr 1fr; margin-top: 28px; gap: 20px; }
+  .wb-story-stage { height: calc(100svh - var(--nav-h, 44px)); max-height: none; margin: 0; padding: 0 0 var(--wb-story-floor); background: none; box-shadow: none; }
   .wb-story-panel { --wb-ps: .26; --wb-plate-pad: 8px 10px 10px; }
   .wb-story-gauges { grid-template-columns: 1fr minmax(0, 34%); margin-top: 8px; gap: 10px; }
-  .wb-step { min-height: calc(100svh - var(--nav-h, 44px)); padding: 0; scroll-margin-top: 0; }
+  .wb-step { min-height: calc(100svh - var(--nav-h, 44px)); padding: 0 0 var(--wb-story-floor); scroll-margin-top: 0; }
   .wb-step-n { font-size: 1.5rem; -webkit-text-stroke-width: 0; color: var(--brass); }
   .wb-step.is-on .wb-step-n { color: var(--brass); }
   .wb-step-l { margin: 0; font-size: var(--wb-fine-min); }

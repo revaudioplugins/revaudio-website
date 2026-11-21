@@ -15,7 +15,7 @@
  */
 import { PRESETS, presetValues, type Store } from './state';
 import type { WbParams } from './audio';
-import { S, KEYSTEP, stripGrid, stripPos, toNorm, knobValue, valueText, KNOBS, type Face, type KnobId, type Part } from './face';
+import { S, KEYSTEP, stripGrid, stripPos, toNorm, knobValue, valueText, KNOBS, releasePick, fitLine, onRefit, type Face, type KnobId, type Part } from './face';
 import { DECK_MQ } from './drive-to';
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -129,6 +129,7 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
     input.addEventListener('input', () => { setN(k, Number(input.value) / 100); face.touch(k); });
     input.addEventListener('focus', () => { box.setAttribute('data-lenis-prevent-wheel', ''); face.touch(k); });
     input.addEventListener('blur', () => { box.removeAttribute('data-lenis-prevent-wheel'); box.classList.remove('is-picked'); });
+    releasePick(box, input);
     box.addEventListener('dblclick', () => store.set({ [k]: presetValues(PRESETS[0])[k] } as Partial<WbParams>, 'deck'));
   }
 
@@ -161,16 +162,23 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
 
   // ── PRESET ‹ name › (the 16 factory presets, as the console's) ──
   const presetName = deck.querySelector<HTMLElement>('[data-wb-deck-preset]');
-  deck.querySelectorAll<HTMLButtonElement>('[data-wb-deck-step]').forEach((b) => b.addEventListener('click', () => face.loadPreset(store.preset + Number(b.dataset.wbDeckStep))));
+  deck.querySelectorAll<HTMLButtonElement>('[data-wb-deck-step]').forEach((b) => b.addEventListener('click', () => face.stepPreset(Number(b.dataset.wbDeckStep))));
 
   // ── the readout: the face's trip LCD, printed big ──
   const read = deck.querySelector<HTMLElement>('[data-wb-deck-read]');
+  let readLen = -1; // refitted when the line's length changes (monospace), not on every frame of a drag
+  const fitRead = (force = false) => {
+    if (!read) return;
+    const t = read.textContent || '', w = read.clientWidth - 22;
+    if (!force && t.length === readLen) return;
+    readLen = t.length;
+    fitLine(read, t && w > 0 ? `${Math.floor(clamp((w / t.length - 1) / 0.6, 15, 30) * 10) / 10}px` : '');
+  };
   face.onTrip((t) => {
     if (!read) return;
     read.textContent = t;
     // Courier New is 0.6 em a glyph (+1 px tracking): 30 px, smaller for a long line so it stays on the glass
-    const w = read.clientWidth - 22;
-    read.style.fontSize = t && w > 0 ? `${Math.floor(clamp((w / t.length - 1) / 0.6, 15, 30) * 10) / 10}px` : '';
+    fitRead();
   });
 
   // ── paint: every store change ──
@@ -192,8 +200,12 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
     power?.setAttribute('aria-pressed', String(s.power));
     if (rocker) rocker.style.backgroundPosition = stripPos(S.power, s.power ? 14 : 0);
     deck.classList.toggle('is-off', !s.power);
-    if (presetName) presetName.textContent = PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
+    const nm = PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
+    if (presetName && presetName.textContent !== nm) { presetName.textContent = nm; fitLine(presetName); }
   };
+  onRefit(() => { fitRead(true); if (presetName) fitLine(presetName); });
+  // the deck shows only upright under 901 px: a name painted while it was hidden is fitted once it shows
+  mq.addEventListener?.('change', () => requestAnimationFrame(() => { fitRead(true); if (presetName) fitLine(presetName); }));
   store.on((s, ch) => {
     if ('high' in ch) highKick();
     if ('side' in ch) sideKick();

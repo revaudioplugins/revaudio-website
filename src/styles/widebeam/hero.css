@@ -10,6 +10,10 @@
   position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block;
   -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent); mask-image: linear-gradient(180deg, #000 78%, transparent);
 }
+/* never a grid item of its own: the still stays a plain layer. Its <source> needs the second rule: no UA sheet hides a
+   <source>, so under display: contents it became a block grid item (a second row that pushed the column down 70-170 px) */
+.wb-hero > picture { display: contents; }
+.wb-hero > picture > source { display: none; }
 .wb-still { object-fit: cover; background: #07080a; }
 .wb-night { pointer-events: none; }
 /* the column sits in the sky: its bottom stays >= 40 px above the car's vanishing point (art-03, measured at
@@ -22,10 +26,15 @@
    it (hero-01): a lit upper-left lip, a contact shadow, a short soft drop, and the warm glow that grows with WIDTH. */
 .wb-mark { margin: 0; line-height: 1; font-weight: 400; }
 .wb-mark:focus { outline: none; } /* focused by script after Skip (hero-10), never by Tab */
+/* The row must fit its column at WIDTH 200 (--wb-w 1), where it is 7.76 em wide (measured, Chrome and WebKit): eight
+   letters, the word space and eight gaps of .21em. --wb-mark-fit is the largest size that does, for the 1100 px column
+   less its 16 px sides (137 px from 1100 px wide). Without it the 168 px top size ran the row 1162-1248 px into a 1068
+   px column from ~1236 px wide, and flex took the whole shortfall from the word space: WIDE and BEAM ran together. */
+.wb-hero { --wb-mark-fit: calc((min(100vw, 1100px) - 32px) / 7.8); }
 .wb-mark-row {
   display: flex; justify-content: center; align-items: baseline;
   gap: calc(.01em + var(--wb-w) * .2em);
-  font-family: var(--serif); font-size: clamp(3rem, 12.5vw, 10.5rem);
+  font-family: var(--serif); font-size: min(clamp(3rem, 12.5vw, 10.5rem), var(--wb-mark-fit));
   transition: gap .9s cubic-bezier(.16, 1, .3, 1);
   filter: drop-shadow(-.6px -.6px 0 rgba(255, 240, 212, .3)) drop-shadow(1px 3px 1px rgba(8, 6, 4, .85)) drop-shadow(0 6px 14px rgba(4, 3, 2, .55))
     drop-shadow(0 0 calc(10px + var(--wb-w) * 34px) rgba(255, 214, 140, calc(.08 + var(--wb-w) * .3)));
@@ -35,7 +44,7 @@
   background: linear-gradient(160deg, #e3d1b0 0%, #ceb088 50%, #978366 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.wb-mark-row .wb-sp { width: .32em; }
+.wb-mark-row .wb-sp { width: .32em; flex-shrink: 0; } /* the word space is the lockup: never the part that gives */
 /* the plate's sub line: a wide geometric sans between solid brass rules. Futura on a Mac, Century Gothic on most PCs,
    the house Inter anywhere else (no web font: a licence question, see the lane H report) */
 .wb-sub {
@@ -74,7 +83,7 @@
 
 /* a short laptop (Dan's 1141x636, 1280x665): the lockup about 15 % smaller so the column clears the car (art-d02) */
 @media (max-height: 700px) and (min-width: 561px) {
-  .wb-mark-row { font-size: calc(clamp(3rem, 12.5vw, 10.5rem) * .85); }
+  .wb-mark-row { font-size: min(calc(clamp(3rem, 12.5vw, 10.5rem) * .85), var(--wb-mark-fit)); } /* 121 / 136 px there, as tuned */
 }
 
 /* ---------- the intro film over the road, and its dissolve into it ----------
@@ -94,6 +103,12 @@
 }
 @media (hover: hover) and (pointer: fine) { .wb-skip:hover, .wb-replay:hover { color: var(--ivory); border-color: var(--brass-hi); } }
 .wb-skip:focus-visible, .wb-replay:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+/* a finger gets a 44 px tall target; the pill keeps its 34-36 px look. An invisible band above and below it takes the
+   tap, since a taller pill would reach the lockup's letters on a landscape tablet (Replay 55-99 px vs the glyphs from
+   72-76 px at 1024x768 / 1180x820) */
+@media (pointer: coarse) {
+  .wb-skip::after, .wb-replay::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+}
 .wb-skip { display: none; }
 .wb-hero.is-intro .wb-skip { display: inline-flex; animation: wb-in .6s 1.2s both; }
 .wb-hero.is-intro .wb-skip:focus-visible { animation: none; } /* reached by keyboard (or Replay): shown at once */
@@ -102,14 +117,16 @@
 
 /* the title waits for the script's reveal; if no script ever runs (blocked, or it throws before the intro takes
    charge) a CSS-only failsafe shows it at 8.5 s (hero-d01). `is-run` = intro.ts is in charge and keeps its own
-   deadlines (the title by 6.5 s after play(), or at once on a bail). */
+   deadlines (the title by 6.5 s after navigation on the first run, 6.5 s after play() on a Replay, or at once on a bail). */
 @media (scripting: enabled) {
   .wb-hero:not(.is-shown) .wb-hero-inner { visibility: hidden; animation: wb-failsafe 0s 8.5s forwards; }
   .wb-hero.is-run:not(.is-shown) .wb-hero-inner { animation: none; }
 }
 @keyframes wb-failsafe { to { visibility: visible; } }
 @media (scripting: none) { .wb-intro, .wb-skip, .wb-replay { display: none; } }
-.wb-hero.is-hush .wb-hero-inner { opacity: 0 !important; transition: opacity .3s; }
+/* a replay's hush: faded, then out of reach (intro.ts also makes it inert), so the unseen key can't be clicked or
+   tabbed to while the film runs; it comes back at once when the hush ends */
+.wb-hero.is-hush .wb-hero-inner { opacity: 0 !important; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
 
 /* ---------- phones (upright) and narrow portrait screens ---------- */
 /* the full-width lockup leaves no room beside it: Skip / Replay get their own band above it */

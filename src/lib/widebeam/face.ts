@@ -6,8 +6,9 @@
  * is the meter's mass-spring (k 140, ζ 0.7) about its pivot, drawn at the meter's 0.75 scale.
  *
  * The arrival is one sequence (plan D.1):
- *  - the art loads late, through one loader: the first of the intro's hand-off + idle, the dash within 1.5 screens, an
- *    act on the demo, or 8 s (perf-01, hero-05, guidelines-15). Each part comes in the size tier its rendered size x DPR
+ *  - the art loads late, through one loader: the first of the dash within 1.5 screens, an act on the demo, a drive, or
+ *    the page at rest once its first view is over (12 s + idle; was 8 s / the hand-off, which put the art in G11's
+ *    first view) (perf-01, hero-05, guidelines-15). Each part comes in the size tier its rendered size x DPR
  *    needs (perf-02, art-d01; the tiers are built in WbDrive.astro), every file is decode()d, then all of them are swapped
  *    in one frame over face-still.webp, the dark face in its default state (perf-04);
  *  - the face stays dark (is-cold) until the ignition: the lamps cough only once the art is in and the face has landed
@@ -22,8 +23,8 @@
  * halves step (demo-09, a11y-14); the focus ring is an outline counter-scaled to 3 CSS px, so forced colours paint it
  * (a11y-13, a11y-d01); the announcer says what changed (a11y-07); the paint loop runs only on screen (a11y-17).
  * On a phone held upright (D.4, DECK_MQ) the face is the live display and deck.ts holds the controls: the face goes inert
- * (its announcer lives beside it, in .wb-dash), the art loads once the face is within two screens (not on the 8 s timer or
- * the hand-off), and each strip's tier covers the larger of its face and deck sizes (one file for both). The soft snap on
+ * (its announcer lives beside it, in .wb-dash), the art loads once the face is within two screens (not on the at-rest
+ * clock), and each strip's tier covers the larger of its face and deck sizes (one file for both). The soft snap on
  * the dash (D.5, motion-17): snap.ts.
  *
  * /widebeam/?wb-cold keeps the face dark forever: the switch that captures face-still.webp (see WbDrive.astro).
@@ -31,7 +32,7 @@
 import type { WbParams } from './audio';
 import { PRESETS, presetValues, type Store, type Source } from './state';
 import { gsap, ScrollTrigger } from '../motion';
-import { driveTo, isDriving, deckOn } from './drive-to';
+import { driveTo, isDriving, deckOn, navH } from './drive-to';
 import { initSnap } from './snap';
 
 export interface FaceArt { base: string; width: string; focus: string; mix: string; toggle: string; power: string; wheel: string; }
@@ -99,9 +100,11 @@ export type TouchId = KnobId | 'high' | 'side' | 'mono' | 'save';
 export interface Face {
   root: HTMLElement;
   setCorrelation(c: number | null): void;
-  /** Glides the knobs to preset i (wraps). The glide waits for the art and for a drive on its way to arrive, so the
-   *  visitor sees it; `afterArrive` asks for exactly that (it is the default now; kept for lane S's calls). */
+  /** Glides the knobs to preset i (wraps). The glide waits for a drive on its way to arrive, so the visitor
+   *  sees it (with the art not in yet it lands at once); `afterArrive` asks for exactly that (it is the default now; kept for lane S's calls). */
   loadPreset(i: number, opts?: { afterArrive?: boolean }): void;
+  /** steps d presets from the one asked for last (a press still waiting on a drive counts: three quick presses = three) */
+  stepPreset(d: number): void;
   presetName(): string;
   /** resolves once the art is decoded and on the face; starts the loader if it has not started */
   whenArtReady(): Promise<void>;
@@ -120,6 +123,46 @@ export interface Face {
   drag(id: TouchId | null): void;
   /** hears the trip LCD's text whenever it changes ('' = dark glass); the deck's readout prints the same */
   onTrip(fn: (text: string) => void): void;
+}
+
+/** A knob picked by a tap (it then takes vertical drags, touch-action none) keeps the pick only while the visitor is
+ *  with it: a touch anywhere else, or the knob leaving the screen, drops it (blur; keyboard focus is never touched, a
+ *  knob only carries is-picked from a tap). A swipe-scroll moves no focus, so without this a stale pick trapped the next
+ *  scroll swipe that began on the knob and slammed it to its stop (demo-02, r-dash-pickstick). */
+export function releasePick(box: HTMLElement, focusEl: HTMLElement = box) {
+  const drop = () => {
+    if (!box.classList.contains('is-picked')) return;
+    box.classList.remove('is-picked');
+    if (document.activeElement === focusEl) focusEl.blur();
+  };
+  document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' && !box.contains(e.target as Node)) drop(); }, true);
+  new IntersectionObserver(([en]) => { if (!en.isIntersecting) drop(); }).observe(box);
+}
+
+/** Shrinks one LCD line to fit its window (from `base`, '' = its CSS size). The windows are fixed glass; a visitor's own
+ *  text spacing (WCAG 1.4.12: letter-spacing .12em and up) made the long names overflow them, cut with no other way to
+ *  read them (r-dash-spacing). At default spacing every name fits, and nothing changes. Measured on the text's own box
+ *  (a Range), so a centred flex line and the rig's scale count right. */
+export function fitLine(el: HTMLElement, base = '') {
+  el.style.fontSize = base;
+  const r = el.getBoundingClientRect();
+  if (!r.width || !el.offsetWidth || !el.textContent) return;
+  const cs = getComputedStyle(el), k = r.width / el.offsetWidth;
+  const room = r.width - (parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) * k;
+  const rg = document.createRange(); rg.selectNodeContents(el);
+  const t = rg.getBoundingClientRect().width;
+  if (t > room + 0.5) el.style.fontSize = `${((parseFloat(cs.fontSize) * room) / t * 0.98).toFixed(2)}px`;
+}
+const refits = new Set<() => void>();
+/** runs fn again whenever the page's styles may have changed under the LCDs: a stylesheet added (a text-spacing tool, a
+ *  user style), the fonts arriving */
+export function onRefit(fn: () => void) {
+  if (!refits.size) {
+    const run = () => requestAnimationFrame(() => refits.forEach((f) => f()));
+    new MutationObserver(run).observe(document.head, { childList: true });
+    document.fonts?.ready.then(run);
+  }
+  refits.add(fn);
 }
 
 let current: Face | null = null;
@@ -240,7 +283,7 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
   }
 
   // ── the trip LCD: the readout, the hand's control while it is on it, the coach's line in between (garage.js trip) ──
-  let touchId: TouchId | null = null, touchUntil = 0, dragId: TouchId | null = null, sayText: string | null = null, tripT = 0;
+  let touchId: TouchId | null = null, touchUntil = 0, dragId: TouchId | null = null, sayText: string | null = null, tripT = 0, reachHint = -1e9;
   const tripFns: ((t: string) => void)[] = [];
   let cold = !!root.classList.contains('is-cold'), lcdCold = cold, igniting = false;
   function tripText() {
@@ -249,7 +292,10 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     const now = performance.now();
     if (touchId && (dragId === touchId || now < touchUntil)) {
       if (touchId === 'save') return 'SAVE: IN THE PLUGIN';
-      if (touchId === 'high') return `HIGH BEAM ${s.high ? 'ON' : 'OFF'}`;
+      // the switch reads SPREAD ON / OFF (the plugin's trip table since round 13, garage.js; the plate keeps HIGH BEAM),
+      // and a hand on REACH with the beam down says SPREAD OFF for 600 ms first, as the plugin does
+      if (touchId === 'high') return `SPREAD ${s.high ? 'ON' : 'OFF'}`;
+      if (touchId === 'reach' && !s.high && now - reachHint < 600) return 'SPREAD OFF';
       if (touchId === 'side') return `SIDE ${s.side ? 'ON' : 'OFF'}`;
       if (touchId === 'mono') return `MONO ${s.mono ? 'ON' : 'OFF'}`;
       return reading(touchId, s);
@@ -257,22 +303,31 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     if (sayText) return sayText;
     return s.mono ? 'MONO' : s.side ? 'SIDE ONLY' : reading('width', s);
   }
+  // (refitted when the line's length changes, not on every reading: the LCD face is monospace, and a glide or a drag
+  // repaints the trip every frame)
+  let tripLen = -1;
+  const fitTrip = (force = false) => { const t = trip.textContent || ''; if (!force && t.length === tripLen) return; tripLen = t.length; fitLine(trip, t.length > 13 ? `${clamp(((237 - 12) / t.length - 1) / 0.6, 18, 27).toFixed(1)}px` : ''); };
+  onRefit(() => { fitTrip(true); fitLine(pName); });
   function paintTrip() {
     const t = tripText();
     if (trip.textContent !== t) {
       trip.textContent = t;
       // Courier New is 0.6 em a glyph (+1 unit tracking): the plugin's 27 px, down to its preset window's 18 px for a long line
-      trip.style.fontSize = t.length > 13 ? `${clamp(((237 - 12) / t.length - 1) / 0.6, 18, 27).toFixed(1)}px` : '';
+      fitTrip();
       tripFns.forEach((f) => f(t));
     }
   }
   const touch = (id: TouchId, ms = 1400) => { touchId = id; touchUntil = performance.now() + ms; clearTimeout(tripT); tripT = window.setTimeout(paintTrip, ms + 30); paintTrip(); };
+  // a hand on REACH (a press or the wheel, as in garage.js; not a key) with the beam down, after 1.4 s away from it
+  let reachHand = -1e9;
+  const reachHintOn = () => { const now = performance.now(); if (!store.get().high && now - reachHand > 1400) { reachHint = now; window.setTimeout(paintTrip, 630); } reachHand = now; };
 
   // ── sliders: drag, keys, wheel ──
   const getV = (k: KnobId) => store.get()[k] as number;
   const setN = (k: KnobId, n: number) => store.set({ [k]: k === 'focus' ? Math.round(fromNorm(k, n)) : Math.round(fromNorm(k, n) / (k === 'tilt' ? 2 : 1)) * (k === 'tilt' ? 2 : 1) } as Partial<WbParams>, 'face');
   const picked = (el: HTMLElement) => el.classList.contains('is-picked') || document.activeElement === el;
   function bindSlider(el: HTMLElement, k: KnobId) {
+    if (k === 'reach') { el.addEventListener('pointerdown', reachHintOn, true); el.addEventListener('wheel', reachHintOn, { capture: true, passive: true }); }
     let p: { id: number; touch: boolean; x: number; y: number; n: number; mode: 'pending' | 'turn' | 'off'; axis: 'x' | 'y' | 'any'; wasPicked: boolean; sx: number; sy: number } | null = null;
     el.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
@@ -334,6 +389,7 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     el.addEventListener('dblclick', () => store.set({ [k]: (presetValues(PRESETS[0]) as any)[k] } as Partial<WbParams>, 'face'));
     el.addEventListener('focus', () => { el.setAttribute('data-lenis-prevent-wheel', ''); touch(k); });
     el.addEventListener('blur', () => { el.removeAttribute('data-lenis-prevent-wheel'); el.classList.remove('is-picked'); });
+    releasePick(el);
   }
   for (const k of ['tilt', 'focus', 'mix', 'width', 'reach'] as KnobId[]) bindSlider(hits[k], k);
 
@@ -357,8 +413,8 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
   hits.side.addEventListener('click', () => { store.set({ side: !store.get().side }, 'face'); touch('side'); });
   hits.mono.addEventListener('click', () => { store.set({ mono: !store.get().mono }, 'face'); touch('mono'); });
   hits.power.addEventListener('click', () => store.set({ power: !store.get().power }, 'face'));
-  hits.prev.addEventListener('click', () => loadPreset(store.preset - 1));
-  hits.next.addEventListener('click', () => loadPreset(store.preset + 1));
+  hits.prev.addEventListener('click', () => stepPreset(-1));
+  hits.next.addEventListener('click', () => stepPreset(1));
   hits.save.addEventListener('click', () => { touch('save', 2400); speak('Saving your own presets happens in the plugin itself, as files.'); });
 
   // POWER rocker: the paddle throws, the jewel fades in like a bulb once the paddle has settled ON (garage.js)
@@ -378,16 +434,32 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
 
   // ── 44 CSS px hits wherever the neighbours leave room (demo-09), and the ring's 3 CSS px (a11y-13) ──
   function fitHits(k: number) {
-    const min = 44 / k;
+    const min = 44 / k, at = {} as Record<HitId, number[]>;
     for (const [id, [x, y, w, h], [x0, y0, x1, y1]] of HITS) {
       const W = Math.max(w, Math.min(min, x1 - x0)), H = Math.max(h, Math.min(min, y1 - y0));
-      const X = clamp(x + w / 2 - W / 2, x0, x1 - W), Y = clamp(y + h / 2 - H / 2, y0, y1 - H);
+      at[id] = [clamp(x + w / 2 - W / 2, x0, x1 - W), clamp(y + h / 2 - H / 2, y0, y1 - H), W, H];
+    }
+    // the preset row: NEXT's room is only its own LCD half (123 units), PREV and SAVE have room to spare on their outer
+    // sides. Where 44 CSS px needs more (a small face: 844x390), NEXT grows about its centre and the two give way, so all
+    // three keep 44 and never overlap (r-dash-next44). A face big enough for 123 units leaves the row untouched.
+    const nx = at.next, pv = at.prev, sv = at.save, g = Math.min(min - nx[2], 2 * 60) / 2;
+    if (g > 0) {
+      nx[0] -= g; nx[2] += 2 * g;
+      const pr = Math.min(pv[0] + pv[2], nx[0]); pv[0] = Math.max(0, Math.min(pv[0], pr - min)); pv[2] = pr - pv[0];
+      const sl = Math.max(sv[0], nx[0] + nx[2]); sv[2] = Math.min(Math.max(sv[0] + sv[2] - sl, min), 560 - sl); sv[0] = sl;
+    }
+    for (const id of Object.keys(at) as HitId[]) {
+      const [X, Y, W, H] = at[id];
       Object.assign(hits[id].style, { left: X + 'px', top: Y + 'px', width: W + 'px', height: H + 'px' });
     }
   }
 
   // ── presets: the knobs glide (no overshoot, every value clamped: motion-01), MONO + SIDE off, POWER untouched ──
   let glide = 0, pending: number | null = null, artReady = false, holdCheck = 0;
+  // the knobs a glide still moves: a knob the visitor takes during it (a drag, a key, the console, the deck) leaves the
+  // glide at once and stays where the hand put it, with the '*' its edit earned (the other knobs glide on)
+  let gliding = new Set<KnobId>();
+  store.on((_s, ch, src) => { if (gliding.size && src !== 'preset' && src !== 'init') for (const k of Object.keys(ch)) gliding.delete(k as KnobId); });
   function loadPreset(i: number, _opts?: { afterArrive?: boolean }) {
     const n = PRESETS.length;
     pending = ((Math.round(i) % n) + n) % n;
@@ -396,25 +468,29 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     cancelAnimationFrame(holdCheck);
     holdCheck = requestAnimationFrame(tryGlide);
   }
+  const stepPreset = (d: number) => loadPreset((pending ?? store.preset) + d);
   function tryGlide() {
     if (pending === null) return;
-    if (isDriving() || !artReady) return; // resumed on the drive's arrival / when the art is in
+    if (isDriving()) return; // resumed on the drive's arrival
     const i = pending; pending = null;
     store.preset = i;
+    store.edited = false; // before the first write, so the store's preset news carries the clean name
     const from = store.get(), to = presetValues(PRESETS[i]);
     cancelAnimationFrame(glide);
     store.set({ mono: false, side: false, high: to.high }, 'preset');
     speak(`Preset ${String(i + 1).padStart(2, '0')}, ${PRESETS[i].name}`, true);
-    const keys: KnobId[] = ['width', 'focus', 'mix', 'tilt', 'reach'], t0 = performance.now(), dur = reducedNow() ? 0 : 520;
+    // the art not in yet (a slow line): the preset lands at once, name, sound and deck with it, and the face shows it when
+    // its art arrives (a glide on the dark still would be invisible; waiting for the art lost presses: r-dash-artpending)
+    const keys: KnobId[] = ['width', 'focus', 'mix', 'tilt', 'reach'], t0 = performance.now(), dur = reducedNow() || !artReady ? 0 : 520;
     const n0 = Object.fromEntries(keys.map((k) => [k, toNorm(k, from[k] as number)])), n1 = Object.fromEntries(keys.map((k) => [k, toNorm(k, to[k] as number)]));
     const ease = (t: number) => 1 - Math.pow(1 - t, 3); // a motor settling on its stop: no overshoot
     const run = (now: number) => {
       const t = dur ? Math.min(1, (now - t0) / dur) : 1, e = ease(t), v: Partial<WbParams> = {};
-      for (const k of keys) (v as any)[k] = t >= 1 ? to[k] : Math.round(fromNorm(k, n0[k] + (n1[k] - n0[k]) * e));
+      for (const k of gliding) (v as any)[k] = t >= 1 ? to[k] : Math.round(fromNorm(k, n0[k] + (n1[k] - n0[k]) * e));
       store.set(v, 'preset');
-      if (t < 1) glide = requestAnimationFrame(run); else { store.edited = false; paintStatic(); }
+      if (t < 1 && gliding.size) glide = requestAnimationFrame(run); else { gliding.clear(); paintStatic(); }
     };
-    store.edited = false;
+    gliding = new Set(keys);
     glide = requestAnimationFrame(run);
   }
 
@@ -450,7 +526,8 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     paintTrip();
     tiltLcd.textContent = s.power && !lcdCold ? fmtTilt(s.tilt) : '';
     // the preset window is on the accessory circuit: lit with POWER off (cards.css), dark only before the ignition
-    pName.textContent = lcdCold ? '' : PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
+    const pn = lcdCold ? '' : PRESETS[store.preset].name.toUpperCase() + (store.edited ? '*' : '');
+    if (pName.textContent !== pn) { pName.textContent = pn; fitLine(pName); }
     monoCap.classList.toggle('is-down', s.mono);
     hits.mono.setAttribute('aria-pressed', String(s.mono));
     hits.high.setAttribute('aria-checked', String(s.high));
@@ -565,6 +642,7 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     root,
     setCorrelation(c) { corrIn = c; kick(); },
     loadPreset,
+    stepPreset,
     presetName: () => PRESETS[store.preset].name,
     whenArtReady,
     ignite,
@@ -588,6 +666,16 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
 }
 
 /** The page's dash: builds the face, loads its art late, lights it when it lands, raises it once as it comes in. */
+/** A deferred <img> (the dash's face-still, WbDrive.astro) takes its data-srcset / data-src now, at high priority: it is
+ *  what the face shows until the art is in. Called by init.ts nearArt() (3/4 of a screen ahead) and by loadArt() below
+ *  before the art requests, so the still is never queued behind the strips (r-base-foldart). */
+export function showDeferred(img: Element | null) {
+  if (!(img instanceof HTMLImageElement) || !img.dataset.src || img.getAttribute('src')) return;
+  img.fetchPriority = 'high';
+  if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+  img.src = img.dataset.src;
+}
+
 export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedMotion: boolean) {
   const faceEl = page.querySelector<HTMLElement>('[data-wb-face]')!;
   const face = createFace(faceEl, art, store);
@@ -610,8 +698,12 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     const pre = list.find(([, u]) => preloaded.has(new URL(u, location.href).href));
     if (pre) return pre;
     const dpr = window.devicePixelRatio || 1;
-    let need = NEED[p] * hooks.scale() * dpr;
-    if (p === 'toggle') { const bat = document.querySelector<HTMLElement>('[data-wb-bat]'); if (bat) need = Math.max(need, bat.getBoundingClientRect().width * dpr); }
+    // -1 % on the face: at 1280-1440 x 900 @2 the WIDTH knob is drawn 290 px wide, 2 px past the 75 % tier's 288 px frame,
+    // and the next tier (384 px, 420 KB) would add 54 KB to the full visit (G11's 3.3 MB bar) for a 0.7 % stretch no eye
+    // sees. In-between WIDTH tiers come out heavier than the full file (0.8 = 458 KB), so the ladder stays as it is.
+    const SLACK = 0.99;
+    let need = NEED[p] * hooks.scale() * dpr * SLACK;
+    if (p === 'toggle') { const bat = document.querySelector<HTMLElement>('[data-wb-bat]'); if (bat) need = Math.max(need, bat.getBoundingClientRect().width * dpr * SLACK); }
     // the phone deck draws the same strips bigger: one file per strip serves both (its frame is the deck's box, at 2x
     // at most: a 3x phone gets 2x art, -5 % so the 75 % WIDTH tier's 288 px frame covers a 150 px knob)
     if (deckOn()) page.querySelectorAll<HTMLElement>(`[data-wb-deck-art="${p}"]`).forEach((el) => { need = Math.max(need, el.getBoundingClientRect().width * Math.min(dpr, 2) * 0.95); });
@@ -619,17 +711,48 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   };
 
   let loading: Promise<void> | null = null;
-  const decode = (u: string) => { const im = new Image(); im.decoding = 'async'; im.src = u; return im.decode().catch(() => {}); };
+  // true once the file has loaded (its load event, then a decode: a decode() that rejects on a loaded image is not a
+  // missing image), false on its error event (a 404, a dropped line)
+  const decode = (u: string) => new Promise<boolean>((res) => {
+    const im = new Image(); im.decoding = 'async';
+    im.onload = () => { im.decode().catch(() => {}).then(() => res(true)); };
+    im.onerror = () => res(false);
+    im.src = u;
+  });
+  const msg = page.querySelector<HTMLElement>('[data-wb-msg]');
+  const ART_MSG = "The dash's pictures didn't load. Its controls still work; reload the page to see them.";
+  let failedAt = 0; // a failed load: only an act on the demo tries again, at most every 3 s (never the scroll)
   function loadArt() {
     if (loading) return loading;
+    if (failedAt && performance.now() - failedAt < 3000) return Promise.resolve();
+    const still = faceEl.querySelector<HTMLImageElement>('img.wb-dash-still');
+    showDeferred(still); // first: the still shows while the strips come in
     loading = (async () => {
+      // and the strips wait for it (at most 1.2 s): started together they shared the line and the still landed 0.8 s
+      // after a drive's arrival at 4 Mbit/s, a bare face; alone it takes ~0.15 s
+      if (still && !still.complete) await new Promise((r) => { still.addEventListener('load', r, { once: true }); still.addEventListener('error', r, { once: true }); setTimeout(r, 1200); });
       const want: Partial<Record<Part, string>> = {};
       for (const p of Object.keys(NEED) as Part[]) { const t = pick(p); if (t) { want[p] = t[1]; loaded[p] = t[0]; } }
-      await Promise.all(Object.values(want).map((u) => decode(u!)));
+      // a part that fails gets one more try: the page's own full-size file when the tier was another, else the same file.
+      // Still missing, the face stays on its dark still (no empty knob sockets under a coach saying DRAG WIDTH UP), the
+      // status line says so, and the next act on the demo tries again (r-dash-art404)
+      const parts = Object.keys(want) as Part[];
+      const ok = await Promise.all(parts.map((p) => decode(want[p]!)));
+      const again = parts.filter((_, i) => !ok[i]);
+      if (again.length) {
+        const ok2 = await Promise.all(again.map((p) => { const full = art?.[p]; if (full && full !== want[p]) { want[p] = full; loaded[p] = 1e6; } return decode(want[p]!); }));
+        if (ok2.some((v) => !v)) {
+          loading = null; failedAt = performance.now();
+          if (msg) msg.textContent = ART_MSG;
+          return;
+        }
+      }
+      if (msg?.textContent === ART_MSG) msg.textContent = ''; // a retry that worked: the line is no longer true
       await new Promise((r) => requestAnimationFrame(r));
       hooks.applyArt(want); // every part in the same frame (perf-04)
       window.dispatchEvent(new CustomEvent('wb:art'));
-      if (hooks.wantIgnite() || landedNow()) face.ignite();
+      // (a drive on its way lands the face itself, on its arrival: never mid-glide)
+      if (hooks.wantIgnite() || (landedNow() && !isDriving())) face.ignite();
     })();
     return loading;
   }
@@ -643,12 +766,14 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
       const up: Partial<Record<Part, string>> = {};
       for (const p of Object.keys(NEED) as Part[]) { const t = pick(p); if (t && t[0] > (loaded[p] ?? 0)) { up[p] = t[1]; loaded[p] = t[0]; } }
       if (!Object.keys(up).length) return;
-      await Promise.all(Object.values(up).map((u) => decode(u!)));
+      const ok = await Promise.all(Object.values(up).map((u) => decode(u!)));
+      if (ok.some((v) => !v)) return; // a sharper tier that fails: the face keeps the one it has
       requestAnimationFrame(() => { hooks.applyArt(up); window.dispatchEvent(new CustomEvent('wb:art')); });
     }, 500);
   }).observe(faceEl);
 
-  // the loader's triggers: the first of the intro's hand-off + idle, the dash within 1.5 screens, an act on the demo, 8 s.
+  // the loader's triggers: the first of the dash within 1.5 screens, an act on the demo, a drive, or the page at rest
+  // after its first view (12 s + idle).
   // "Within 1.5 screens" counts on the visitor's own scroll: on a laptop the dash already sits that close under the hero
   // at load, and the art must not race the intro's first seconds (perf-01).
   const introRunning = () => {
@@ -657,21 +782,24 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   };
   // (the deck: once the face, right above it, is within one screen)
   const near = () => (deckOn() ? faceEl.getBoundingClientRect().top < innerHeight * 2 : section.getBoundingClientRect().top < innerHeight * 2.5);
-  const onScroll = () => { if (loading) removeEventListener('scroll', onScroll); else if (near() && (scrollY > 2 || !introRunning())) loadArt(); };
+  const onScroll = () => { if (loading || failedAt) removeEventListener('scroll', onScroll); else if (near() && (scrollY > 2 || !introRunning())) loadArt(); };
   addEventListener('scroll', onScroll, { passive: true });
   if (scrollY > 2) onScroll(); // a reload that restored the scroll, a link to #wb-drive
   const intent = (e: Event) => { if ((e.target as Element)?.closest?.('[data-wb-demo]')) loadArt(); };
   page.addEventListener('pointerdown', intent, true);
   page.addEventListener('keydown', intent, true);
   page.addEventListener('click', intent, true);
-  // on an upright phone the strips are the deck's (D.4: they load only when the deck nears): the dash coming near, or an
-  // act on the demo, never the hand-off or the clock alone
-  window.setTimeout(() => { if (!deckOn()) loadArt(); }, 8000);
+  // the page at rest: a visitor who has not scrolled or touched the demo gets the art once the first view is over (the
+  // plan's first 10 s, G11 / team/perf/measure.cjs; 12 s for margin) and the browser is idle. The intro runs 8 s, so the
+  // old triggers (8 s, or the hand-off + idle) put 1.47 MB of below-the-fold art into the first view (2.69 MB against
+  // its 1.9 MB bar); keyed to the page clock, not the hand-off, so a skipped or absent intro waits the same.
+  // On an upright phone the strips are the deck's (D.4: they load only when the deck nears): the dash coming near, or an
+  // act on the demo, never the clock alone
   const idle = (fn: () => void) => ((window as any).requestIdleCallback ? (window as any).requestIdleCallback(fn, { timeout: 2000 }) : window.setTimeout(fn, 600));
-  const handoff = window.setInterval(() => { if (loading) { clearInterval(handoff); return; } if (!introRunning()) { clearInterval(handoff); if (!deckOn()) idle(() => loadArt()); } }, 400);
+  window.setTimeout(() => { if (!loading && !failedAt && !deckOn()) idle(() => loadArt()); }, Math.max(0, 12000 - performance.now()));
 
   // ── landing: the face mostly on screen and the page at rest (or a drive's arrival) lights it ──
-  const nav = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 44;
+  const nav = navH;
   const visible = () => { const r = faceEl.getBoundingClientRect(); const top = nav(); return r.height ? Math.max(0, Math.min(innerHeight, r.bottom) - Math.max(top, r.top)) / r.height : 0; };
   const needVis = () => Math.min(0.7, ((innerHeight - nav()) / Math.max(1, faceEl.getBoundingClientRect().height)) * 0.9);
   let lastScroll = performance.now(), visSince = 0, landT = 0;
@@ -681,6 +809,9 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     clearInterval(landT);
     landT = window.setInterval(() => {
       if (holdCold || !hooks.isCold()) { clearInterval(landT); return; }
+      // a drive on its way lands the face itself ('wb:drive' arrive, below): on an upright phone the face is whole on
+      // screen long before the glide ends, and its slow tail read as rest (stage 4: lamps at 560 ms, landing at 760 ms)
+      if (isDriving()) { visSince = 0; return; }
       const now = performance.now();
       if (visible() >= needVis()) { if (!visSince) visSince = now; } else { visSince = 0; return; }
       if (now - lastScroll >= 150 || now - visSince >= 600) { face.ignite(); if (!hooks.isCold()) clearInterval(landT); }
@@ -703,6 +834,14 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     gsap.set(dash, { rotateX: 14, y: 46, transformOrigin: '50% 100%' });
     riseArmed = true;
     riseST = ScrollTrigger.create({ trigger: wrap, start: 'top 88%', once: true, onEnter: () => rise(false) });
+    // focus arriving in the dash first (the Tab key) finishes it at once and scrolls the control in again: the browser's
+    // own focus scroll ran before focusin, on the risen-from place, and the rise then carried the console's 'Previous
+    // preset' 93-97 px up, above the screen at desktop-zoom sizes (285x159: top 66 -> -27, 380x212: 58 -> -39)
+    dash.addEventListener('focusin', (e) => {
+      if (!riseArmed) return;
+      rise(true);
+      (e.target as HTMLElement).scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    });
   }
   addEventListener('wb:drive', (e: Event) => {
     const d = (e as CustomEvent).detail || {};
@@ -722,7 +861,8 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   // owns the drive. Without JS the link is a plain jump to the dash.
   page.querySelectorAll<HTMLAnchorElement>('a[data-wb-start][href="#wb-drive"]').forEach((a) => a.addEventListener('click', (e) => {
     e.stopPropagation(); // first: Lenis never sees this click, whoever drives
-    if (e.defaultPrevented) return;
+    // a modified click (a new tab or window, Ctrl's menu on a Mac) keeps the browser's own, as the hero's does (hero.ts)
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     driveTo('#wb-drive', { align: 'face' });
   }));

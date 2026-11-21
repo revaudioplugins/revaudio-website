@@ -14,14 +14,29 @@ import { driveTo } from './drive-to';
 // the master's last frame: the coupe's two tail-light bars centred at x 969, y 699, 52 px apart (1920x1080; measured
 // on the frame and checked on screen against the film, lampalign.cjs in the lane H report)
 const TAIL = { x: 969, y: 699, sep: 52 };
+const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export function initHero(page: HTMLElement, store: Store, reduced: boolean) {
   const hero = page.querySelector<HTMLElement>('.wb-hero')!;
   const nightEl = page.querySelector<HTMLCanvasElement>('[data-wb-night]');
   const night = nightEl ? startNight(nightEl) : null;
   const mark = page.querySelector<HTMLElement>('[data-wb-mark]');
-  const setMark = () => { const s = store.get(); page.style.setProperty('--wb-w', String(s.power ? (s.mono ? 0 : s.width / 200) : 0)); };
-  store.on(setMark); setMark();
+  // --wb-w lives on the wordmark alone, and changes only while the hero is on screen: set on the page, every frame of a
+  // knob turn or a preset glide restyled the whole page (and restarted the row's gap transition off screen): G12 at 4x CPU.
+  // Coming back into view it is already settled at the new WIDTH (no transition), as it was when it followed off screen.
+  const markOf = mark ?? page;
+  const row = mark?.querySelector<HTMLElement>('.wb-mark-row');
+  let markOn = true;
+  const setMark = (settle = false) => {
+    if (!markOn) return;
+    const s = store.get(), v = String(s.power ? (s.mono ? 0 : s.width / 200) : 0);
+    if (markOf.style.getPropertyValue('--wb-w') === v) return;
+    if (settle && row) row.style.transition = 'none';
+    markOf.style.setProperty('--wb-w', v);
+    if (settle && row) { void row.offsetWidth; row.style.transition = ''; }
+  };
+  store.on(() => setMark()); setMark(true);
+  if (mark) new IntersectionObserver(([e]) => { markOn = e.isIntersecting; setMark(true); }, { rootMargin: '25% 0px' }).observe(mark);
 
   const hooks = {
     reveal(instant: boolean) {
@@ -53,7 +68,13 @@ export function initHero(page: HTMLElement, store: Store, reduced: boolean) {
     if (!dash) return;
     e.preventDefault();
     e.stopPropagation(); // Lenis's anchor jump listens on window: one mover
-    driveTo(dash, { align: 'face' });
+    // on arrival the keyboard comes along: the dash's first control a visitor can reach (the face's on a laptop, the
+    // deck's on an upright phone, where the face is inert, D7 B), without a scroll. Left alone if focus moved meanwhile.
+    driveTo(dash, { align: 'face', onArrive: () => {
+      if (document.activeElement !== key) return;
+      const first = [...dash.querySelectorAll<HTMLElement>(FOCUSABLE)].find((el) => el.getClientRects().length > 0 && !el.closest('[inert],[hidden],[aria-hidden="true"]') && !(el as HTMLButtonElement).disabled);
+      first?.focus({ preventScroll: true });
+    } });
   }));
 
   if (!reduced) {

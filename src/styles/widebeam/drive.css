@@ -4,6 +4,12 @@
 .wb-fine--c { text-align: center; padding: 0 16px; max-width: 70ch; margin-inline: auto; }
 
 /* ---------- THE DASH ---------- */
+/* the lede's gesture follows the coach (console.ts: the deck, or any coarse pointer, gets SLIDE WIDTH RIGHT) */
+.wb-headsub-touch { display: none; }
+@media (pointer: coarse), (max-width: 900px) and (orientation: portrait) {
+  .wb-headsub-pointer { display: none; }
+  .wb-headsub-touch { display: inline; }
+}
 .wb-drive { position: relative; padding: var(--wb-gap) 0 0; }
 .wb-drive::before { /* the lamps' spill on the wall behind the dash grows with the light */
   content: ''; position: absolute; left: 50%; top: 22%; width: min(1500px, 140vw); height: 70%; transform: translateX(-50%); pointer-events: none;
@@ -19,7 +25,10 @@
 @media (min-width: 1100px) {
   .wb-dash-wrap {
     --wb-con-w: clamp(280px, 26vw, 320px);
-    max-width: calc(min(1100px, (100svh - var(--nav-h, 44px) - 40px) * 1.5) + var(--wb-con-w) + 48px);
+    /* capped by the height (the face fits the screen) and by the page's column: the story and the manual's 1180 px
+       (+ the 16 px pads) and, wider than that, 130 px gutters, so a tall 1280-1600 px window no longer runs the dash
+       edge to edge beside narrower sections (r-dash-maxw). 1141 and every window under 1212 px are unchanged. */
+    max-width: min(calc(min(1100px, (100svh - var(--nav-h, 44px) - 40px) * 1.5) + var(--wb-con-w) + 48px), max(1212px, 100% - 260px));
   }
   .wb-dash { display: grid; grid-template-columns: minmax(0, 1fr) var(--wb-con-w); gap: 16px; align-items: stretch; }
 }
@@ -142,6 +151,12 @@ button.wb-hit { cursor: pointer; touch-action: manipulation; }
 .wb-con-fader::-moz-range-track { height: 8px; border-radius: 4px; background: #070605; box-shadow: inset 0 2px 3px #000, 0 0 0 1px #3a2e1c; }
 .wb-con-fader::-moz-range-progress { height: 8px; border-radius: 4px; background: var(--brass-lo); }
 .wb-con-fader::-moz-range-thumb { width: 30px; height: 30px; border: 0; border-radius: 50%; background: url(../../assets/widebeam/parts/cap.webp) center / 100% 100% no-repeat; }
+/* the cap art loads a screen ahead of the reader (init.ts marks the [data-wb-defer] fader [data-wb-near]): two rules,
+   since a list with a pseudo-element one engine doesn't know drops the whole rule in that engine */
+@media (scripting: enabled) {
+  .wb-con-fader:not([data-wb-near])::-webkit-slider-thumb { background-image: none; }
+  .wb-con-fader:not([data-wb-near])::-moz-range-thumb { background-image: none; }
+}
 .wb-con-fader:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; border-radius: 6px; }
 :is(.wb-con-ab-key, .wb-con-mono):focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
 /* the engine key: house brass, never red (art-11, guidelines-11); its key turns once to ON and its emerald pilot lights
@@ -225,6 +240,17 @@ button.wb-hit { cursor: pointer; touch-action: manipulation; }
   mask-image: linear-gradient(90deg, #0000, #000 12%, #000 88%, #0000), linear-gradient(#0000, #000 10%, #000 90%, #0000);
   mask-composite: intersect;
 }
+/* WIDTH's seat: below its scale row the sprite's left 28 px are a flat fill, ~5/255 darker than the photo beside it, so
+   a 12 % feather ended in a hard line (stage 4). There the seat comes in from 28 px to 46 px instead (the ring starts at
+   46), and the scale row (MONO, the ticks) keeps the short feather */
+.wb-deck-seat--width::before {
+  --wb-seat-lo: linear-gradient(90deg, #0000 12%, #000 20%, #000 88%, #0000);
+  --wb-seat-row: linear-gradient(#000 50px, #0000 64px);
+  -webkit-mask-image: linear-gradient(90deg, #0000, #000 12%, #000 88%, #0000), linear-gradient(#0000, #000 10%, #000 90%, #0000), var(--wb-seat-lo), var(--wb-seat-row);
+  -webkit-mask-composite: source-in, source-in, source-over;
+  mask-image: linear-gradient(90deg, #0000, #000 12%, #000 88%, #0000), linear-gradient(#0000, #000 10%, #000 90%, #0000), var(--wb-seat-lo), var(--wb-seat-row);
+  mask-composite: intersect, intersect, add;
+}
 .wb-deck.is-near .wb-deck-seat::before { background: var(--wb-seats) no-repeat 0 var(--wb-seat-y, 0) / 229.5px 479.5px; }
 .wb-deck-seat--width { width: 229.5px; height: 184px; }
 .wb-deck-seat--focus { width: 100.5px; height: 94.5px; --wb-seat-y: -184px; }
@@ -297,12 +323,30 @@ button.wb-hit { cursor: pointer; touch-action: manipulation; }
 }
 html.hc .wb-face-cue.is-on, html.hc .wb-con-mono.is-cue .wb-con-cap::after, html.hc .wb-deck .is-cue :is(.wb-deck-art--knob, .wb-deck-cap, .wb-deck-art--power)::after { animation: none; opacity: .8; }
 
-/* motion-18 (lane D's item on lane A's key): the SOUND key's EQ bars move on transform, not height (no layout per
-   frame). furniture.css can take these three rules and drop its height keyframes. */
-.wb-sound .wb-eq i { height: 12px; transform-origin: 50% 100%; transform: scaleY(.25); }
-.wb-sound[aria-pressed='true'] .wb-eq i { animation-name: wb-dash-eq; }
-@keyframes wb-dash-eq { from { transform: scaleY(.25); } to { transform: scaleY(1); } }
-@media (prefers-reduced-motion: reduce) { .wb-sound[aria-pressed='true'] .wb-eq i { animation: none; height: 12px; transform: scaleY(.66); } }
+/* forced colours (Windows High Contrast): the browser repaints every ring in the theme's one focus colour, which landed
+   on the face photo and the deck's seats at 1.0-1.9:1 (r-base-forced). The face's hits (empty buttons over the photo)
+   keep a two-tone ring instead, so one of the two reads on any photo: the face is a dark photo, so the theme's LIGHT
+   colour is the 3 px ring (its text colour in a dark theme, its canvas colour in a light one) and the other is a 2 px
+   band round it (prefers-color-scheme follows the forced theme). The deck's seats go (on the Canvas they were blurred
+   dark squares), so its knobs sit on the plate's Canvas and the plain ring reads (no forced-color-adjust there: it
+   would bring the knob's gradients back on focus only). The VOLUME track gets an outline and its level (forcing drops a gradient: only the cap showed), and
+   ORIGINAL loses its dimming. */
+@media (forced-colors: active) {
+  .wb-hit:focus-visible, .wb-hit.is-picked {
+    forced-color-adjust: none; outline-color: CanvasText; outline-offset: 0;
+    box-shadow: 0 0 0 calc(5px / var(--wb-k, 1) + 1px) Canvas;
+  }
+  @media (prefers-color-scheme: light) {
+    .wb-hit:focus-visible, .wb-hit.is-picked { outline-color: Canvas; box-shadow: 0 0 0 calc(5px / var(--wb-k, 1) + 1px) CanvasText; }
+  }
+  .wb-deck.is-near .wb-deck-seat::before { background: none; }
+  .wb-con-fader { forced-color-adjust: none; }
+  .wb-con-fader::-webkit-slider-runnable-track { background: linear-gradient(90deg, CanvasText 0 var(--wb-vol, 80%), Canvas 0); box-shadow: none; border: 1px solid CanvasText; }
+  .wb-con-fader::-moz-range-track { background: Canvas; box-shadow: none; border: 1px solid CanvasText; }
+  .wb-con-fader::-moz-range-progress { background: CanvasText; }
+  .wb-con-fader:focus-visible { outline-color: CanvasText; }
+  .wb-con-ab-key .wb-plate-label { opacity: 1; }
+}
 
 /* the HIGH BEAM page flash (WbFlash.astro, listener in keys.ts): at most once a second, on its own layer from load
    (motion-15), never under reduced motion or the site's high contrast */
