@@ -39,7 +39,7 @@ for (const s of SIZES) {
   const p = await ctx.newPage();
   await p.goto(url, { waitUntil: 'networkidle', timeout: 120000 });
   await p.evaluate(() => document.fonts.ready);
-  await p.waitForTimeout(4000); // the TV's power-on and its pictures
+  await p.waitForTimeout(6000); // the TV's power-on and its pictures, and the heading's arrow blinking out its 4 x 1.1 s (WordWall ww-blink): the room shows the TV settled, arrow on (11-20)
   // the TV: the first screen under the nav (the room shows it from --nav-h down, as the old captures did: 1 px under);
   // the nav (+ the sale strip) as the page lays it out
   const nav = await p.evaluate(() => { const cs = getComputedStyle(document.documentElement), v = (k) => parseFloat(cs.getPropertyValue(k)) || 0;
