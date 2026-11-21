@@ -77,18 +77,17 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     link is gone).
   - For the launch owner (Gil / Yoni), not Dan: mail the whole newsletter list at launch (`launchMailToWholeList`, now
     false; fixer's pick yes); the licence of the loops under the demo clips (Yoni's renders).
-  - Waiting on Dan (design; evidence in the scratchpad, lost on a reboot):
-    - The phone deck after "Take it for a drive": MONO and POWER sit below the screen. A reorder (WIDTH row, the four
-      keys, then LOW FOCUS / MIX / REACH; leaves the plugin's plate order), B a smaller deck, C keep. Pick: A.
-    - An upright iPad: A today (landscape film centre-cropped, one headlight pair at 1.2 s) or B (the phone's portrait
-      cut, softer). Pick: B. `team/build/fix-hero/ipad/side-by-side-820x980-1.2.png`.
-    - The intro film's bytes, only if the final G11 still fails: keep the film and move the bar, or a lighter encode
-      (`team/build/fix-cross/film-pick/index.html`; B drops some faint stars).
-    - Calls made (veto any): the name capped at 137 px from 1236 px; on a slow line the film is skipped (REPLAY plays
-      it); the dash inside the page column from 1212 px; dash images q72, plate q80; the road's LEVEL reads 0.0 dB
-      under CRUISE; 2x deck art on 3x phones; the no-JS line on the trial forms; the phone bar on zoomed short screens;
-      the seam before the manual kept.
-    - Device checks: turn a real phone while typing in the closer's field; VoiceOver on the deck; iPad B softness.
+  - Dan, 2026-11-21, "go with your picks" (`ec9ac17`): the phone deck puts HIGH BEAM / MONO / SIDE / POWER right under
+    WIDTH (A; the deck leaves the plugin's plate order); an upright tablet 600-1100 px wide gets the portrait cut that
+    follows the car (B, a little softer; DESIGN.md §7 extended). The stage 4 calls stay: the name capped at 137 px from
+    1236 px; on a slow line the film is skipped (REPLAY plays it); the dash inside the page column from 1212 px; dash
+    images q72, plate q80; the road's LEVEL reads 0.0 dB under CRUISE; 2x deck art on 3x phones; the no-JS line on the
+    trial forms; the phone bar on zoomed short screens; the seam before the manual kept.
+    - The running round-3 workflow's "known" list still calls deck order and iPad "held for Dan": stale since
+      `ec9ac17`, harmless (it tells fixers never to change them).
+  - Waiting on Dan (design): the intro film's bytes, only if the final G11 still fails (keep the film and move the bar,
+    or a lighter encode: `team/build/fix-cross/film-pick/index.html`, B drops some faint stars). Device checks: turn a
+    real phone while typing in the closer's field; VoiceOver on the deck; iPad B softness on a real iPad.
   - The cookie banner at 844x390 also covers the hero's Skip (G6) and, at 932x430, the hero key: the same Yoni fix.
   - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
     plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
