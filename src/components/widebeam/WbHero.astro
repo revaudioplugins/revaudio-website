@@ -8,6 +8,8 @@
  *   1-2  an upright phone (D8 B, DESIGN.md §7's one exception): the portrait cut that follows the car, 680 px of the
  *        1080p master, so any hero box up to 680:1080 is scaled by height and shows the centre (390x786: the 526 px
  *        Dan picked). It starts and ends on the frame's centre, so the shared poster and the road still line up.
+ *        Also an upright tablet, 600-1100 px wide (Dan's pick B, 2026-11-21): there the file is scaled by WIDTH, a
+ *        little softer and cropped top and bottom, but both headlight pairs show (the centre crop showed one, cut).
  *   3    a narrow landscape screen: the 720 file.   4  everything else: the 1080 file.
  *   5    the 720 file again, unconditional and last: a laptop on a slow line (intro.ts drops every data-wb-tier="hi"
  *        source when navigator.connection.downlink < 3), and the last fallback; an error on it = no film at all.
@@ -36,7 +38,7 @@ const trialKey = phase === 'preopen' ? null : askFor(phase).key;
 // the line breaks between its sentences, never inside one (a 360 px phone: "WIDER MIX." / "BASS DEAD CENTRE.")
 const LINE = heroLine.split(/(?<=\.)\s+/);
 const WORD = ['W', 'I', 'D', 'E', ' ', 'B', 'E', 'A', 'M'];
-const PORTRAIT = '(max-aspect-ratio: 3/5)';
+const PORTRAIT = '(max-aspect-ratio: 3/5), (orientation: portrait) and (min-width: 600px) and (max-width: 1100px)';
 const FULL_FRAME = '0 0 1920 1080';
 const PORTRAIT_FRAME = '620 0 680 1080';
 ---

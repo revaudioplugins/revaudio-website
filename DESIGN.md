@@ -463,7 +463,9 @@ One exception, Dan's pick (the WIDE BEAM page, 2026-11-18, D8 B over the zoom-in
 rule): /widebeam's intro film on an upright phone is a portrait cut that FOLLOWS the car (both headlight pairs fill the
 screen at about 1 s, then it swings to the tail lights and settles on the road). The film is that page's signature, and
 a centre crop played its best moment off screen (15 % of the headlight light on screen; the follow-cut 77 %). The rest
-of that page is still rebuilt for portrait (the dash becomes a deck of big controls, D7 B).
+of that page is still rebuilt for portrait (the dash becomes a deck of big controls, D7 B). Extended 2026-11-21 (Dan's
+pick B): an upright tablet (600-1100 px wide) gets the same follow-cut, a little softer, since the centre crop showed one
+headlight pair, cut by the edge.
 
 ## 8. Layout
 
