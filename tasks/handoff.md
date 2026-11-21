@@ -58,12 +58,34 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     `wb-base` (detached at `d76c750`) stay until stage 4 ends, then go.
     - Stage 3's adversarial checkers for the hero, the dash and the glove box / road / manual never finished (sleep, then
       the account limit); stage 4's hunt has three lenses that re-check those lanes' own claims.
-  - Stage 4 RUNNING (Workflow `wf_34e21857-e42`, Pit Wall http://127.0.0.1:8795, `caffeinate` 24 h): the lanes' 27
-    requests + 11 two-team checks + the social card; every gate on a production preview; timing on a quiet machine
-    (before and after the hunt); nine bug-hunt lenses with a skeptic per finding, until a round finds nothing above low;
-    then the final build, gates, house specs, the gate scripts copied to `tools/widebeam-gates/`. All agents Opus. A dead
-    agent stops the run: resume it with `resumeFromRunId`. Its inputs: scratchpad `team/build/stage4-inputs.json`.
-    G1 (the lanes' pixel isolation) is retired after the merge.
+  - Stage 4, updated 2026-11-21 ~15:00. Run `wf_34e21857-e42` did the integration, 4 gate runs with fixes, timing
+    (9/9 PASS) and bug-hunt rounds 1-2 (65 + 31 findings; 28 + 27 real after a skeptic each, all fixed by area, a gate
+    run after each). It stopped at round 3: the lid was closed at 01:53 (pmset "Clamshell Sleep" until 13:49; caffeinate
+    can't stop that), then the Claude login had expired. Checkpoint commit `94d5663` (39 files, build green).
+    RESUMED as `wf_753116d1-2ea` (scratchpad `team/build/stage4-resume.js`, seeded with the round-2 state from the old
+    journal): round 3 (six lenses + the 25 carried lows, cap 60), timing, the final check, the section shots
+    (`team/gates/baseline-final`), the gate scripts into `tools/widebeam-gates/`. Pit Wall http://127.0.0.1:8795;
+    caffeinate until Mon 23 Nov 02:51 (keep the lid open). Dev server 4392 restarted fresh. All agents Opus.
+    - Biggest fixes so far: the words described the 0.9 plugin (a CRUISE switch, TRACTION); the trial form was not
+      wired in the open/released phases; MONO / SIDE did nothing below MIX 100 (12 of 16 presets); a mono own-track
+      file played hard left; the hero name lost its word space from 1236 px; the BF/CM sale strip would have shown on
+      /widebeam (now gated in `src/layouts/BaseLayout.astro`, the sale-gate line only).
+    - Built, not yet seen passing: the L1440 full-visit byte row (3.33 vs 3.30 MB before the face.ts tier fix) and the
+      G3 Firefox "stops" guard. The final gate run proves them.
+  - Waiting on Dan (evidence in the scratchpad, lost on a reboot):
+    - The launch email: mail the whole newsletter list at launch (`launchMailToWholeList`, now false)? Fixer's pick: yes.
+    - The phone deck after "Take it for a drive": MONO and POWER sit below the screen. A reorder (WIDTH row, the four
+      keys, then LOW FOCUS / MIX / REACH; leaves the plugin's plate order), B a smaller deck, C keep. Pick: A.
+    - An upright iPad: A today (landscape film centre-cropped, one headlight pair at 1.2 s) or B (the phone's portrait
+      cut, softer). Pick: B. `team/build/fix-hero/ipad/side-by-side-820x980-1.2.png`.
+    - The intro film's bytes, only if the final G11 still fails: keep the film and move the bar, or a lighter encode
+      (`team/build/fix-cross/film-pick/index.html`; B drops some faint stars).
+    - Calls made (veto any): the name capped at 137 px from 1236 px; on a slow line the film is skipped (REPLAY plays
+      it); the dash inside the page column from 1212 px; dash images q72, plate q80; the road's LEVEL reads 0.0 dB
+      under CRUISE; 2x deck art on 3x phones; the no-JS line on the trial forms; the phone bar on zoomed short screens;
+      the seam before the manual kept.
+    - Device checks: turn a real phone while typing in the closer's field; VoiceOver on the deck; iPad B softness.
+  - The cookie banner at 844x390 also covers the hero's Skip (G6) and, at 932x430, the hero key: the same Yoni fix.
   - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
     plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
     film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE
