@@ -38,7 +38,7 @@ import { initSnap } from './snap';
 export interface FaceArt { base: string; width: string; focus: string; mix: string; toggle: string; power: string; wheel: string; }
 export type Part = keyof FaceArt;
 type Tiers = Partial<Record<Part, [number, string][]>>;
-export type CueTarget = 'width' | 'mono' | 'power' | null;
+export type CueTarget = 'width' | 'mono' | 'power' | 'high' | null;
 
 const NS = 'http://www.w3.org/2000/svg';
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -285,9 +285,10 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
   // ── the trip LCD: the readout, the hand's control while it is on it, the coach's line in between (garage.js trip) ──
   let touchId: TouchId | null = null, touchUntil = 0, dragId: TouchId | null = null, sayText: string | null = null, tripT = 0, reachHint = -1e9;
   const tripFns: ((t: string) => void)[] = [];
-  let cold = !!root.classList.contains('is-cold'), lcdCold = cold, igniting = false;
+  let cold = !!root.classList.contains('is-cold'), lcdCold = cold, igniting = false, artFailed = false;
   function tripText() {
     const s = store.get();
+    if (artFailed) return 'RELOAD THE PAGE'; // the art did not load (initFace loadArt; the status line says why)
     if (!s.power || lcdCold) return '';
     const now = performance.now();
     if (touchId && (dragId === touchId || now < touchUntil)) {
@@ -325,7 +326,9 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
   // ── sliders: drag, keys, wheel ──
   const getV = (k: KnobId) => store.get()[k] as number;
   const setN = (k: KnobId, n: number) => store.set({ [k]: k === 'focus' ? Math.round(fromNorm(k, n)) : Math.round(fromNorm(k, n) / (k === 'tilt' ? 2 : 1)) * (k === 'tilt' ? 2 : 1) } as Partial<WbParams>, 'face');
-  const picked = (el: HTMLElement) => el.classList.contains('is-picked') || document.activeElement === el;
+  // a pick is a tap (is-picked), never focus alone: a script's focus (the hero's hand-off) or a Tab is no pick, so the
+  // next swipe that starts on the knob scrolls the page and leaves the value alone (r-dash-focuspick)
+  const picked = (el: HTMLElement) => el.classList.contains('is-picked');
   function bindSlider(el: HTMLElement, k: KnobId) {
     if (k === 'reach') { el.addEventListener('pointerdown', reachHintOn, true); el.addEventListener('wheel', reachHintOn, { capture: true, passive: true }); }
     let p: { id: number; touch: boolean; x: number; y: number; n: number; mode: 'pending' | 'turn' | 'off'; axis: 'x' | 'y' | 'any'; wasPicked: boolean; sx: number; sy: number } | null = null;
@@ -648,8 +651,9 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     ignite,
     say(text) { sayText = text; paintTrip(); },
     cue(target) {
-      const b = target === 'width' ? [626, 515, 280, 280] : target === 'mono' ? [1294, 627, 156, 156] : target === 'power' ? [1340, 41, 112, 112] : null;
+      const b = target === 'width' ? [626, 515, 280, 280] : target === 'mono' ? [1294, 627, 156, 156] : target === 'power' ? [1340, 41, 112, 112] : target === 'high' ? [922, 630, 180, 180] : null;
       cueEl.classList.toggle('is-on', !!b);
+      if (b) root.setAttribute('data-wb-cue', target!); else root.removeAttribute('data-wb-cue'); // (drive.css: the ring steps off the lamp)
       if (b) Object.assign(cueEl.style, { left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[3] + 'px' });
     },
     onIgnite(fn) { if (!cold && !igniting) fn(); else igniteFns.push(fn); },
@@ -660,14 +664,16 @@ export function createFace(root: HTMLElement, art: FaceArt, store: Store): Face 
     onTrip(fn) { tripFns.push(fn); fn(trip.textContent || ''); },
   };
   // internal hooks for initFace (not part of the Face API)
-  (face as any)._art = { applyArt, setLoader: (fn: () => void) => { wantLoad = fn; }, wantIgnite: () => wantIgnite, isCold: () => cold, scale: () => k, tryGlide };
+  (face as any)._art = { applyArt, setLoader: (fn: () => void) => { wantLoad = fn; }, wantIgnite: () => wantIgnite, isCold: () => cold, scale: () => k, tryGlide,
+    failArt(on: boolean) { artFailed = on; root.classList.toggle('is-artfail', on); paintTrip(); } };
   current = face;
   return face;
 }
 
 /** The page's dash: builds the face, loads its art late, lights it when it lands, raises it once as it comes in. */
 /** A deferred <img> (the dash's face-still, WbDrive.astro) takes its data-srcset / data-src now, at high priority: it is
- *  what the face shows until the art is in. Called by init.ts nearArt() (3/4 of a screen ahead) and by loadArt() below
+ *  what the face shows until the art is in. The inline script at the end of widebeam.astro does the same 3/4 of a screen
+ *  ahead (r-base-artbare); loadArt() below calls this
  *  before the art requests, so the still is never queued behind the strips (r-base-foldart). */
 export function showDeferred(img: Element | null) {
   if (!(img instanceof HTMLImageElement) || !img.dataset.src || img.getAttribute('src')) return;
@@ -679,7 +685,7 @@ export function showDeferred(img: Element | null) {
 export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedMotion: boolean) {
   const faceEl = page.querySelector<HTMLElement>('[data-wb-face]')!;
   const face = createFace(faceEl, art, store);
-  const hooks = (face as any)._art as { applyArt(u: Partial<Record<Part, string>>): void; setLoader(fn: () => void): void; wantIgnite(): boolean; isCold(): boolean; scale(): number; tryGlide(): void };
+  const hooks = (face as any)._art as { applyArt(u: Partial<Record<Part, string>>): void; setLoader(fn: () => void): void; wantIgnite(): boolean; isCold(): boolean; scale(): number; tryGlide(): void; failArt(on: boolean): void };
   const section = page.querySelector<HTMLElement>('#wb-drive') ?? faceEl;
   const holdCold = new URLSearchParams(location.search).has('wb-cold');
 
@@ -744,9 +750,12 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
         if (ok2.some((v) => !v)) {
           loading = null; failedAt = performance.now();
           if (msg) msg.textContent = ART_MSG;
+          // and on the trip LCD, where the drive lands (the status line sits under the fold there: r-dash-art404msg)
+          hooks.failArt(true);
           return;
         }
       }
+      hooks.failArt(false);
       if (msg?.textContent === ART_MSG) msg.textContent = ''; // a retry that worked: the line is no longer true
       await new Promise((r) => requestAnimationFrame(r));
       hooks.applyArt(want); // every part in the same frame (perf-04)
@@ -804,7 +813,19 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   const needVis = () => Math.min(0.7, ((innerHeight - nav()) / Math.max(1, faceEl.getBoundingClientRect().height)) * 0.9);
   let lastScroll = performance.now(), visSince = 0, landT = 0;
   addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
-  const landedNow = () => !holdCold && visible() >= needVis();
+  // on an upright phone the deck holds the controls (D7 B): a visitor who scrolls past the inert face and stops on the deck
+  // has landed too, once the deck's readout (the trip LCD, printed big) is whole on screen under the nav, or the deck is
+  // mostly on screen (the face's own rule) (r-dash-deckcold)
+  const deckEl = page.querySelector<HTMLElement>('[data-wb-deck]');
+  const deckRead = deckEl?.querySelector<HTMLElement>('[data-wb-deck-read]') ?? null;
+  const deckShown = () => {
+    if (!deckEl || !deckRead || !deckOn()) return false;
+    const r = deckRead.getBoundingClientRect(), d = deckEl.getBoundingClientRect(), top = nav();
+    if (r.height > 0 && r.top >= top - 1 && r.bottom <= innerHeight + 1) return true;
+    const vis = d.height ? Math.max(0, Math.min(innerHeight, d.bottom) - Math.max(top, d.top)) / d.height : 0;
+    return vis >= Math.min(0.7, ((innerHeight - top) / Math.max(1, d.height)) * 0.9);
+  };
+  const landedNow = () => !holdCold && (visible() >= needVis() || deckShown());
   const watch = () => {
     clearInterval(landT);
     landT = window.setInterval(() => {
@@ -813,11 +834,20 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
       // screen long before the glide ends, and its slow tail read as rest (stage 4: lamps at 560 ms, landing at 760 ms)
       if (isDriving()) { visSince = 0; return; }
       const now = performance.now();
-      if (visible() >= needVis()) { if (!visSince) visSince = now; } else { visSince = 0; return; }
+      if (landedNow()) { if (!visSince) visSince = now; } else { visSince = 0; return; }
       if (now - lastScroll >= 150 || now - visSince >= 600) { face.ignite(); if (!hooks.isCold()) clearInterval(landT); }
     }, 100);
   };
-  new IntersectionObserver(([e]) => { if (e.isIntersecting) watch(); else { clearInterval(landT); visSince = 0; } }, { threshold: [0, 0.35] }).observe(faceEl);
+  const inView = new Set<Element>();
+  const landIO = new IntersectionObserver((entries) => {
+    for (const e of entries) { if (e.isIntersecting) inView.add(e.target); else inView.delete(e.target); }
+    if (inView.size) watch(); else { clearInterval(landT); visSince = 0; }
+  }, { threshold: [0, 0.35] });
+  landIO.observe(faceEl);
+  if (deckEl) landIO.observe(deckEl);
+  // and an act on the deck is a landing (a tap, a turn, a key, a screen reader's adjust): the visitor is at the controls
+  const deckAct = () => { if (!deckOn() || holdCold || !hooks.isCold()) return; loadArt(); face.ignite(); };
+  if (deckEl) for (const t of ['pointerup', 'click', 'keydown', 'input']) deckEl.addEventListener(t, deckAct, true);
 
   // ── the rise: once, solid (rotateX + y), when the dash comes in; finished off screen by a drive to the face ──
   const dash = page.querySelector<HTMLElement>('[data-wb-dash]');
@@ -870,7 +900,7 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   // the soft snap (D.5): a scroll that comes to rest near the dash settles it where a drive lands it (snap.ts)
   initSnap(faceEl);
 
-  // the engine key turns the key in the dash: it lights the face (once the art is in)
+  // any start of the sound turns the key in the dash (sound.ts start): it lights the face (once the art is in)
   const ignite = () => { if (!holdCold) face.ignite(); };
   return { face, ignite, dash };
 }

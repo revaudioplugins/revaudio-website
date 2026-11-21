@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { widebeam, buyable } from '../src/data/widebeam';
+import { salePhases } from '../src/data/sale';
 
 // The durable assertions for /widebeam (lane T of the WIDE BEAM build). Run by the house config (chromium + mobile-safari) against the built preview.
 // Honesty: the page says only what the plugin can back (src/data/widebeam.ts owns the phase and the formats). Behaviour: no errors, the ask's name,
@@ -135,4 +136,26 @@ test.describe('/widebeam behaviour', () => {
     await key.click(); await page.waitForTimeout(600);
     expect(await soundOn(page), 'sound after a second press').toBe(false);
   });
+});
+
+// /widebeam can't be bought yet (src/data/widebeam.ts): on the REAL Black Friday / Cyber Monday dates it carries no sale strip and no
+// html[data-sale] (BaseLayout clears the phase there and leaves <SaleStrip/> out of the markup). The ?sale=bf preview cannot prove this: it is a
+// dev-only switch and never runs the date path. A control page in the same clock must show the phase, or the clock never took.
+test.describe('/widebeam on the sale dates', () => {
+  for (const ph of salePhases) {
+    test(`no sale strip on /widebeam during ${ph.name}`, async ({ page }) => {
+      await page.route(WORKER, (r) => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"ok":true}' }));
+      await page.clock.setFixedTime(new Date((Date.parse(ph.start) + Date.parse(ph.end)) / 2));
+      const read = () => page.evaluate(() => ({
+        sale: document.documentElement.dataset.sale ?? null,
+        shown: [...document.querySelectorAll('.ss,[data-sale-strip]')].filter((e) => getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0).length,
+      }));
+      await page.goto('/', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500);
+      expect((await read()).sale, `the clock took: the home page is in ${ph.name}`).toBe(ph.id);
+      await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3000);
+      const wb = await read();
+      expect(wb.sale, 'html[data-sale] on /widebeam').toBeNull();
+      expect(wb.shown, 'a sale strip shown on /widebeam').toBe(0);
+    });
+  }
 });

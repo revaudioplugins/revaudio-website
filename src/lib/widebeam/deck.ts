@@ -28,7 +28,50 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
   const on = () => mq.matches;
 
   // ── the face above: the live display, inert while the deck holds the controls ──
-  const mode = () => face.root.toggleAttribute('inert', on());
+  // a window that changes between the two (a half window turned portrait, a tablet turned) moves the focus to the same
+  // control on the side that now holds the controls: inert (or hidden) took it away and dropped it on <body>
+  // (r-dash-modefocus)
+  let lastCtl: HTMLElement | null = null;
+  const con = page.querySelector<HTMLElement>('[data-wb-console]');
+  page.addEventListener('focusin', (e) => { const t = e.target as HTMLElement; lastCtl = face.root.contains(t) || deck.contains(t) || !!con?.contains(t) ? t : null; });
+  const SW: Record<string, string> = { high: 'High beam', side: 'Side solo', mono: 'Mono', power: 'Power' };
+  const faceHit = (label: string) => face.root.querySelector<HTMLElement>(`.wb-hit[aria-label="${label}"]`);
+  const twin = (el: HTMLElement): HTMLElement | null => {
+    const k = el.getAttribute('data-wb-deck-k'), sw = el.getAttribute('data-wb-deck-sw');
+    const ps = el.getAttribute('data-wb-deck-step') ?? el.getAttribute('data-wb-step');
+    if (deck.contains(el)) {
+      if (k) return faceHit(KNOBS[k as KnobId].name);
+      if (sw) return faceHit(SW[sw]);
+      if (ps) return faceHit(Number(ps) < 0 ? 'Previous preset' : 'Next preset');
+      return null;
+    }
+    if (face.root.contains(el)) {
+      const label = el.getAttribute('aria-label') || '';
+      const kk = (Object.keys(KNOBS) as KnobId[]).find((x) => KNOBS[x].name === label);
+      if (kk) return deck.querySelector<HTMLElement>(`#wb-deck-${kk}`);
+      const s2 = Object.keys(SW).find((x) => SW[x] === label);
+      if (s2) return deck.querySelector<HTMLElement>(`[data-wb-deck-sw="${s2}"]`);
+      if (label === 'Previous preset' || label === 'Next preset') return deck.querySelector<HTMLElement>(`[data-wb-deck-step="${label[0] === 'P' ? -1 : 1}"]`);
+      return deck.querySelector<HTMLElement>('#wb-deck-width');
+    }
+    // the console's PRESET keys go into the deck while it shows
+    if (ps) return deck.querySelector<HTMLElement>(`[data-wb-deck-step="${ps}"]`);
+    return null;
+  };
+  const gone = (el: HTMLElement) => !el.isConnected || !!el.closest('[inert]') || !el.getClientRects().length;
+  const mode = () => {
+    face.root.toggleAttribute('inert', on());
+    const a = document.activeElement as HTMLElement | null;
+    const from = a && a !== document.body ? a : lastCtl;
+    if (!from || (a && a !== document.body && a !== from)) return;
+    requestAnimationFrame(() => {
+      const now = document.activeElement;
+      if (now && now !== document.body && now !== from) return; // the visitor moved on
+      if (!gone(from)) return; // still there (the console's own keys)
+      const t = twin(from);
+      if (t && !gone(t)) t.focus();
+    });
+  };
   mq.addEventListener?.('change', mode);
   mode();
 
@@ -69,7 +112,9 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
   function bindKnob(box: HTMLElement, input: HTMLInputElement, k: KnobId) {
     type Drag = { id: number; touch: boolean; sx: number; sy: number; x: number; y: number; n: number; mode: 'pending' | 'turn' | 'off'; axis: 'x' | 'y' | 'any'; wasPicked: boolean };
     let p: Drag | null = null;
-    const picked = () => box.classList.contains('is-picked') || document.activeElement === input;
+    // a pick is a tap (is-picked), never focus alone: the hero's hand-off focuses TILT on a phone, and a swipe that then
+    // started on it scrolled the page AND turned it (r-dash-focuspick)
+    const picked = () => box.classList.contains('is-picked');
     const startTurn = (e: PointerEvent) => { try { box.setPointerCapture(e.pointerId); } catch {} box.classList.add('is-turning'); face.drag(k); };
     box.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;

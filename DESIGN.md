@@ -596,3 +596,11 @@ came up with, or it rescales under the finger.
   the 2026-10-18 "no glitches" in one place only: the entrance's motion is unchanged, and the new picture
   locks in with a short tear about one time in three once it is in place (§4). Built as phase 4e;
   design-language §3 gained the exception (a broken object's own faults, small and rare).
+- 2026-11-21 Dan, after he heard /widebeam's sound: "remove the player". The dash's console (his pick D5 A of
+  2026-11-18: a column of the plugin's own parts beside the face at >= 1100 px, a plate under it below) loses TRACK
+  (the four demo clips went with it), its VOLUME fader and the brass engine key ("Start / Stop the engine"); the phone
+  deck loses its TRACK too. What stays: the rear-view mirror, ORIGINAL | WIDE BEAM, MONO CHECK and PRESET, and the SOUND
+  key, "Take it for a drive" and "Use your own track". The sound starts on a touch of the demo or SOUND and plays the
+  synth loop at the fader's old level (-3.9 dB); any start lights the face, as the key did. The shorter column keeps
+  the face's height: the A/B stands over MONO CHECK (the plate's own stacked pair), so the console's strap still meets
+  the face's; under the face the plate is mirror | A/B + MONO CHECK over PRESET.

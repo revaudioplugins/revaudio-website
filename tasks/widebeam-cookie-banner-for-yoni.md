@@ -1,8 +1,38 @@
 # The cookie banner on a sideways phone: a layout fix for Yoni
 
+## APPLIED 2026-11-21 on `feat/widebeam-page` (Dan: "The two failures fix")
+
+Two commits at the end of the banner's `<style>`, CSS only. The wording, the markup and the script are untouched.
+
+- `e401fba`, the block proposed below, capped at 1099 px wide: `(min-width: 601px) and (max-width: 1099px) and
+  (max-height: 500px)`. The cap keeps the component's own rule ("the short line is phone-only"): a short laptop window
+  1100 px or wider keeps the desktop row and the full copy (1141x480: 158 px, fits, as before).
+- `bd8d4ac`, a second block found while measuring, separate so it can be dropped on its own: at 641-1099 px wide (any
+  height) the title moves above the FULL copy and the keys stay on the right, 44 px. An upright iPad had the same bug
+  as the sideways phone: 744-834 px wide gave 80 px of text, 29 lines, a 626 px banner over 52-61 % of the screen, the
+  title running under Decline; a 900x700 window gave 19 lines. The sideways-phone block comes after it and wins there.
+
+Measured after the edit (dev server, fresh visitor, Playwright Chrome + WebKit, /widebeam, / and /drift alike):
+
+| Screen | Before | After |
+|---|---|---|
+| 844 x 390, 740 x 360, 667 x 375 (sideways phones) | 626 px, top -236 / -266 / -251 | 63 px, short line, 2 lines |
+| 932 x 430 (Pro Max, sideways) | 341 px, 15 lines | 63 px, short line, 1 line |
+| 640 x 360 | 233 px | 74 px, short line, 3 lines |
+| 744 x 1133 to 834 x 1194 (upright iPads) | 626 px, 29 lines | 145 px, full copy, 4 lines |
+| 1024 x 768 (iPad sideways), 900-1099 x 700 | 199-463 px | 145 px, full copy, 4 lines |
+| 641 x 900 | (not measured) | 186 px, full copy, 6 lines |
+| 390 x 844, 360 x 740, 620 x 900, 1100 px and wider | | unchanged |
+
+Every key and the Privacy link hit-test to themselves; the keys are 44 px tall in both new layouts. Not seen on a real
+iPhone or iPad. To keep the long text on sideways phones too, delete the `.cb-full` / `.cb-short` lines of the
+sideways block.
+
+## The original note (2026-11-18 / 19)
+
 Written 2026-11-18 by the WIDE BEAM build (lane A), revised 2026-11-19. `src/components/CookieBanner.astro` is Yoni's
-component (`tasks/lessons.md` 2026-10-07: Yoni owns the consent text), so nothing here touches it. This note gives the
-bug, the measurements and a proposed CSS block. The wording stays exactly as it is.
+component (`tasks/lessons.md` 2026-10-07: Yoni owns the consent text), so nothing here touched it then. This note gives
+the bug, the measurements and a proposed CSS block. The wording stays exactly as it is.
 
 The first version of the block was wrong: tested the way a reviewer tests it (injected as a plain style tag), it hid
 ALL the consent text and the Privacy link. Its plain `.cb-short { display: inline }` lost to the component's own

@@ -128,6 +128,21 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
   video.addEventListener('playing', () => { playing = true; clearTimeout(stall); clearTimeout(watchdog); });
   // the selection reached the last <source> and it failed too: there is no film to show or to replay
   last?.addEventListener('error', () => { if (dropped) return; noFilm = true; if (replay) replay.hidden = true; finish(true); });
+  // a <source media> is read once, when the file is picked: a phone turned during the film kept playing the portrait
+  // cut in the landscape hero (5.6x upscaled, r-hero-rotate), or the reverse. A TURN that changes the cut the page
+  // would pick now ends the film as a skip does, and Replay loads the right one. Other resizes play on: a desktop
+  // window across 900 px (720 vs 1080, the same frame), or a phone's toolbar folding away on a scroll (375x553 ->
+  // 375x635 would cross the portrait cut's 3/5 line without a turn).
+  const upright = () => matchMedia('(orientation: portrait)').matches;
+  let wasUpright = upright();
+  window.addEventListener('resize', () => {
+    const turned = upright() !== wasUpright;
+    wasUpright = upright();
+    if (!running || !turned) return;
+    const cur = [...video.querySelectorAll('source')].find((s) => s.src === video.currentSrc);
+    const now = [...video.querySelectorAll('source')].find((s) => !s.media || matchMedia(s.media).matches);
+    if (cur && now && cur.dataset.wbFrame !== now.dataset.wbFrame) finish(true);
+  });
   skip?.addEventListener('click', () => { finish(true); title?.focus({ preventScroll: true }); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && running) finish(true); });
   replay?.addEventListener('click', () => { start(); if (running) skip?.focus({ preventScroll: true }); });

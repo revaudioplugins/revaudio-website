@@ -10,16 +10,30 @@
  * can't back fails the build instead of shipping.
  *
  * LAUNCH DAY, in this order (plan 2026-11-18 §6; nothing below is done yet):
- *  1. Gil: DL_PLUGINS.widebeam in the licence worker + the R2 builds. Then gateWired: true, phase: 'open' (the build
+ *  1. Gil: DL_PLUGINS.widebeam in the licence worker (DONE 2026-11-19, revlimiter-license 0f241f7; gateWired is
+ *     true) + the R2 builds (owed: until /pit-lane ships them the email says "coming soon" per platform). Then
+ *     phase: 'open' (the build
  *     refuses 'open' without the gate). Send the list one email the day the trial opens: the pre-open words promise
  *     it ("One email when the trial opens"), and nothing sends it by itself. Send it to the WHOLE newsletter list
  *     (launchMailToWholeList), or also mail the people who wrote in under "subject WIDE BEAM".
- *  2. Paddle: the price id + priceUsd here, a plugins.ts entry with the same id and price (the build refuses
+ *     - The open-phase consent line promises "a few short getting-started emails": true only while the worker's KV
+ *       campaign:trial-seq is 'on' (its t0 / t2 / t5 emails). Off, the old drip sends one (day 1) and the 3-days-left
+ *       one (day 27): then the line reads "a getting-started email". Check the KV value the day the trial opens.
+ *     - Before the trial opens, fix the worker's WIDE BEAM day-0 email (RevLimiter repo, gumroad-worker/src/worker.js
+ *       ~4411-4416, "At 100 your track is exactly as it was"): false, the side below LOW FOCUS is removed at any WIDTH
+ *       and the dry is allpass-rotated (plan "Read first", Copy). STEPS[0] here has the true words.
+ *  2. Paddle (price id, priceUsd, the plugins.ts entry and OWN_ROUTE: DONE by Gil 2026-11-19, below): the price id +
+ *     priceUsd here, a plugins.ts entry with the same id and price (the build refuses
  *     'released' without it: the cart sells only plugins.ts slugs) and systemReq.formats = formatsLine() (the cart
- *     drawer prints it; no AAX), 'widebeam' in OWN_ROUTE (src/pages/[slug].astro; the build refuses the entry without
+ *     drawer prints it; no AAX. Gil's entry still says 'VST3 + AU + AAX on Mac': fix it before 'released'), 'widebeam' in OWN_ROUTE (src/pages/[slug].astro; the build refuses the entry without
  *     it), then phase: 'released'.
  *     - Once downloads exist, 'released' has to come within 30 days of the first download: the worker's day-31
  *       "KEEP WIDE BEAM" email sends people to this page to pay (guidelines-d03).
+ *     - With the worker's trial sequence on (KV campaign:trial-seq 'on'; SEQ_PLUGINS has widebeam) the first buy ask
+ *       comes on DAY 9: its t9 email says "Every way to keep WIDE BEAM is on the WIDE BEAM page", and t25 / t30 carry a
+ *       KEEP WIDE BEAM key to this page. So 'released' has to come before day 9 of the first download, or WIDE BEAM's
+ *       t9 / t25 / t30 steps are held in the worker (SEQ_STEPS) until it is: in 'open' this page has no way to buy,
+ *       only "Own it · Price coming soon" (r-base-pricelaunch).
  *     - OFFER_PLUGINS.widebeam with buyPath /buy/widebeam/ in the licence worker (RevLimiter repo, guidelines-d02).
  *     - The smoke test asserts /buy/widebeam/ exists.
  *     - The money chain (plan "Read first"): WIDE BEAM's own licence worker deployed (README: "source only"), the
@@ -38,6 +52,15 @@
  *     stays off /widebeam (BaseLayout's pre-paint gate).
  *  Open/released: the trial forms have no no-JS route (the worker's /download/register reads JSON only). Without the
  *  page script their key stays disabled and a <noscript> line says why (askFor().nojs).
+ *
+ * Commerce, wired while the page stays pre-open (Gil 2026-11-19, Paddle product pro_01m7vhb719rzqnagt7vmm03kwh):
+ *   - gateWired true: the trial form posts {email, plugin, marketing} to the worker's /download/register first, which
+ *     emails the download at once (as src/lib/drift/capture.ts does), then joins the list via /form-once. The worker's
+ *     DL_PLUGINS.widebeam opened with revlimiter-license 0f241f7; until /pit-lane ships the builds the email says
+ *     "coming soon" per platform. The worker must be live before this page is, or the register call has no gate.
+ *   - priceUsd + paddlePriceId: BUY NOW adds to the cart and opens it. plugins.ts has the same id and price (the cart
+ *     only checks out slugs it finds there), [slug].astro OWN_ROUTE has 'widebeam', and the plugins.ts entry has no
+ *     `library`, so WIDE BEAM stays off the home TV until it is meant to be listed.
  */
 import { site } from './site';
 
@@ -50,10 +73,10 @@ export const widebeam = {
    *  released = Paddle sells it (buyable()). */
   phase: 'preopen' as WidebeamPhase,
   trialDays: 30, // README "Licence": a silent 30-day trial from the first load
-  priceUsd: null as number | null,
-  paddlePriceId: null as string | null,
+  priceUsd: 9 as number | null, // = the Paddle price ($9.00 USD); the page shows it only in 'released'
+  paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m' as string | null, // keep equal to plugins.ts widebeam
   /** the licence worker has DL_PLUGINS.widebeam + the R2 builds: the forms post to /download/register first */
-  gateWired: false,
+  gateWired: true, // Gil 2026-11-19 (revlimiter-license 0f241f7); pre-open forms never use it (askFor)
   gateId: 'widebeam',
   /** README "Build": "the PACE wcguid for AAX is not created". false takes AAX off the whole page. */
   aaxReady: false,
@@ -115,7 +138,8 @@ export const STEPS: Step[] = [
     n: '05', id: 'wb-step-05', label: 'MONO · CORRELATION', h: 'Check it on a phone speaker. Before your listeners do.',
     // README MONO / SIDE: listening switches, not automatable (makeParameters: withAutomatable(false)); a preset load
     // switches them off (PluginProcessor.cpp onAfterLoad). No TRACTION: removed from the engine in 0.10.0 (README, round 13)
-    p: 'A moving-coil style correlation meter reads the result. MONO sums the output to mono; SIDE solos the stereo side. They are listening checks: the DAW can\'t automate them, and loading a preset switches them off.',
+    // README POWER (bypass): MONO and SIDE act only while POWER is on; POWER off or the DAW's bypass plays the aligned dry
+    p: 'A moving-coil style correlation meter reads the result. MONO sums the output to mono; SIDE solos the stereo side. They are listening checks: the DAW can\'t automate them, and loading a preset switches them off. They act only while POWER is on: POWER off, or the DAW\'s bypass, plays the aligned dry.',
   },
   {
     n: '06', id: 'wb-step-06', label: 'CRUISE', h: 'Wider, not louder.',
@@ -195,15 +219,17 @@ export const FOLDS: Fold[] = [
 export const DASH = {
   head: 'Every knob works.',
   headEm: 'Go wide.',
-  sub: "This is WIDE BEAM's own face, running in your browser. Drag a knob up or down, flip HIGH BEAM, press MONO. Start the engine to hear it.",
+  sub: "This is WIDE BEAM's own face, running in your browser. Drag a knob up or down, flip HIGH BEAM, press MONO. Any one, or SOUND, plays it.",
   /** a touch screen (the phone deck, where WIDTH slides sideways, and any coarse pointer): the coach's own gesture */
-  subTouch: "This is WIDE BEAM's own face, running in your browser. Slide WIDTH to the right, flip HIGH BEAM, press MONO. Start the engine to hear it.",
-  idle: 'Engine off. Start it for a demo loop; headphones help.',
+  subTouch: "This is WIDE BEAM's own face, running in your browser. Slide WIDTH to the right, flip HIGH BEAM, press MONO. A slide, or SOUND, plays it.",
+  idle: 'Sound off. Turn a knob or press SOUND for a demo loop; headphones help.',
   fileNote: 'Your track plays in this tab only. Nothing is uploaded.',
   demoNote: "What you hear is a browser sketch of WIDE BEAM built on the plugin's own laws, not the plugin itself.",
 };
 /** the glove box: one neutral line for mouse and touch (mobile-11) */
 export const GLOVE_SUB = 'Pick one and the knobs on the dash glide to it. The row slides sideways to show all sixteen.';
+/** the same line with JavaScript off: the cards still show each preset's settings, but a pick moves nothing (r-cross-nojs) */
+export const GLOVE_SUB_NOJS = "Each card shows a preset's settings. The row slides sideways to show all sixteen. Picking one needs JavaScript, which is off in this browser.";
 
 /* ---------- the Owner's Manual (stand-by until a film exists; P4 A) ---------- */
 export const manual = {
@@ -244,7 +270,11 @@ export interface Ask {
   /** the forms' <noscript> line (WbGet / WbCloser) once the trial is open: the trial goes out only through the page
    *  script (capture.ts), and the line promises nothing else (r-asks-nojstrial). null pre-open: the forms post natively. */
   nojs: string | null;
+  /** JS on but the page script never bound the trial form (a blocker, a dropped request): its key stays disabled and this
+   *  line shows from 9 s (WbGet / WbCloser, get.css). Open and released phases only: pre-open the forms post natively. */
+  late: string;
 }
+const LATE = "The trial sign-up didn't load. Reload the page, or email info@revaudio.net.";
 export function askFor(phase: WidebeamPhase = widebeam.phase): Ask {
   if (phase === 'preopen') {
     return {
@@ -265,6 +295,7 @@ export function askFor(phase: WidebeamPhase = widebeam.phase): Ask {
       closerNote: 'WIDE BEAM is in final testing. Details can still change before release.',
       metaTail: 'Coming soon from RevAudio.',
       nojs: null,
+      late: LATE,
     };
   }
   // open and released: the trial downloads; the getting-started and trial-end line is true only once the worker's
@@ -287,14 +318,16 @@ export function askFor(phase: WidebeamPhase = widebeam.phase): Ask {
       ? `Free ${widebeam.trialDays}-day trial, then ${fmtUsd(widebeam.priceUsd!)} one-time. From RevAudio.`
       : `Free ${widebeam.trialDays}-day trial from RevAudio.`,
     nojs: 'The trial sign-up needs JavaScript, which is off in this browser.',
+    late: LATE,
   };
 }
 
-/** The buy side of the plate: no key until Paddle has a price (P1 A). */
-export function buyFor() {
-  return buyable()
-    ? { title: fmtUsd(widebeam.priceUsd!), sub: 'one-time · yours to keep', key: `Buy WIDE BEAM · ${fmtUsd(widebeam.priceUsd!)}`, trust: 'No iLok · key by email · 2 computers · 14-day refund' }
-    : { title: 'Own it', sub: 'Price at launch', key: null, trust: null };
+/** The buy side of the plate: no key until Paddle has a price (P1 A). Pre-open it reads "Price at launch" (P1 A). Once
+ *  the trial is out and Paddle isn't, "launch" has already happened for the visitor (the trial opening is what "Email
+ *  me at launch" meant), so 'open' says the price is still to come without the word (r-base-pricelaunch). */
+export function buyFor(phase: WidebeamPhase = widebeam.phase) {
+  if (buyable()) return { title: fmtUsd(widebeam.priceUsd!), sub: 'one-time · yours to keep', key: `Buy WIDE BEAM · ${fmtUsd(widebeam.priceUsd!)}`, trust: 'No iLok · key by email · 2 computers · 14-day refund' };
+  return { title: 'Own it', sub: phase === 'preopen' ? 'Price at launch' : 'Price coming soon', key: null, trust: null };
 }
 
 /** BUY adds to the cart only in 'released' with a Paddle price */

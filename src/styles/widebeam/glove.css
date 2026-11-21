@@ -34,13 +34,22 @@
 .wb-card-name { font: 400 16px/1.2 Georgia, serif; letter-spacing: .1em; text-transform: uppercase; color: #2c2218; }
 .wb-card svg { width: 100%; height: 96px; border-radius: 2px; background: #0a0b0d; box-shadow: 0 0 0 1px rgba(91, 64, 39, .45); }
 .wb-card-beam { opacity: var(--m); }
-/* the values, typed on the card in Courier New: one line at the longest (W 136 · F 1000Hz · M 100%) */
-.wb-card-vals { font: 700 13px/1.3 var(--wb-lcd); letter-spacing: 0; white-space: nowrap; color: #5b4027; }
+/* the values, typed on the card in Courier New under the knobs' own names in small caps (the dash's WIDTH, LOW FOCUS,
+   MIX; one-letter codes read M as MONO, r-road-cardcodes): three columns, one row at the longest (LOW FOCUS 1000 Hz) */
+.wb-card-vals { display: flex; justify-content: space-between; gap: 10px; font: 700 13px/1.3 var(--wb-lcd); letter-spacing: 0; white-space: nowrap; color: #5b4027; }
+.wb-card-vals > span { display: grid; }
+.wb-card-vals small { font: 400 13px/1.2 var(--wb-lcd); letter-spacing: .04em; color: #5b4027; }
 .wb-card-note { font: italic 14px/1.4 Georgia, serif; color: #5b4027; }
 
 /* the picked card: the plugin's own selection band on its name row */
 .wb-card.is-on .wb-card-row { background: rgba(40, 148, 250, .25); box-shadow: inset 3px 0 0 #2894fa; }
 .wb-card.is-on .wb-card-name { color: #10283f; }
+/* forced colours drop the band's tint and its bar: the picked row there wears the system's own selection (Highlight /
+   HighlightText) plus a ring in it, so the pick still shows (r-road-fcpicked); the card's focus ring stays outside */
+@media (forced-colors: active) {
+  .wb-card.is-on .wb-card-row { forced-color-adjust: none; background: Highlight; box-shadow: none; outline: 2px solid Highlight; }
+  .wb-card.is-on .wb-card-n, .wb-card.is-on .wb-card-name { color: HighlightText; }
+}
 
 @media (hover: hover) and (pointer: fine) {
   .wb-card:hover { translate: 0 -1px; box-shadow: inset 0 0 30px #9c7f5530, 0 1px 0 rgba(8, 6, 4, .9), 0 14px 28px rgba(4, 3, 2, .62); }
@@ -56,4 +65,7 @@
 @media (prefers-reduced-motion: reduce) {
   .wb-card, .wb-card::after { transition: none; }
 }
-html.hc .wb-card-note, html.hc .wb-card-vals { color: #2c2218; }
+html.hc .wb-card-note, html.hc .wb-card-vals, html.hc .wb-card-vals small { color: #2c2218; }
+
+/* JavaScript off: a pick moves nothing, so the sub line that promises the glide gives way to its <noscript> twin (r-cross-nojs) */
+@media (scripting: none) { .wb-glove-sub { display: none; } }

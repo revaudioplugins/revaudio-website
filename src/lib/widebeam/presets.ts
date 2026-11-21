@@ -8,14 +8,15 @@
  */
 import type { Store } from './state';
 import type { Face } from './face';
-import { driveTo } from './drive-to';
+import { driveTo, driveDestination } from './drive-to';
 import { lenis, reducedMotion } from '../motion';
 
 // a keyboard pick's hand-off on an upright phone: the drive lands the face at the top and the deck's "Next preset" under
 // it can sit below the fold (preventScroll then leaves the focus ring off screen; the face is inert there, D7 B). Then
-// bring the deck's rows from that control down to its last key up into the band between the nav and the bottom stack
+// bring the deck's rows from that control down to the next Tab stop (the console's ORIGINAL | WIDE BEAM under the deck,
+// since the deck's TRACK keys went with the player, 2026-11-21) up into the band between the nav and the bottom stack
 // (the phone bar / --wb-lift, and the page's scroll-padding-bottom, which is what the browser's own Tab scroll uses), so
-// the focus ring shows and the next Tabs (the TRACK keys) need no jump. By a number through the page's Lenis (instant
+// the focus ring shows and the next Tab needs no jump. By a number through the page's Lenis (instant
 // under reduced motion). On a laptop the face's control is already in the band: nothing moves.
 function bringUp(c: HTMLElement) {
   const html = document.documentElement, cs = getComputedStyle(html);
@@ -27,8 +28,10 @@ function bringUp(c: HTMLElement) {
   const bottom = innerHeight - lift - 12;
   const g = (c.closest<HTMLElement>('[role="group"]') ?? c).getBoundingClientRect();
   if (g.top >= top && g.bottom <= bottom) return; // in the band already (the laptop's face)
-  const last = [...(c.closest('[data-wb-deck]')?.querySelectorAll<HTMLElement>('button, input, a[href]') ?? [])].pop();
-  const end = Math.max(g.bottom, last ? last.getBoundingClientRect().bottom : 0);
+  const deck = c.closest('[data-wb-deck]');
+  const last = [...(deck?.querySelectorAll<HTMLElement>('button, input, a[href]') ?? [])].pop();
+  const next = deck ? document.querySelector<HTMLElement>('[data-wb-console] [data-wb-ab][tabindex="0"]') : null;
+  const end = Math.max(g.bottom, ...[last, next].map((n) => (n?.getClientRects().length ? n.getBoundingClientRect().bottom : 0)));
   const dy = end > bottom ? Math.min(end - bottom, g.top - top) : g.top - top;
   if (Math.abs(dy) < 1) return;
   const to = Math.max(0, Math.min(html.scrollHeight - innerHeight, scrollY + dy));
@@ -71,14 +74,19 @@ export function initPresets(page: HTMLElement, store: Store, face: Face, dash: H
     if (want !== i) return;
     want = -1; clearTimeout(fallback);
     face.loadPreset(i);
-    // where the drive left the page: a visitor who scrolls on before the focus move is never pulled back
+    // where the drive left the page, and whether that is where it aimed (the dash): a visitor who took over mid-drive
+    // (the arrival fires where they stopped, drive-to.ts) or scrolls on before the focus move keeps their place and their
+    // focus. A focus moved to a control far off screen would make the next Space step the preset out of sight and the
+    // next Tab pull the page back (r-road-focusaway); the hand-off is only for a visitor still at the dash.
     const key = byKey, landed = scrollY;
+    // (40 px of slack: a late layout shift or a nudge at the end still counts as at the dash)
+    const atDash = !dash || Math.abs(landed - driveDestination(dash, 'face').y) < 40;
     setTimeout(() => {
-      if (!untouched()) return;
+      if (!atDash || Math.abs(scrollY - landed) >= 3 || !untouched()) return;
       const c = presetControl();
       if (!c) return;
       c.focus({ preventScroll: true });
-      if (key && Math.abs(scrollY - landed) < 3) bringUp(c);
+      if (key) bringUp(c);
     }, GLIDE_MS);
   };
   cards.forEach((b) => b.addEventListener('click', (e) => {
@@ -97,9 +105,11 @@ export function initPresets(page: HTMLElement, store: Store, face: Face, dash: H
     // its ring at the edge), so the lane brings it in whole itself, sideways only (the page never moves), to the next card
     // start (the snap points), with the lane's own 14 px of room so the ring clears. Keyboard focus only: a mouse focuses
     // the card it presses, and moving the lane under the pointer would break the drag and the click.
-    lane.addEventListener('focusin', (e) => {
-      const c = e.target as HTMLElement;
-      if (!c.matches?.('[data-preset]') || !c.matches(':focus-visible')) return;
+    // Measured and started two frames after the focus: WebKit's own focus handling cancels a smooth scroll started inside
+    // focusin (the card stayed a 35 % sliver in Safari, r-road-lanewebkit), and by then its own focus scroll, if any, has
+    // already moved the lane, so a card it brought in whole is left alone.
+    const bringIn = (c: HTMLElement) => {
+      if (document.activeElement !== c) return;
       const pad = 14, L = lane.getBoundingClientRect(), r = c.getBoundingClientRect();
       const over = r.right + pad - L.right, under = r.left - pad - L.left;
       if (over <= 0 && under >= 0) return; // whole already
@@ -109,6 +119,11 @@ export function initPresets(page: HTMLElement, store: Store, face: Face, dash: H
       const need = lane.scrollLeft + (over > 0 ? over : under);
       const to = over > 0 ? (snaps.find((s) => s >= need - 1) ?? max) : ([...snaps].reverse().find((s) => s <= need + 1) ?? 0);
       lane.scrollTo({ left: Math.max(0, Math.min(max, to)), behavior: reducedMotion() ? 'auto' : 'smooth' });
+    };
+    lane.addEventListener('focusin', (e) => {
+      const c = e.target as HTMLElement;
+      if (!c.matches?.('[data-preset]') || !c.matches(':focus-visible')) return;
+      requestAnimationFrame(() => requestAnimationFrame(() => bringIn(c)));
     });
     // drag the lane sideways with a mouse; touch scrolls natively
     let x0 = 0, s0 = 0, down = false, moved = false;

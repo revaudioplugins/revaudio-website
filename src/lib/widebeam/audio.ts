@@ -6,11 +6,11 @@
  *       │            └─ HP@focus (LR4) ─ velvet decorrelator ─ −6 dB < 1.2 kHz ─ REACH ─┐│
  *       └─ S = (L−R)/2 ─ HP@focus (LR4) ─ TILT shelves ─ WIDTH ──────────────────────────┴┘
  *       └───────────────────────────────────────────────────────────────────────────────── dry (× 1−MIX, or all of it with POWER off)
- *   wet + dry ─ MONO / SIDE (on the blend) ─ master ─ limiter ─ −0.3 dBFS ceiling ─┬─ (the meter tap: CORR, the mirror) ─ VOLUME ─ out
+ *   wet + dry ─ MONO / SIDE (on the blend) ─ master ─ limiter ─ −0.3 dBFS ceiling ─┬─ (the meter tap: CORR, the mirror) ─ monitor ─ out
  *
  * The limiter and the ceiling sit after the A/B, so ORIGINAL (POWER off) and WIDE BEAM go through the same output, and no
  * setting clips (demo-d02). The beam is the plugin's: its amount (0.5 at REACH 100) and halved below 1.2 kHz, which keeps
- * HIGH BEAM's lean inside the plugin's own 1-2 dB (demo-14). VOLUME is the page's monitor level: the plugin has no fader.
+ * HIGH BEAM's lean inside the plugin's own 1-2 dB (demo-14). The monitor level is the page's own (sound.ts: fixed at -3.9 dB).
  *
  * It is a demo of what the controls do, not the plugin's DSP: no allpass-aligned dry, no attack ducking on HIGH BEAM.
  */
@@ -54,7 +54,7 @@ export class WideBeamEngine {
   input: GainNode;
   analyserL: AnalyserNode;
   analyserR: AnalyserNode;
-  /** the very end of the chain (after VOLUME); connected to the context's destination */
+  /** the very end of the chain (after the monitor level); connected to the context's destination */
   output: GainNode;
   private master: GainNode;
   private nodes: Record<string, any> = {};
@@ -138,7 +138,7 @@ export class WideBeamEngine {
     this.output = gain(1, false);
     monitored.connect(this.master).connect(limiter).connect(pre).connect(shaper).connect(post).connect(this.output).connect(ctx.destination);
 
-    // the meter tap: after the ceiling, before VOLUME (the mirror and CORR read the sound, not the monitor level)
+    // the meter tap: after the ceiling, before the monitor level (the mirror and CORR read the sound, not the monitor level)
     const meterSplit = ctx.createChannelSplitter(2);
     post.connect(meterSplit);
     this.analyserL = ctx.createAnalyser(); this.analyserR = ctx.createAnalyser();
@@ -178,7 +178,7 @@ export class WideBeamEngine {
 
   get params() { return this.p; }
 
-  /** VOLUME, the page's own monitor level, in dB (-60 and below = silent; never above 0). */
+  /** The page's own monitor level, in dB (-60 and below = silent; never above 0). */
   setVolume(db: number) {
     const g = db <= -60 ? 0 : Math.pow(10, Math.min(0, db) / 20);
     this.output.gain.setTargetAtTime(g, this.ctx.currentTime, T);
@@ -204,7 +204,7 @@ export class WideBeamEngine {
   stop() { this.source?.stop(); this.source = null; }
   get playing() { return !!this.source; }
   /** what plays (or would play on start): the loop or the last file / clip */
-  get sourceName() { return this.current.kind === 'demo' ? (this.current.name ?? 'Night Drive loop') : this.current.name; }
+  get sourceName() { return this.current.kind === 'demo' ? (this.current.name ?? 'Synth loop') : this.current.name; }
   get sourceKind() { return this.current.kind; }
 
   /** Pick what plays; if something is playing it switches at once. */
@@ -336,7 +336,13 @@ function nightDrive(ctx: AudioContext, dest: AudioNode) {
   // an OfflineAudioContext (a test render) has no clock to tick on: schedule its whole length up front
   const offline = typeof OfflineAudioContext !== 'undefined' && ctx instanceof OfflineAudioContext;
   let next = ctx.currentTime + 0.08, i = 0;
-  const tick = () => { const until = offline ? (ctx as unknown as OfflineAudioContext).length / ctx.sampleRate : ctx.currentTime + 0.6; while (next < until) { schedBar(next, i++); next += bar; } };
+  // a timer held back past the look-ahead (a stalled main thread, a clamped background timer) never books the bars it
+  // missed into the past, where they all fire at once: the loop picks up at the next bar after now (r-dash-scheduler)
+  const tick = () => {
+    if (!offline && next < ctx.currentTime) { const miss = Math.ceil((ctx.currentTime - next) / bar); next += miss * bar; i += miss; }
+    const until = offline ? (ctx as unknown as OfflineAudioContext).length / ctx.sampleRate : ctx.currentTime + 0.6;
+    while (next < until) { schedBar(next, i++); next += bar; }
+  };
   tick();
   const timer = offline ? 0 : window.setInterval(tick, 150);
   return {

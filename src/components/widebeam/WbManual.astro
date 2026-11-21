@@ -60,11 +60,11 @@ const note = !film
     : 'A chapter starts the film at that step, or takes you to that step of the stereo road above.';
 const paras = (m.transcript ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 ---
-<!-- ============ THE OWNER'S MANUAL (D6 A) ============ -->
+{/* ============ THE OWNER'S MANUAL (D6 A) ============ */}
 <section id="manual" class="wb-manual" data-wb-manual aria-labelledby="wb-manual-h">
   <header class="wb-head wb-manual-head" data-reveal="fade">
     <p class="wb-eyebrow">The {m.title}</p>
-    <h2 id="wb-manual-h">Every control, <em>chapter by chapter.</em></h2>
+    <h2 id="wb-manual-h">The controls, <em>chapter by chapter.</em></h2>
   </header>
   <div class="wb-manual-row" data-reveal="fade">
     <div class="wb-manual-film">
@@ -91,13 +91,13 @@ const paras = (m.transcript ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(
           {film === 'self' && (
             <div class="wb-manual-end" data-wb-manual-end hidden>
               <p>{ask.manualLine}</p>
-              <a class="rv-btn" href="#wb-get" data-wb-manual-ask>{ask.key}</a>
+              <a class="rv-btn" href="#wb-get" data-wb-manual-ask>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></a>
               <button type="button" class="wb-manual-again" data-wb-manual-again>&#8635; Watch again</button>
             </div>
           )}
         </div>
       </div>
-      <p class="wb-manual-ask" data-wb-cta data-wb-ask data-wb-manual-line>{ask.manualLine} <a href="#wb-get">{ask.key}</a></p>
+      <p class="wb-manual-ask" data-wb-cta data-wb-ask data-wb-manual-line>{ask.manualLine} <a href="#wb-get">{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></a></p>
       {paras.length > 0 && (
         <details class="wb-manual-transcript">
           <summary>Read the transcript</summary>

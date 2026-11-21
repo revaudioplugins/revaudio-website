@@ -1,7 +1,11 @@
 # WIDE BEAM page: handoff for Dan (2026-11-17)
 
 From Gil, built with Claude Code on Gil's Mac. Branch **`feat/widebeam-page`** (pushed, NOT merged, NOT live).
-Route **`/widebeam`**, unlisted: `noindex`, not in `plugins.ts`, nothing links to it.
+Route **`/widebeam`**, unlisted: `noindex`; in `plugins.ts` as `in-development` with no `library`, so it is off the
+home TV, /buy and /support, and nothing links to it.
+
+**Update 2026-11-19 (Gil):** BUY NOW and the trial gate are wired (commit `7a92522`), and the license hub is deployed
+with both (`0f241f7`). See "Open" below.
 
 ## Try it
 
@@ -19,7 +23,7 @@ back. Click anywhere to start the music.
 | Section | What it does | Code |
 |---|---|---|
 | Hero | Higgsfield video: a GT coupe sweeps past and drives off down the road. Title comes up at 5 s. On the last frame it dissolves into that frame with the car painted out; a canvas carries the tail lights into the vanishing point. | `src/lib/widebeam/intro.ts`, `night.ts`, `public/widebeam/intro-{1080,720}.mp4`, `src/assets/widebeam/intro-{poster,end}.jpg` |
-| Get it | Free 30-day trial email + BUY NOW (placeholder, see below) | `src/data/widebeam.ts`, `bindSignup()` in `init.ts` |
+| Get it | Free 30-day trial (posts to the download gate) + BUY NOW $9 (Paddle) | `src/data/widebeam.ts`, `bindSignup()` in `init.ts` |
 | The dash | WideBeam's real face, live: every knob, TILT wheel, HIGH BEAM / SIDE switches, MONO, POWER rocker, presets, LCDs, lamps, road beams, correlation needle. Plus START THE ENGINE, "use your own track", a goniometer. | `face.ts`, `audio.ts` |
 | The stereo road | Scroll story, 6 steps (WIDTH, LOW FOCUS, HIGH BEAM, TILT, MONO/CORRELATION, CRUISE) on a road of pan × frequency | `story.ts` |
 | Glove box | The 16 factory presets as cards; a click glides the dash's knobs to it | `state.ts` (`PRESETS`) |
@@ -48,23 +52,22 @@ Fixed SOUND pill bottom-right. Keys: H high beam, M mono, S side, P power, [ ] p
 
 ## Open: what it needs before it can go live
 
-1. **Paddle.** No WideBeam product/price exists, so BUY NOW is a placeholder that explains. Note: `sale.ts` on main
-   (`713f6b3`, today) lists "Wide Beam ($9)" in the BF/CM bundle. To go live: set `priceUsd` + `paddlePriceId` in
-   `src/data/widebeam.ts`; add a WideBeam entry to `src/data/plugins.ts` with the same id and price (the cart only
-   checks out slugs it finds there); add `'widebeam'` to `OWN_ROUTE` in `src/pages/[slug].astro` (else the generic
-   page fights this one for `/widebeam`); keep it off the home TV / store until it should be listed (copy how
-   `revfx.ts` `listed` does it). The button then renders `data-add-to-cart data-cart-open`, which adds and opens the
-   drawer (checked with identical markup pointed at RevFX).
-2. **Trial gate.** `gateWired: false`: the trial form only joins the list (`/form-once`, source `widebeam-trial`) and
-   promises the link when the trial opens. Flip it once the revlimiter-license worker has `DL_PLUGINS.widebeam` and the
-   builds are in R2; the form then posts `{email, plugin: 'widebeam', marketing}` to `/download/register` first. The
-   WideBeam repo's own `license-worker` is not deployed (`REPLACE_WITH_WIDEBEAM_SEATS_ID`).
+1. **Paddle: done 2026-11-19.** Price `pri_01m7vhcdt6t1dtpbyn9g1mx00m` ($9, product `pro_01m7vhb719rzqnagt7vmm03kwh`) is in
+   `src/data/widebeam.ts` and the `plugins.ts` entry; `'widebeam'` is in `OWN_ROUTE`. BUY NOW adds WIDE BEAM to the
+   cart at $9.00. Paddle refuses checkout on localhost ("blocked for this vendor"; RevFX gets the same), so the
+   first real checkout test is on revaudio.net after the merge. The hub's `PADDLE_PRICE_MAP` mints the key on sale.
+2. **Trial gate: done 2026-11-19.** `gateWired: true`; the form posts `{email, plugin: 'widebeam', marketing}` to
+   `/download/register` first (hub `DL_PLUGINS.widebeam`, live), then joins the list. Until a build is shipped from
+   /pit-lane the email and portal say COMING SOON, no dead links. Builds still to upload, then BUILDS_LIVE on the
+   widebeam-license worker. Still open: the home TV (`library`) and status `live` when it should be listed; a Paddle
+   bundle product if the BF/CM bundle should check out in one go (`sale.ts` has no bundle checkout).
 3. **Cloudflare cache rule.** `widebeam/` joined `FOLDERS` in `tools/assetver/integration.mjs` (the videos get
    `?v=<hash>`), but the long-cache rule in the Cloudflare dashboard does not list it yet. Until it does the videos
    keep the 10-minute cache. Nothing breaks.
 4. **Real devices.** Tested in Playwright Chromium + WebKit on macOS, 1440×900 and 390×844, no page errors. Not tested:
    real iPhone Safari (intro autoplay + the gesture-started audio), Windows, Firefox.
-5. **Formats line** under BUY NOW says "Mac VST3 · AU · AAX · Windows VST3" (WideBeam README). Confirm AAX ships.
+5. **Formats line** under BUY NOW says "Mac VST3 · AU · AAX · Windows VST3". AAX stays (Gil, 2026-11-19), but the
+   0.10.x handoff builds have an **unsigned** AAX: it must be PACE-signed (wraptool) before the pkg ships.
 
 ## Touched outside the page
 

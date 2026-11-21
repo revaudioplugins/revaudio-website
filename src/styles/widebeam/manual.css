@@ -3,7 +3,8 @@
    (WideBeam Source/ui/cards.css #infoCard: the cream stock, the oxblood band, Georgia and Courier New).
    At 1141x636 the title, the frame and the strap share one screen (video-d02): the glass is 16:9, at most 600 px wide and
    no taller than the screen leaves under the nav, the title and the plate's own chrome. */
-.wb-manual { padding: var(--wb-gap) 16px 0; }
+/* the sides clear a phone's notch held sideways (930 px class: the row is two columns there, r-road-manualnotch), as the story does */
+.wb-manual { padding: var(--wb-gap) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
 /* /widebeam/#manual (the plugin's MANUAL button, D14) lands on the title, not on the gap above it: the html's
    scroll-padding (nav + .75rem) + this = the title under the nav, the frame and its strap on the same screen */
 #manual { scroll-margin-top: calc(var(--wb-gap) * -1 + 4px); }
@@ -86,7 +87,9 @@
 .wb-manual-card a b { font: 700 15px var(--wb-lcd); color: #7d2b22; }
 .wb-manual-card a span { font: 400 14px/18px Georgia, serif; letter-spacing: .08em; text-transform: uppercase; }
 .wb-manual-card a em { grid-column: 2; font: italic 13px/17px Georgia, serif; color: #5b4027; }
-.wb-manual-card a::after { content: '›'; grid-column: 3; grid-row: 1; font: 700 16px Georgia, serif; color: #7d2b22; }
+/* the chevron is drawn, not read: its alt text is empty, so a chapter's name ends at its title (r-hero-glyphname); a browser
+   without the alt form keeps the first line */
+.wb-manual-card a::after { content: '›'; content: '›' / ''; grid-column: 3; grid-row: 1; font: 700 16px Georgia, serif; color: #7d2b22; }
 .wb-manual-card a:focus-visible { outline: 2px solid #7d2b22; outline-offset: 2px; border-radius: 2px; }
 @media (hover: hover) and (pointer: fine) {
   .wb-manual-card a:hover span { color: #7d2b22; }

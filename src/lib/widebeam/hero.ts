@@ -70,12 +70,29 @@ export function initHero(page: HTMLElement, store: Store, reduced: boolean) {
     e.stopPropagation(); // Lenis's anchor jump listens on window: one mover
     // on arrival the keyboard comes along: the dash's first control a visitor can reach (the face's on a laptop, the
     // deck's on an upright phone, where the face is inert, D7 B), without a scroll. Left alone if focus moved meanwhile.
+    // Keyboard activation only (detail 0, as presets.ts): Chrome focuses a link on a mouse click too, and a pointer
+    // visitor's next Space must page down, not step the preset under a focus they never saw.
+    const byKey = e.detail === 0;
     driveTo(dash, { align: 'face', onArrive: () => {
-      if (document.activeElement !== key) return;
+      if (!byKey || document.activeElement !== key) return;
       const first = [...dash.querySelectorAll<HTMLElement>(FOCUSABLE)].find((el) => el.getClientRects().length > 0 && !el.closest('[inert],[hidden],[aria-hidden="true"]') && !(el as HTMLButtonElement).disabled);
       first?.focus({ preventScroll: true });
     } });
   }));
+
+  // one sign-up is the done state on every surface (capture.ts): the trial key goes, and the drive takes back the one
+  // shine key it is before the trial opens (D1 B), so the hero never keeps asking for an email it already has
+  page.addEventListener('wb:joined', () => {
+    const trial = hero.querySelector<HTMLAnchorElement>('.wb-hero-keys a[href="#wb-get"]');
+    const drive = hero.querySelector<HTMLAnchorElement>('.wb-hero-keys .wb-hero-drive');
+    if (!trial || !drive) return;
+    trial.hidden = true;
+    drive.className = 'rv-btn rv-btn--lg rv-btn--shine';
+    const face = document.createElement('span');
+    face.dataset.face = '';
+    face.textContent = drive.textContent;
+    drive.replaceChildren(face);
+  }, { once: true });
 
   if (!reduced) {
     // scrolling away dims the readings; text never moves with the scroll (motion-14)

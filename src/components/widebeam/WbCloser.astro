@@ -21,7 +21,7 @@ const native = !ask.registerUrl; // pre-open only: the one no-JS route that does
 // a drum strip holds 0-9 twice, so a roll can turn each drum a full revolution; at rest (and with no JS) the first set
 const STRIP = [...'01234567890123456789'];
 ---
-<!-- ============ THE CLOSER: runs on your setup + the one ask ============ -->
+{/* ============ THE CLOSER: runs on your setup + the one ask ============ */}
 <section class="wb-closer" id="wb-notify" aria-labelledby="wb-closer-h">
   <div class="wb-closer-plate wb-plate wb-plate--badge" data-reveal="fade">
     <i class="wb-closer-lamp wb-part-lamp-l" aria-hidden="true"></i>
@@ -58,6 +58,7 @@ const STRIP = [...'01234567890123456789'];
             <button type="submit" class="rv-btn" disabled={!native}><span data-face>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></span></button>
           </form>
           {!native && ask.nojs && <noscript><p class="wb-get-status err">{ask.nojs}</p></noscript>}
+          {!native && <p class="wb-get-status err wb-get-late">{ask.late}</p>}
           <p class="wb-get-status" id="wb-notify-status" data-wb-status role="status" aria-live="polite" tabindex="-1"></p>
           <p class="wb-get-notice" id="wb-notify-consent">{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
         </div>
@@ -77,7 +78,7 @@ const STRIP = [...'01234567890123456789'];
       </div>
 
       <div class="wb-closer-side">
-        <!-- one odometer: the real numbers are the text ([data-odo]); the drums beside them are decoration -->
+        {/* one odometer: the real numbers are the text ([data-odo]); the drums beside them are decoration */}
         <ul class="wb-odo" role="list">
           {ODOMETER.map((o) => (
             <li class="wb-odo-cell">

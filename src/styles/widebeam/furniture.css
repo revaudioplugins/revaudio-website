@@ -47,7 +47,13 @@ body:has(.wb-page) .site-footer { margin-bottom: var(--wb-banner, 0px); }
   .wb-sound:hover { color: var(--ivory); border-color: var(--brass); }
 }
 .wb-sound[aria-pressed='true'] { color: var(--ivory); border-color: var(--brass); }
-.wb-sound:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+/* a two-tone ring: dark bands on both sides of the brass, so it holds over the dark sections (13:1) and over the
+   manual's cream chapter card on phones, where the brass alone was 1.3-1.55:1 (r-asks-soundring). The inner band fills
+   the 3 px offset, the outer one sits just past the outline; the drop shadow stays last */
+.wb-sound:focus-visible {
+  outline: 2px solid var(--brass-hi); outline-offset: 3px;
+  box-shadow: 0 0 0 3px #0e0c0a, 0 0 0 7px #0e0c0a, 0 8px 22px rgba(4, 3, 2, .5);
+}
 .wb-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
 .wb-eq i { width: 2px; height: 3px; border-radius: 1px; background: var(--brass-hi); }
 .wb-sound[aria-pressed='true'] .wb-eq i { animation: wb-eq .9s ease-in-out infinite alternate; }
