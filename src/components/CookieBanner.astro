@@ -322,4 +322,23 @@
       --rb-r: 12px;
     }
   }
+
+  /* ── A phone held sideways (601–1099px wide, ≤500px tall): one slim row, the title, the phone's short line, then
+     the keys. The desktop row has no room there: its text was squeezed to 80px, 29 lines, a 626px banner in a 390px
+     screen with its top off the screen (Dan, 2026-11-21: "fix"). Every selector starts with #cookie-banner so the
+     block also wins when a test injects it as a plain style tag. ── */
+  @media (min-width: 601px) and (max-width: 1099px) and (max-height: 500px) {
+    #cookie-banner .cb-inner {
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      padding: 0.55rem max(1.2rem, env(safe-area-inset-right, 0px)) 0.55rem max(1.2rem, env(safe-area-inset-left, 0px));
+    }
+    #cookie-banner .cb-text { flex-direction: row; align-items: center; gap: 0.9rem; }
+    #cookie-banner .cb-title { order: -1; margin-left: 0; font-size: 1.15rem; letter-spacing: 0.06em; white-space: nowrap; }
+    #cookie-banner .cb-full { display: none; }
+    #cookie-banner .cb-short { display: inline; }
+    #cookie-banner .cb-body { font-size: 0.82rem; line-height: 1.4; }
+    #cookie-banner .cb-actions { display: flex; gap: 0.6rem; }
+    #cookie-banner .cb-btn { --rb-h: 44px; --rb-px: 16px; --rb-fs: 15px; --rb-r: 12px; }
+  }
 </style>
