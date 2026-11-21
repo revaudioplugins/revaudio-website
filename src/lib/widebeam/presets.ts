@@ -13,9 +13,10 @@ import { lenis, reducedMotion } from '../motion';
 
 // a keyboard pick's hand-off on an upright phone: the drive lands the face at the top and the deck's "Next preset" under
 // it can sit below the fold (preventScroll then leaves the focus ring off screen; the face is inert there, D7 B). Then
-// bring the deck's rows from that control down to its last key up into the band between the nav and the bottom stack
+// bring the deck's rows from that control down to the next Tab stop (the console's ORIGINAL | WIDE BEAM under the deck,
+// since the deck's TRACK keys went with the player, 2026-11-21) up into the band between the nav and the bottom stack
 // (the phone bar / --wb-lift, and the page's scroll-padding-bottom, which is what the browser's own Tab scroll uses), so
-// the focus ring shows and the next Tabs (the TRACK keys) need no jump. By a number through the page's Lenis (instant
+// the focus ring shows and the next Tab needs no jump. By a number through the page's Lenis (instant
 // under reduced motion). On a laptop the face's control is already in the band: nothing moves.
 function bringUp(c: HTMLElement) {
   const html = document.documentElement, cs = getComputedStyle(html);
@@ -27,8 +28,10 @@ function bringUp(c: HTMLElement) {
   const bottom = innerHeight - lift - 12;
   const g = (c.closest<HTMLElement>('[role="group"]') ?? c).getBoundingClientRect();
   if (g.top >= top && g.bottom <= bottom) return; // in the band already (the laptop's face)
-  const last = [...(c.closest('[data-wb-deck]')?.querySelectorAll<HTMLElement>('button, input, a[href]') ?? [])].pop();
-  const end = Math.max(g.bottom, last ? last.getBoundingClientRect().bottom : 0);
+  const deck = c.closest('[data-wb-deck]');
+  const last = [...(deck?.querySelectorAll<HTMLElement>('button, input, a[href]') ?? [])].pop();
+  const next = deck ? document.querySelector<HTMLElement>('[data-wb-console] [data-wb-ab][tabindex="0"]') : null;
+  const end = Math.max(g.bottom, ...[last, next].map((n) => (n?.getClientRects().length ? n.getBoundingClientRect().bottom : 0)));
   const dy = end > bottom ? Math.min(end - bottom, g.top - top) : g.top - top;
   if (Math.abs(dy) < 1) return;
   const to = Math.max(0, Math.min(html.scrollHeight - innerHeight, scrollY + dy));

@@ -900,7 +900,7 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   // the soft snap (D.5): a scroll that comes to rest near the dash settles it where a drive lands it (snap.ts)
   initSnap(faceEl);
 
-  // the engine key turns the key in the dash: it lights the face (once the art is in)
+  // any start of the sound turns the key in the dash (sound.ts start): it lights the face (once the art is in)
   const ignite = () => { if (!holdCold) face.ignite(); };
   return { face, ignite, dash };
 }

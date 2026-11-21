@@ -20,7 +20,7 @@ export function initKeys(page: HTMLElement, store: Store, face: Face, reduced: b
     const bracket = e.key === '[' || e.key === ']';
     if (bracket ? e.ctrlKey && !e.altKey : e.ctrlKey || e.altKey) return;
     const t = e.target as HTMLElement;
-    // (a range takes no letters: the phone deck's knobs and VOLUME are dash controls like the face's)
+    // (a range takes no letters: the phone deck's knobs are dash controls like the face's)
     if (t.closest('input:not([type=range]), textarea, select, [contenteditable], iframe, video, [data-wb-manual]')) return;
     const s = store.get();
     const act: Record<string, () => void> = {

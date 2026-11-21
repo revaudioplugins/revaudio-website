@@ -38,12 +38,11 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
   const faceHit = (label: string) => face.root.querySelector<HTMLElement>(`.wb-hit[aria-label="${label}"]`);
   const twin = (el: HTMLElement): HTMLElement | null => {
     const k = el.getAttribute('data-wb-deck-k'), sw = el.getAttribute('data-wb-deck-sw');
-    const ps = el.getAttribute('data-wb-deck-step') ?? el.getAttribute('data-wb-step'), ts = el.getAttribute('data-wb-track-step');
+    const ps = el.getAttribute('data-wb-deck-step') ?? el.getAttribute('data-wb-step');
     if (deck.contains(el)) {
       if (k) return faceHit(KNOBS[k as KnobId].name);
       if (sw) return faceHit(SW[sw]);
       if (ps) return faceHit(Number(ps) < 0 ? 'Previous preset' : 'Next preset');
-      if (ts) return con?.querySelector<HTMLElement>(`[data-wb-track-step="${ts}"]`) ?? null;
       return null;
     }
     if (face.root.contains(el)) {
@@ -55,9 +54,8 @@ export function initDeck(page: HTMLElement, store: Store, face: Face) {
       if (label === 'Previous preset' || label === 'Next preset') return deck.querySelector<HTMLElement>(`[data-wb-deck-step="${label[0] === 'P' ? -1 : 1}"]`);
       return deck.querySelector<HTMLElement>('#wb-deck-width');
     }
-    // the console's PRESET and TRACK keys go into the deck while it shows
+    // the console's PRESET keys go into the deck while it shows
     if (ps) return deck.querySelector<HTMLElement>(`[data-wb-deck-step="${ps}"]`);
-    if (ts) return deck.querySelector<HTMLElement>(`[data-wb-track-step="${ts}"]`);
     return null;
   };
   const gone = (el: HTMLElement) => !el.isConnected || !!el.closest('[inert]') || !el.getClientRects().length;

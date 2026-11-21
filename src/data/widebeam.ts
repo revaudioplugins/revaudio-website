@@ -219,10 +219,10 @@ export const FOLDS: Fold[] = [
 export const DASH = {
   head: 'Every knob works.',
   headEm: 'Go wide.',
-  sub: "This is WIDE BEAM's own face, running in your browser. Drag a knob up or down, flip HIGH BEAM, press MONO. Start the engine to hear it.",
+  sub: "This is WIDE BEAM's own face, running in your browser. Drag a knob up or down, flip HIGH BEAM, press MONO. Any one, or SOUND, plays it.",
   /** a touch screen (the phone deck, where WIDTH slides sideways, and any coarse pointer): the coach's own gesture */
-  subTouch: "This is WIDE BEAM's own face, running in your browser. Slide WIDTH to the right, flip HIGH BEAM, press MONO. Start the engine to hear it.",
-  idle: 'Engine off. Start it for a demo loop; headphones help.',
+  subTouch: "This is WIDE BEAM's own face, running in your browser. Slide WIDTH to the right, flip HIGH BEAM, press MONO. A slide, or SOUND, plays it.",
+  idle: 'Sound off. Turn a knob or press SOUND for a demo loop; headphones help.',
   fileNote: 'Your track plays in this tab only. Nothing is uploaded.',
   demoNote: "What you hear is a browser sketch of WIDE BEAM built on the plugin's own laws, not the plugin itself.",
 };
