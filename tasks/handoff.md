@@ -1,4 +1,4 @@
-## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page`, NOT pushed
+## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page` (the branch itself NOT pushed); PUSHED for team QA as `qa/widebeam-page-1121` on 2026-11-21 (Dan's word), NOT on main
 
 Claim: OPEN (Dan, 2026-11-18: "fix the code ... review it and fix whatever you see fit, then we continue with the design").
 Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`, `tasks/widebeam-polish-plan-2026-11-18.md`, one line of
@@ -88,7 +88,21 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
   - Waiting on Dan (design): the intro film's bytes, only if the final G11 still fails (keep the film and move the bar,
     or a lighter encode: `team/build/fix-cross/film-pick/index.html`, B drops some faint stars). Device checks: turn a
     real phone while typing in the closer's field; VoiceOver on the deck; iPad B softness on a real iPad.
-  - The cookie banner at 844x390 also covers the hero's Skip (G6) and, at 932x430, the hero key: the same Yoni fix.
+  - Dan, 2026-11-21, "The two failures fix": the cookie banner is fixed on this branch, CSS only, the wording and the
+    script untouched (Yoni owns the consent text). `e401fba`: a phone held sideways (601-1099 px wide, 500 px tall or
+    less) gets one slim row with the phone's short line (844x390: 626 -> 63 px, top -236 -> 327). `bd8d4ac`, separate so
+    it can be dropped: the title above the full copy at 641-1099 px wide (an upright iPad: 626 -> 145 px, 4 lines).
+    Measured on /widebeam, / and /drift in Chrome and WebKit; 1100 px and wider and upright phones unchanged. Yoni's
+    note says "applied" now (`tasks/widebeam-cookie-banner-for-yoni.md`). Not seen on a real sideways iPhone.
+  - Dan, 2026-11-21, "send an agent to push the branch to qa": `qa/widebeam-page-1121` = `bd8d4ac` + origin/main
+    `2851c19` (merge `7b3e9ba`, the `qa/drift-page-1005` pattern), pushed by an Opus agent, nothing forced; build green
+    (34 pages); Dan's look served from the QA worktree (scratchpad `team/qa/wt`) on 127.0.0.1:4394. GitHub Pages builds
+    main only, so the branch has no web address. It holds the page up to the banner fix, not round 3 (still running).
+    - NOT in it: Gil's two commits on origin/feat/widebeam-page from 2026-11-19, `7a92522` (BUY NOW $9 via Paddle
+      `pri_01m7vhcdt6t1dtpbyn9g1mx00m`, the trial form posting to the download gate, a cart entry in plugins.ts,
+      `widebeam` in OWN_ROUTE) and `3c91404` (its handoff). This branch never took them in; they clash in
+      `src/data/widebeam.ts`, `src/pages/[slug].astro` and `src/pages/widebeam.astro`. Next, after the run: merge
+      origin/feat/widebeam-page in, re-run the gates (the trial form's flow changes with `gateWired: true`), refresh qa.
   - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
     plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
     film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE
@@ -101,8 +115,8 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     scripts into the repo. Dan's stills page, after hunt round 2 (21 Nov): https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs
   - Owed by others, unchanged: Gil (Paddle price, licence worker + hub line, signed builds on R2, the trial download,
     a real test purchase; and on Nov 22 his `sale.ts` line takes "Wide Beam" out of the bundle with OBDTune), Ilay
-    (MANUAL -> /widebeam/#manual), a partner (the film), Yoni (Cloudflare long-cache rule; the cookie banner on
-    sideways phones, write-up coming from lane A). At launch someone sends the list "one email the day the trial
+    (MANUAL -> /widebeam/#manual), a partner (the film), Yoni (Cloudflare long-cache rule; a look at the banner fix
+    in `tasks/widebeam-cookie-banner-for-yoni.md`). At launch someone sends the list "one email the day the trial
     opens" (the page promises it; nothing sends it automatically).
 
 ## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
