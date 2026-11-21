@@ -8,6 +8,11 @@ import { salePhases } from '../src/data/sale';
 // Everything is scoped to [data-wb-page] (the footer, the cart catalogue and the legal modal are site furniture and name AAX for other plugins).
 
 const WORKER = /workers\.dev|cloudflareinsights/;
+// the stub: the licence worker gets JSON; the Cloudflare beacon (a <script> on a production build) gets an empty script, since JSON parsed as JS
+// is a page error ("Unexpected token ':'") that the page itself never has
+const stub = (r: import('@playwright/test').Route) => /cloudflareinsights/.test(r.request().url())
+  ? r.fulfill({ status: 200, contentType: 'application/javascript', body: '' })
+  : r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"ok":true}' });
 
 // The one known dev-only noise: the Astro dev toolbar's script answers 403 on a dev server (node_modules is outside Vite's allow list). A built preview
 // has no such request, so the filter is off unless the scratch config (tests are run against `astro dev`) sets WB_DEV_NOISE=1.
@@ -16,7 +21,7 @@ const isDevNoise = (text: string, url = '') => process.env.WB_DEV_NOISE === '1' 
 async function open(page: Page, path = '/widebeam', wait = 2400) {
   const errors: string[] = [];
   // the licence worker and analytics are never reached: a stub answers
-  await page.route(WORKER, (r) => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"ok":true}' }));
+  await page.route(WORKER, stub);
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !isDevNoise(m.text(), m.location().url)) errors.push('console: ' + m.text()); });
   page.on('response', (r) => { if (r.status() >= 400 && !isDevNoise('', r.url()) && !WORKER.test(r.url()) && !/paddle|googletagmanager|google-analytics|fonts\.g/.test(r.url())) errors.push(`http ${r.status()}: ${r.url()}`); });
@@ -144,7 +149,7 @@ test.describe('/widebeam behaviour', () => {
 test.describe('/widebeam on the sale dates', () => {
   for (const ph of salePhases) {
     test(`no sale strip on /widebeam during ${ph.name}`, async ({ page }) => {
-      await page.route(WORKER, (r) => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"ok":true}' }));
+      await page.route(WORKER, stub);
       await page.clock.setFixedTime(new Date((Date.parse(ph.start) + Date.parse(ph.end)) / 2));
       const read = () => page.evaluate(() => ({
         sale: document.documentElement.dataset.sale ?? null,
