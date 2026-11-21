@@ -5,6 +5,8 @@
 
      /garage-9f3c/          room.html: the bench (T), ?lights=demo, ?lights=calm ... all work
      /garage-9f3c/<file>    what the room loads: street.js, lights/lights-on.js, layouts/, vendor/, assets/
+     /garage-9f3c/tv-photo.js   the home page's garage loads it, not the room: its photo of its own TV for the
+                            room's TV (src/components/HomeOpening.astro), with vendor/modern-screenshot/
 
    Hidden = unlisted, not private: nothing links to it, it is not in the sitemap (only Astro's own pages are), and its
    head says noindex. The repo is public, so anyone reading it can find the path.
@@ -22,7 +24,7 @@ import { join } from 'node:path';
 const ROOM = fileURLToPath(new URL('../_home-opening/', import.meta.url));
 const LENIS = fileURLToPath(new URL('../../node_modules/lenis/', import.meta.url));
 const PATH = 'garage-9f3c';
-const FILES = ['street.js', 'lights/lights-on.js'];
+const FILES = ['street.js', 'lights/lights-on.js', 'tv-photo.js'];
 const DIRS = ['layouts', 'vendor', 'assets'];
 const SKIP = /(\.(md|mjs|py)|\.DS_Store)$/; // layouts' rationale notes
 

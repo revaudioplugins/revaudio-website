@@ -1,10 +1,14 @@
-// The room's pictures of the homepage (CAPS in room.html): the TV (the first screen under the nav), the nav, and the
-// page below the TV, per screen size, from a homepage that is live (default https://revaudio.net/) or served locally.
-// The room shows them until it becomes the homepage itself; re-run when the home TV changes (Dan 11-11: "the main TV is
-// not updated to the current TV"), then the loading pictures (lights/render.mjs: bank 1 is the TV).
+// The room's saved pictures of the homepage (CAPS in room.html): the TV (the first screen under the nav), the nav, and
+// the page below the TV, per screen size, from a homepage that is live (default https://revaudio.net/) or served locally.
+// Where they show: on the room's own page (/garage-9f3c/), and in the loading screen's pictures (lights/render.mjs:
+// bank 1 is the TV). On the home page the room's TV is NOT one of these any more (2026-11-21): the page photographs
+// its own TV in the visitor's browser, at the visitor's window size, and hands the room that (tv-photo.js, which
+// HomeOpening.astro loads); the saved TV photo there is only the stand-in until that photo is taken, or if it
+// fails. Re-run when the home TV changes (Dan 11-11: "the main TV is not updated to the current TV"), then the loading
+// pictures.
 //   node tools/_home-opening/tvcap.mjs [--url https://revaudio.net/] [--only 1141x636]
 // The sale strip over the nav (src/data/sale.ts: "Black Friday in ..." from Nov 20, then Black Friday, Cyber Monday)
-// moves the TV 46 px down and lays it out for a shorter screen; the room in the home page's frame shows its own set then:
+// moves the TV 46 px down and lays it out for a shorter screen; the room in the home page's frame has its own set for then:
 //   node tools/_home-opening/tvcap.mjs --url http://127.0.0.1:4804/?home=tv --at 2026-11-28T12:00:00-08:00 --suffix sale
 // --at <ISO date> = the page's clock (its sale state); --suffix <name> writes only tv-<w>x<h>-<name>.webp (never the nav
 // or below pictures). The TV's top is read from the page (--site-nav-h + --sale-h).

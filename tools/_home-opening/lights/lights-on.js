@@ -45,7 +45,8 @@
   };
   const base = pic('base.webp', 'lo-base', true);
   const baseIn = base.decode().catch(() => {});
-  // a bank drawn per screen width (the TV: its picture follows the room's CAPS): the one the room will pick, the nearest
+  // a bank drawn per screen width (the TV: its picture follows the room's CAPS): the saved photo the room would pick, the
+  // nearest (on the home page the room then shows the page's own photo of its TV, room.html liveTv)
   const capOf = (caps) => caps.reduce((a, t) => (Math.abs(+t.split('x')[0] - innerWidth) < Math.abs(+a.split('x')[0] - innerWidth) ? t : a));
   const L = banks.map((b, i) => {
     const el = pic(`bank-${i + 1}${b.caps ? '@' + capOf(b.caps) : ''}.webp`, 'lo-bank');

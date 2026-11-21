@@ -15,7 +15,10 @@ first visit of a session; after that soft rises, no flicker).
    RevAudio": inside the dark room's picture it faded up from black with it, readable only after 0.6 to 0.8 s).
 2. The TV at the end of the aisle comes on first (Dan 11-09: "the small lcd screen to light up first"): standby, the
    backlight on a dark panel, the picture; its glow on the end wall, the desk and the wet floor. Its picture is drawn
-   per screen width (`bank-1@1141x636.webp` ...), the one the room's TV will show (CAPS), so the hand-off is the same.
+   per screen width (`bank-1@1141x636.webp` ...), the saved photo the room's TV shows on its own page (CAPS), so the
+   hand-off is the same. On the home page the room's TV is the page's own photo of its TV (room.html, liveTv): the
+   same TV laid out for the visitor's window, so between the saved sizes the small TV's insides shift a few px at
+   the hand-off (2026-11-21; at 1312x734 the TV is 68 px wide there).
 3. The shop light by the door: its ends glow, it tries twice, it strikes.
 4. The violet strip buzzes on, then the magenta one: the room appears (the exposure catches up: a short overexposure).
 5. The four hanging lamps warm up, front to back toward the TV (the trouble light and the clamp lamp with theirs).

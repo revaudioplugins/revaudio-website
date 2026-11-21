@@ -7,6 +7,9 @@
 // It inherits this page's origin and CSP (the same policy the room already runs under on its own URL).
 // At the end of the walk the room's TV face covers the screen under the nav, exactly where the real TV (WordWall)
 // sits, and the real TV fades in over it; past that point the frame is hidden and paused.
+// The picture on the room's TV is this page's own TV, photographed here in the visitor's browser while the room loads
+// (the script's "the room's picture of the TV", 2026-11-21), so the two are the same picture at any window size; the
+// room's saved photos of the TV (tools/_home-opening/tvcap.mjs, three screen sizes) show until it is taken, or if it fails.
 //
 // Who sees it: laptops and desktops (1000 px wide, a mouse or trackpad, WebGL 2), no reduced motion, no data saver,
 // no bot. Half of them, drawn once and kept (localStorage ra-home); phones keep today's home page (Dan 2026-11-08).
@@ -227,6 +230,16 @@
     scrollTo(0, 0);
     measure();
     note('started');
+    // the room's picture of the TV: this page photographs its own TV while the room loads (tv-photo.js, with the why
+    // and the how, and the library it uses; both beside the room's files, fetched together, run in this order, only
+    // here). window.__hoTv says how it went (the checks read it). Either file missing: the room keeps its saved photo
+    window.__hoTv = { state: 'waiting' };
+    ['vendor/modern-screenshot/modern-screenshot-4.7.0.js', 'tv-photo.js'].forEach(function (f, i) {
+      var s = document.createElement('script'); s.src = '/garage-9f3c/' + f; s.async = false;
+      s.onerror = function () { window.__hoTv = { state: 'failed', why: 'no ' + f }; };
+      if (i) s.onload = function () { try { window.__hoTvPhoto(frame, navTotal); } catch (e) { window.__hoTv = { state: 'failed', why: String(e && e.message || e) }; } };
+      document.head.appendChild(s);
+    });
     fetch('/garage-9f3c/', { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (html) {
@@ -243,7 +256,7 @@
           .replace(/<head[^>]*>/i, function (m) { return m + head; })
           // the room's pictures of this page's nav, TV and below are not shown here; and the browser's early fetches in
           // a srcdoc ignore its <base> (Chrome asked /assets/..., /lights/... at the root), so the rest go absolute
-          .replace(/ src="assets\/(nav|below|tv)-[^"]*"/g, '') // (and the TV's picture in the page's size comes from the room's resize())
+          .replace(/ src="assets\/(nav|below|tv)-[^"]*"/g, '') // (the TV's saved photo for this screen's width comes from the room's resize(); this page's own photo of its TV takes its place, tv-photo.js)
           .replace(/ src="(assets|lights|vendor)\//g, ' src="/garage-9f3c/$1/');
       })
       .catch(fallback);

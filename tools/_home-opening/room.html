@@ -143,7 +143,10 @@
           the lit props on its circuit (LIT with a light); w = its share of the room's fill (the hemisphere, the reflections) */
           window.LIGHT_BANKS = [
             { id: 'tv', kind: 'screen', w: 0.15,                   // the TV at the end of the aisle first (Dan 11-09: "the small lcd screen to light up first");
-              caps: ['1141x636', '1440x900', '1920x1080'] },       //   its picture per screen width, the TV's own captures (CAPS): the hand-off shows the same one
+              caps: ['1141x636', '1440x900', '1920x1080'] },       //   its picture per screen width, from the TV's saved photos (CAPS): the one the room's own page shows at the
+                                                                   //   hand-off. The home page's room shows the page's own photo of its TV (liveTv): the same TV as laid out for
+                                                                   //   this window, on a TV 5 % of the screen wide there (68 px at 1312): at a window size between the saved ones
+                                                                   //   its insides sit a few px differently from the loading picture's
             { id: 'shop', kind: 'tube', props: ['N02'] },          // the twin-tube shop light by the door, one tube dying
             { id: 'neonL', kind: 'neon' },                         // the violet strip, left
             { id: 'neonR', kind: 'neon' },                         // the magenta strip, right
@@ -468,7 +471,11 @@ function remember() {
 }
 const save = () => { if (CAPTURE != null || EMBED) return; if (LAYOUT) { remember(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
 
-// the live TV, captured per screen size (r = the bezel's corner radius, px)
+// the home page's TV, photographed per screen size (tvcap.mjs; r = the bezel's corner radius, px). On the home page
+// these saved photos are the stand-in: the page photographs its own TV on the visitor's screen and hands that over
+// (liveTv, below), since the TV is laid out by the window's width and height and its small type by the browser, and a
+// saved photo fits only the size it was taken at (2026-11-21: at 1312x734 the lock jumped). A saved photo shows on
+// the room's own page, in the loading screen's pictures, and on the home page until its photo arrives (or if it fails)
 const CAPS = [
   { w: 1141, nav: 41, tag: '1141x636', navW: 1141, r: 34 },
   { w: 1440, nav: 41, tag: '1440x900', navW: 1440, r: 34 },
@@ -695,6 +702,35 @@ let cap = null;
 const L = {};      // layout numbers
 const R = {};      // the room's parts, made once
 const tvImg = new Image();
+let tvPic = tvImg; // the picture on the TV: a saved photo (tvImg, CAPS) or the home page's own photo of its TV (liveTv)
+// The home page's own photo of its TV (HomeOpening.astro, 2026-11-21): the TV as this visitor's browser draws it on this
+// screen, so the lock lands on the same picture at any window size. window.__garageTv(pic, { w, h, nav }): pic = a
+// canvas, the page from the nav down to the end of the screen, the TV face's own area at the lock (the saved photos
+// start 1 px higher, and that row is squeezed in); w x h = the screen it was taken on, CSS px; nav = the page's nav
+// (+ sale strip). It is that screen's picture only: after a resize the saved
+// photo is back until the page sends the new one. It goes up where the change can't be seen: before the room is on
+// show (the usual visit: the page has it a second or more before the room is ready) or while the page has the room
+// hidden (past the lock); or where it is small: while the TV is far down the aisle, under TV_FAR of the screen's width
+// (off the saved sizes the TV's insides re-arrange there, in one frame, on a TV 68 to 131 px wide on a 1312 px screen).
+// One that comes later than that waits for the room to be hidden (takeLiveTv, asked every frame)
+let liveTv = null;
+const TV_FAR = 0.1; // (the first 45 % of the walk: the TV is 5 % of the screen's width at the door, 10 % there)
+const liveFits = () => !!liveTv && Math.abs(liveTv.cap.w - innerWidth) <= 1 && Math.abs(liveTv.h - innerHeight) <= 1; // (a zoomed browser rounds the two a px apart)
+// a photo handed over now would go up at once (the page asks, window.__garageTvNow: it hurries one that still can)
+const tvSwapNow = () => !R.liveAt || embed.paused || document.hidden
+  || L.faceW / (2 * walkDist(progress) * L.th) <= TV_FAR; // (the TV's share of the screen's width from where the camera stands)
+function takeLiveTv() {
+  if (!liveTv || !cap || cap === liveTv.cap || !liveFits() || !tvSwapNow()) return;
+  setCap(liveTv.cap);
+}
+if (EMBED) window.__garageTvNow = () => !cap || tvSwapNow();
+if (EMBED) window.__garageTv = (pic, o) => {
+  if (!pic || !pic.width || !o || !(o.w > 0 && o.h > 0)) return false;
+  if (liveTv?.pic === pic) return true;
+  liveTv = { pic, h: o.h, cap: { w: o.w, nav: o.nav, tag: `${o.w}x${o.h}`, navW: o.w, r: pickCap(o.w).r, live: true } };
+  takeLiveTv(); // (before the room's first layout there is no cap yet: resize() takes it)
+  return true;
+};
 
 // ---------- canvas textures (seeded, so a texture never changes under a slider) ----------
 function canvasTex(w, h, draw, wrap = true) {
@@ -820,11 +856,12 @@ const signTex = (halo) => canvasTex(1400, 340, (g) => { // halo: only the glow r
   g.strokeStyle = '#ffd9c4'; g.lineWidth = 5; g.strokeText('REVAUDIO', 700, 180);
 }, false);
 function applyTvTexture() {
-  // the captured live TV with the bezel's round corners cut out
-  if (!R.tv || !tvImg.complete || !tvImg.naturalWidth) return;
-  const c = document.createElement('canvas'); c.width = tvImg.naturalWidth; c.height = tvImg.naturalHeight;
+  // the TV's photo (a saved one, or the home page's own) with the bezel's round corners cut out
+  const w = tvPic.naturalWidth || tvPic.width, h = tvPic.naturalHeight || tvPic.height;
+  if (!R.tv || !w || (tvPic === tvImg && !tvImg.complete)) return;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d'), k = c.width / cap.w;
-  g.beginPath(); g.roundRect(0, 0, c.width, c.height, cap.r * k); g.clip(); g.drawImage(tvImg, 0, 0);
+  g.beginPath(); g.roundRect(0, 0, c.width, c.height, cap.r * k); g.clip(); g.drawImage(tvPic, 0, 0);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   R.tv.faceMat.map?.dispose?.(); R.tv.faceMat.map = t; R.tv.faceMat.needsUpdate = true;
 }
@@ -2345,18 +2382,28 @@ function placeShots() {
 function resize() {
   const vw = innerWidth, vh = innerHeight;
   L.vw = vw; L.vh = vh;
-  const c = (TVCAP && CAPS.find((x) => x.tag === TVCAP)) || pickCap(vw);
-  if (c !== cap) {
-    cap = c;
-    tvImg.src = `assets/tv-${c.tag}${EMBED_SALE && c !== CAPS[3] ? '-' + EMBED_SALE : ''}.webp`;
-    $('tvLive').src = tvImg.src;
-    if (!EMBED) { // (the home page shows its own nav and sections)
-      $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
-      $('belowImg').src = `assets/below-${c.navW}.webp`;
-    }
-  }
+  const c = (TVCAP && CAPS.find((x) => x.tag === TVCAP)) || (liveFits() ? liveTv.cap : pickCap(vw)); // (the page's own photo, if it is this screen's)
+  if (c !== cap) setCap(c);
   setBuffer();
   layoutCamera(); arrange(); benchFit();
+}
+// the TV's photo: a saved one by the screen's width, or the home page's own (liveTv)
+function setCap(c) {
+  cap = c;
+  if (c.live) {
+    tvPic = liveTv.pic; applyTvTexture();
+    $('tvLive').src = `data:,live-${c.tag}`; // (a name, not a picture: the home page's own photo is a canvas, and the flat TV is not shown there, html.embed)
+  } else {
+    tvPic = tvImg;
+    tvImg.src = `assets/tv-${c.tag}${EMBED_SALE && c !== CAPS[3] ? '-' + EMBED_SALE : ''}.webp`;
+    $('tvLive').src = tvImg.src;
+    if (tvImg.complete) applyTvTexture(); // (back from the page's photo to a saved one that is in already; else its load puts it up)
+  }
+  if (!EMBED) { // (the home page shows its own nav and sections)
+    $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
+    $('belowImg').src = `assets/below-${c.navW}.webp`;
+  }
+  R.lockDrawn = false; // (at the lock the room has stopped drawing: its one frame again, with this photo)
 }
 // the drawing buffer: the recipe's laptop budget, a 3.7 MP buffer at most; GOV.k < 1 only on a machine the governor
 // found too slow at the door (weak machines only, see GOV)
@@ -2582,6 +2629,7 @@ function frame(now) {
   if (!reduced && R.modelAnims) { const dt = Math.min(0.1, (now - (R.animAt || now)) / 1000); for (const a of R.modelAnims) a.o.rotation[a.axis] = a.speed != null ? a.o.rotation[a.axis] + a.speed * dt : a.amp * Math.sin(now / 1000 * a.freq); } R.animAt = now; // the models' fans and reels
   const e = easeIO(clamp(progress), S.ease), far = 1 - e;
   const locked = progress >= 0.999;
+  if (liveTv && cap !== liveTv.cap) takeLiveTv(); // the page's photo of its TV came while the TV was large on screen: up once it is small again
   if (R.carLook) R.carLook.tick(!!S.engine); // the car's frame for its wear shaders, its tail lamps
   $('tvLive').classList.toggle('is-on', locked);
 
@@ -3046,7 +3094,7 @@ addEventListener('keydown', (ev) => {
 });
 let resizeTimer = 0;
 addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); });
-tvImg.addEventListener('load', applyTvTexture);
+tvImg.addEventListener('load', () => { if (tvPic === tvImg) applyTvTexture(); });
 
 // fonts first (the sign and the labels are drawn with them) and every texture, then the room, once; the models' bytes
 // come down as soon as the textures are in (prefetchModels)
@@ -3377,7 +3425,9 @@ if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - 
 else t0 = performance.now();
 R.liveAt = R.handoffAt || t0; // the live room's clock starts (liveClock)
 if (EMBED) { // the page drives the walk from here on (src/components/HomeOpening.astro)
-  window.__garage = { to: (p) => { embed.to = clamp(p) * L.walkPx; }, jump: (p) => jumpTo(clamp(p) * L.walkPx), pause: (b) => { embed.paused = !!b; }, get walkPx() { return L.walkPx; } };
+  // (tv: the page's own photo of its TV, see liveTv; window.__garageTv takes one before the room is built too. A photo
+  // that waits goes up as the page hides the room)
+  window.__garage = { to: (p) => { embed.to = clamp(p) * L.walkPx; }, jump: (p) => jumpTo(clamp(p) * L.walkPx), pause: (b) => { embed.paused = !!b; if (b) takeLiveTv(); }, tv: window.__garageTv, get walkPx() { return L.walkPx; } };
   embedSay('ready', { walkPx: L.walkPx });
 }
 if (LIGHTS != null) { t0 -= 1e5; window.__lightsReady = true; } // a light capture: every envelope done (lights/render.mjs)
