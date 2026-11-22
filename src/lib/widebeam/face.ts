@@ -709,7 +709,10 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
     // sees. In-between WIDTH tiers come out heavier than the full file (0.8 = 458 KB), so the ladder stays as it is.
     const SLACK = 0.99;
     let need = NEED[p] * hooks.scale() * dpr * SLACK;
-    if (p === 'toggle') { const bat = document.querySelector<HTMLElement>('[data-wb-bat]'); if (bat) need = Math.max(need, bat.getBoundingClientRect().width * dpr * SLACK); }
+    // the console's bat switch draws the same strip: its layout width (offsetWidth), not its rect, which the dash's rise
+    // (rotateX 14 in perspective, below) still swells to 97.3 px for the 96 px bat as the art is picked at 1100 px and up:
+    // 0.65 px over the 192 px frame, and the 256 px file put 48 KB on the full visit (G11's 3.3 MB bar) for a bat at 1:1
+    if (p === 'toggle') { const bat = document.querySelector<HTMLElement>('[data-wb-bat]'); if (bat) need = Math.max(need, bat.offsetWidth * dpr * SLACK); }
     // the phone deck draws the same strips bigger: one file per strip serves both (its frame is the deck's box, at 2x
     // at most: a 3x phone gets 2x art, -5 % so the 75 % WIDTH tier's 288 px frame covers a 150 px knob)
     if (deckOn()) page.querySelectorAll<HTMLElement>(`[data-wb-deck-art="${p}"]`).forEach((el) => { need = Math.max(need, el.getBoundingClientRect().width * Math.min(dpr, 2) * 0.95); });
