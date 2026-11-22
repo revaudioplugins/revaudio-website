@@ -16,7 +16,8 @@
  * The cart FAB (<= 700 px, the house CartFab): rides the stack; off the edge while the cart is empty (CSS), and over a
  *   watched block, an ask, the phone deck ([data-wb-deck] while deckOn()) or the footer (html.wb-fab-aside).
  * The phone bar ([data-wb-bar], <= 900 px): askFor().sticky; away while any [data-wb-cta], the manual
- *   ([data-wb-manual]) or the footer is on screen (a sign-up form counts while its key is whole on screen or any of its
+ *   ([data-wb-manual]; with a film only: in stand-by the bar stays up over the manual's frame and line) or the footer is
+ *   on screen, in the band under the nav (a sign-up form counts while its key is whole on screen or any of its
  *   email field is: the closer's field enters from the bottom edge, where the bar sits), while the visitor drives the
  *   phone deck (until the dash has left the screen), while an email field has
  *   focus, after a sign-up (html[data-wb-joined], capture.ts) and (CSS) while the cookie banner is up. Its key goes to
@@ -157,8 +158,15 @@ export function initFurniture(page: HTMLElement, store: Store, reduced: boolean)
         if (on) hits.add(e.target); else hits.delete(e.target);
       }
       setBar();
-    }, { threshold: [0, 1] });
-    const zones = [...ctas(), ...manuals(), ...(footer ? [footer] : [])].flatMap((z) => {
+    // (the band under the nav: a field or key behind the nav is not on screen; Dan's page map, 2026-11-22, put the plate
+    // right above the manual, and its field under the nav held the bar away there)
+    }, { threshold: [0, 1], rootMargin: `-${Math.round(navH())}px 0px 0px 0px` });
+    // the manual in stand-by (no film yet: no player to clear, the frame shows one line): the bar stays up over its
+    // frame and the line under it (Dan's page map, 2026-11-22: without the road the manual was 5 of the phone's 26
+    // scroll steps with no ask in view, G9). With a film, both hold the bar away again.
+    const standby = !page.querySelector('[data-wb-manual-glass][data-film]');
+    const skip = (z: HTMLElement) => standby && (z.matches('.wb-manual-frame, [data-wb-manual-line]'));
+    const zones = [...ctas(), ...manuals(), ...(footer ? [footer] : [])].filter((z) => !skip(z)).flatMap((z) => {
       if (!z.matches('form')) return [z];
       const k = z.querySelector<HTMLElement>('[type="submit"]'), f = z.querySelector<HTMLElement>('input[type="email"]');
       if (k) keyOf.set(k, true);

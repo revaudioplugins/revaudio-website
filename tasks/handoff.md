@@ -110,7 +110,9 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
     stereo road are cut (files kept; bring back = two lines in widebeam.astro + one in widebeam.css). The manual's
     chapters drive to the dash; its note says "the dash above". The art look-ahead starts on the first scroll (G11's
-    first view). Gate rows for the two cut sections SKIP while they are off the page. Superseded by the map (dated
+    first view). Gate rows for the two cut sections SKIP while they are off the page. Phone bar: up over the dash now
+    (before the plate), and up over the stand-by manual (G9 fell to 61.5 % without it; 80.8-84.6 % with it, one step
+    of headroom on WebKit 390): two "Email me at launch" on that screen, the manual line's and the bar's. Superseded by the map (dated
     2026-11-22): plan:87 the plate under the hero, plan:105-107 the glove box under the dash, the road per D4 C /
     plan:108-112, the manual note "the stereo road above", D2 B's body-copy rule (plan:9). Open for Dan: D2 B's two facts
     (the side below LOW FOCUS removed at any WIDTH; MIX under 100 blends the dry back) now show only behind the closed
