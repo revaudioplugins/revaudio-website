@@ -2,7 +2,11 @@
 // "while the user is loading, the amount of loading = a dark room turning into a lit room, as if someone turned on the
 // light ... I want it to feel real"). Each bank is a picture of its own light (assets/lights/bank-<n>.webp: the room
 // with banks 1..n minus the room with 1..n-1, rendered by lights/render.mjs) added over the dark room (base.webp) with
-// plus-lighter: light adds, so every step is the room as rendered. The room's script reports the load
+// plus-lighter: light adds, so every step is the room as rendered. The pictures come in sets (window.LIGHT_SETS, in the
+// room's markup; assets/lights/<set>/): this screen takes the one drawn at the resolution nearest the one the live room
+// draws here, so the hand-off does not change the picture's sharpness. The REVAUDIO sign is its own picture
+// (assets/lights/sign.webp, an <img> in the room's markup): on from the first painted frame, under the dark room,
+// which fades up over it and shows the same sign (Dan 11-18). The room's script reports the load
 // (lightsOn.progress 0..1); bank i comes on at its share, pure progress (Dan's pick), the way its kind does: a tube
 // strikes, a neon buzzes on, a bulb warms up, the gear powers on; a camera in the dark: grain, and the exposure catching
 // up when the first lights strike. Opacity only, so the compositor plays it while the 3D compiles. Flashes: at most one
@@ -16,7 +20,13 @@
   const root = document.getElementById('lights');
   if (!root) return;
   if (/[?&]capture=/.test(location.search)) { root.remove(); return; }
-  const banks = window.LIGHT_BANKS || [], dir = root.dataset.dir || '', q = new URLSearchParams(location.search).get('lights');
+  const banks = window.LIGHT_BANKS || [], q = new URLSearchParams(location.search).get('lights');
+  // this screen's set: by the rows of the room's drawing buffer (the height x the room's pixel ratio, roomRatio: the
+  // look's resolution follows them), the nearest by ratio; the same on a resize (the loading screen is short)
+  const rows = (w, h, d) => h * (window.roomRatio ? window.roomRatio(w, h, d) : 1), mine = rows(innerWidth, innerHeight, devicePixelRatio);
+  const far = (s) => Math.abs(Math.log(rows(...s.ref) / mine));
+  const set = (window.LIGHT_SETS || []).reduce((a, s) => (!a || far(s) < far(a) ? s : a), null);
+  const dir = (root.dataset.dir || '') + (set ? set.tag + '/' : '');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches, demo = q === 'demo';
   let again = false;
   try { again = sessionStorage.getItem('ra:lightsOn') === '1'; sessionStorage.setItem('ra:lightsOn', '1'); } catch (e) {}
@@ -161,5 +171,5 @@
     if (readyCalls || (now - heard < STALL && now - t0 < CAP)) return;
     clearInterval(giveUp); note('give-up'); progress.real = true; progress(1); document.documentElement.classList.remove('lights-loading');
   }, 1000);
-  window.lightsOn = { progress, ready: (...a) => { clearInterval(giveUp); return ready(...a); }, handoff, log, calm };
+  window.lightsOn = { progress, ready: (...a) => { clearInterval(giveUp); return ready(...a); }, handoff, log, calm, set: set && set.tag };
 })();
