@@ -1,4 +1,4 @@
-## 2026-11-22 — "Black Friday in" countdown strip on every page, not just home (Claude Code `revaudio-eb`, Yoni's laptop 2) — on branch `feat/bf-skin-sitewide`, NOT on main (push to main = live deploy, waits for Yoni's word)
+## 2026-11-22 — "Black Friday in" countdown strip on every page, not just home (Claude Code `revaudio-eb`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-22 on Yoni's word "push" (`193d459`, rebased onto `2851c19`); deploy run 45016020586 success (incl. Cloudflare cache clear), smoke run 45016020692 success
 
 Claim: CLOSED 2026-11-22 `revaudio-eb`. Files: `src/layouts/BaseLayout.astro` (sale gate), `src/components/SaleStrip.astro` + `src/data/sale.ts` (comments), this entry.
 - Yoni: "theres the black friday skin - but its only in the homepage - lets make it pernament on every page".
@@ -10,6 +10,7 @@ Claim: CLOSED 2026-11-22 `revaudio-eb`. Files: `src/layouts/BaseLayout.astro` (s
 - Checks: `npm run build` green (33 pages). `astro preview` + Playwright Chromium, real clock (Nov 22): 10 pages (`/`, `/plugins/`,
   `/revlimiter/`, `/drift/`, `/radio-roulette/`, `/revfx/`, `/about/`, `/support/`, `/review/`, `/blog/`) x 1280x665 + 390x844
   DPR2 = 20/20: strip visible at top (46 / 42 px), nav under it, odometer ticking, no sideways scroll, no page errors.
+- Live check on revaudio.net after the deploy: the same 10 pages x 2 viewports = 20/20 PASS (Chromium).
 - Also this session: the website `.git` had lost `pack-bd733105….pack` again (Drive sync); copied back from the Recycle Bin,
   `verify-pack` + `fsck --connectivity-only` clean. The main clone (`revaudio-website`, 180 behind) still holds
   `revaudio-99`'s uncommitted 2026-11-04 entry in `tasks/handoff.md`; left untouched.
