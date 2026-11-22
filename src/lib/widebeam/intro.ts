@@ -3,12 +3,17 @@
  * headlights and drives off down the road. The title comes up as it leaves; on the last frame the video dissolves
  * into the live road and the canvas carries the tail lights on to the horizon (night.ts).
  *
+ * It plays at RATE x (Dan, 2026-11-22: "make the car scene go faster"): the 8.04 s files run about 5.4 s on screen,
+ * the title (video 5 s) comes up about 3.4 s after play(), and night.ts's tail lights travel at the same speed-up.
+ * The files themselves are untouched; a different speed is the one line below.
+ *
  * Plays on every load, a reload included (Dan, 2026-11-18); only a visitor who comes back with Back / Forward has
  * seen it. REPLAY brings it back. Never with reduced motion or Save-Data.
  *
  * THE INTRO RULE (plan 2026-11-18 H.1; hero-04/12/13, perf-03/06/08, video-12):
  *  - not playing 2.5 s after start() -> straight to the road and the title (a bail);
- *  - playing -> the title at video 5 s or 6.5 s after play(), whichever comes first; a stall over 3 s is a bail;
+ *  - playing -> the title at video 5 s (about 3.4 s of wall time at RATE 1.5) or 6.5 s after play(), whichever comes
+ *    first; a stall over 3 s is a bail;
  *  - the first run counts that 6.5 s from NAVIGATION (Part 1 §1: on a slow line the name is up by about 6.5 s at the
  *    latest): a page script that lands late has only what is left of it, a film not yet playing when it runs out is a
  *    bail, and a script that lands with under 2 s of it left plays no film at all (the road, the title, Replay);
@@ -21,9 +26,12 @@
  * build's ?v= stamp on them holds (tools/assetver). The CSS failsafe (hero.css) shows the title at 8.5 s if this
  * module never runs; `is-run` stands it down once the module is in charge.
  */
-const REVEAL_AT = 5.0; // video seconds
+/** the film's speed (Dan, 2026-11-22: "make the car scene go faster"; 8.0 s -> 5.4 s). 1.75 or 2 = this line alone:
+ *  night.ts scales the tail lights' travel by it */
+export const RATE = 1.5;
+const REVEAL_AT = 5.0; // video seconds (the playback rate moves it in wall time, not in the film)
 const TITLE_WALL = 6500; // ms after play(); on the first run, after navigation start
-const FILM_MIN = 2000; // ms: the first run needs this much of the wall left to play the film (the headlights at ~1.2 s)
+const FILM_MIN = 2000; // ms: the first run needs this much of the wall left to play the film (the headlights at film ~1.2 s, ~0.8 s on screen at RATE 1.5)
 const PLAY_DEADLINE = 2500; // ms after start()
 const STALL = 3000; // ms
 
@@ -113,6 +121,9 @@ export function initIntro(hero: HTMLElement, hooks: IntroHooks) {
     if (replay) replay.hidden = true;
     video!.classList.remove('is-gone');
     try { video!.currentTime = 0; } catch {}
+    // every start: restore()/drop() call load(), which puts playbackRate back to defaultPlaybackRate; set both, so a
+    // Replay (after a Skip's drop() too) keeps the speed
+    video!.defaultPlaybackRate = RATE; video!.playbackRate = RATE;
     watchdog = window.setTimeout(() => { if (!playing) finish(true); }, PLAY_DEADLINE);
     const left = fromNav ? Math.max(0, TITLE_WALL - performance.now()) : TITLE_WALL;
     fromNav = false;

@@ -465,7 +465,8 @@ screen at about 1 s, then it swings to the tail lights and settles on the road).
 a centre crop played its best moment off screen (15 % of the headlight light on screen; the follow-cut 77 %). The rest
 of that page is still rebuilt for portrait (the dash becomes a deck of big controls, D7 B). Extended 2026-11-21 (Dan's
 pick B): an upright tablet (600-1100 px wide) gets the same follow-cut, a little softer, since the centre crop showed one
-headlight pair, cut by the edge.
+headlight pair, cut by the edge. The film plays at 1.5x (Dan 2026-11-22, "make the car scene go faster"): about 5.4 s
+on screen instead of 8 s, the tail lights' hand-off at the same speed (intro.ts RATE).
 
 ## 8. Layout
 
@@ -604,3 +605,6 @@ came up with, or it rescales under the finger.
   synth loop at the fader's old level (-3.9 dB); any start lights the face, as the key did. The shorter column keeps
   the face's height: the A/B stands over MONO CHECK (the plate's own stacked pair), so the console's strap still meets
   the face's; under the face the plate is mirror | A/B + MONO CHECK over PRESET.
+- 2026-11-22 Dan: "make the car scene go faster". The /widebeam intro film plays at 1.5x (playbackRate, the files
+  untouched): about 5.4 s instead of 8 s, the title up about 3.4 s after the film starts, and the canvas tail lights
+  after the hand-off travel 1.5x faster too (night.ts TRAVEL), so the car never slows down on the hand-off (§7).
