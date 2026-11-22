@@ -611,8 +611,8 @@ came up with, or it rescales under the finger.
 - 2026-11-22 Dan's page map (Black Friday; "simplify and minimize this page as much as we can ... the plugin is
   really simple"): /widebeam is now hero, dash, ask plate, Owner's Manual, closer, footer. The glove box (#wb-presets)
   and the stereo road (#wb-story) are cut: their components, data and scripts stay (presets.ts and story.ts are
-  null-safe in init.ts), off the page and out of the stylesheet; bringing either back is two lines in widebeam.astro
-  and one in widebeam.css. The dash moved up, unchanged (Dan's bench the same day: both dash screens ticked, "may MOVE,
+  null-safe in init.ts), off the page and out of the stylesheet; bringing either back is its section line and its import
+  in widebeam.astro and its @import in widebeam.css (the chapters would still go to the dash). The dash moved up, unchanged (Dan's bench the same day: both dash screens ticked, "may MOVE,
   not change"). The manual's six chapters keep their titles (STEPS) and now drive the face to the screen (the glove
   box's old drive, align 'face'); the note under them says "the dash above". The below-the-fold art's 3/4-screen
   look-ahead now starts with the first scroll, so the face-still and the console's road stay out of the first view

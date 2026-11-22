@@ -106,18 +106,28 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
       it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
       local branch's upstream was unset the same day, so a bare `git push` can't land there.
-  - **State 2026-11-22 ~12:40, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
+  - **State 2026-11-22 ~13:30, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
     `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
-    stereo road are cut (files kept; bring back = two lines in widebeam.astro + one in widebeam.css). The manual's
-    chapters drive to the dash; its note says "the dash above". The art look-ahead starts on the first scroll (G11's
-    first view). Gate rows for the two cut sections SKIP while they are off the page. Phone bar: up over the dash now
-    (before the plate), and up over the stand-by manual (G9 fell to 61.5 % without it; 80.8-84.6 % with it, one step
-    of headroom on WebKit 390): two "Email me at launch" on that screen, the manual line's and the bar's. Superseded by the map (dated
-    2026-11-22): plan:87 the plate under the hero, plan:105-107 the glove box under the dash, the road per D4 C /
-    plan:108-112, the manual note "the stereo road above", D2 B's body-copy rule (plan:9). Open for Dan: D2 B's two facts
-    (the side below LOW FOCUS removed at any WIDTH; MIX under 100 blends the dry back) now show only behind the closed
-    Specs fold, and only in part (LOW FOCUS "the side below it is removed", no "at any WIDTH"; MIX "Dry blend"); in
-    view: the odometer's "24 dB/oct mono-bass split" and chapter 02's title. No copy added; he decides.
+    stereo road are cut (files kept; bring back = per section its line + import in widebeam.astro and its @import in
+    widebeam.css; the chapters stay on the dash). The manual's chapters drive to the dash; its note says "the dash
+    above". The art look-ahead starts on the first scroll (G11's first view). Gate rows for the two cut sections SKIP
+    while they are off the page.
+    - Phone bar (`2083c4e`, droppable): up over the dash now (before the plate), and up over the stand-by manual (G9
+      fell to 61.5-69.2 % without it; 80.8-84.6 % with it, one step of headroom on WebKit 390). Two "Email me at
+      launch" on that phone screen: the manual line's and the bar's.
+    - Gates (G0, G3-G11, G13 + fixtures, `rg-1122-123319`): 221 PASS, 31 SKIP, 4 FAIL, 1 MISSING. MISSING: G0 "every JS
+      file the page loads" (the production bundle is 2 files; the same row was MISSING on the 11-22 00:05 / 00:56
+      runs, not new). FAIL, all G8, whose fixed scroll fractions now land on the manual: B safe area at P390 / P360 (the
+      key is aside over the manual frame at 0.6 and the row reads its off-screen rect; with or without `2083c4e`); C
+      "never hidden while sound plays" S844 (could not start the sound); C "step aside over [data-wb-watch]" P390 /
+      P360, both engines (the playing key over the stand-by frame, ONLY with `2083c4e`, which lifts the key). Without
+      `2083c4e`, G9's ask rows fail instead. G8 left untouched; Dan / the session picks.
+    - Superseded by the map (dated 2026-11-22): plan:87 the plate under the hero, plan:105-107 the glove box under the
+      dash, the road per D4 C / plan:108-112, the manual note "the stereo road above", D2 B's body-copy rule (plan:9).
+    - Open for Dan: D2 B's two facts (the side below LOW FOCUS removed at any WIDTH; MIX under 100 blends the dry back)
+      now show only behind the closed Specs fold, and only in part (LOW FOCUS "the side below it is removed", no "at any
+      WIDTH"; MIX "Dry blend"); in view: the odometer's "24 dB/oct mono-bass split" and chapter 02's title. No copy
+      added; he decides.
   - **State 2026-11-22 ~11:30 (local on `feat/widebeam-page`, NOT pushed; Dan: Black Friday, Gil wants it today):**
     - `a040c17` the car film plays at 1.5x (intro.ts `RATE`, defaultPlaybackRate on every start; night.ts TRAVEL /
       RATE). Measured Chrome / WebKit / portrait, Replay, Skip, slow line, hidden tab: ~5.4 s film, title ~3.4 s.
