@@ -81,9 +81,12 @@
    from one with them only in the footer rows; everywhere else the two are the same, stage 4). Its two photos wait for the footer: the inline
    script at the end of widebeam.astro marks .site-footer [data-wb-near] 3/4 of a screen ahead, as the parts kit's art.
    That takes them out of a phone's first view, which sat 1.4 KB over G11's 1.0 MB bar (r-cross-g11fv). Without JS, or in
-   a browser without :has(), the rule doesn't apply and the smoke loads as on every other page. */
+   a browser without :has(), the rule doesn't apply and the smoke loads as on every other page.
+   display: none too (2026-11-22, Dan: "a little bit laggy"): an empty plate is still a 1837x1028 screen-blended layer
+   that haze.ts moves every frame, so Chrome redrew a full Retina frame 60 times a second at rest and every wheel input
+   waited ~16 ms more (measured: input to first motion 40-42 -> 24-25 ms, 0 frames swapped at rest, 0 pixels differ). */
 @media (scripting: enabled) {
-  :root:not(:has(.site-footer[data-wb-near])) .haze-plate { background-image: none; }
+  :root:not(:has(.site-footer[data-wb-near])) .haze-plate { background-image: none; display: none; }
 }
 
 /* ---------- shared ---------- */
