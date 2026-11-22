@@ -1205,6 +1205,14 @@ const first = items[0]?.slug ?? '';
        fractional scroll's fraction, which left a 1px strip of the page above
        showing; up, the TV's top edge tucks <1px under the nav's hairline. */
     const landY = (off: number) => Math.ceil(window.scrollY + off);
+    /* The line the TV parks under: the nav's bottom edge, with the sale strip above it while one is up (--sale-h;
+       the same line as --ww-nav in the CSS, and as the garage's own lock, navTotal in HomeOpening.astro). The nav
+       alone (found 2026-11-22) parked the TV 46 px too high on a sale day, its top bezel under the nav: the strip
+       pushes the nav down, and the lock and the glide still aimed at where the nav used to end. */
+    const navLine = () => {
+      const cs = getComputedStyle(document.documentElement);
+      return (parseFloat(cs.getPropertyValue('--site-nav-h')) || 44) + (parseFloat(cs.getPropertyValue('--sale-h')) || 0);
+    };
 
     /* Links to the TV on the TV's own page (home's closing CTA "/#plugins"; on /plugins, the
        header's PLUGINS, the footer, the cart's "Explore the plugins") glide to the TV instead of
@@ -1229,7 +1237,7 @@ const first = items[0]?.slug ?? '';
       e.stopPropagation();
       a.closest('dialog')?.close(); // the cart drawer
       if (history.state?.wwView === 'panel') history.back(); // a phone's open plugin: back to the list (popstate)
-      const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-nav-h')) || 44;
+      const nav = navLine();
       const y = landY(section.getBoundingClientRect().top - nav);
       if (lenis) {
         if (lenis.isScrolling !== 'smooth') lenis.scrollTo(window.scrollY, { immediate: true }); // sync, no move
@@ -1277,7 +1285,8 @@ const first = items[0]?.slug ?? '';
     /* One screen: lock the scroll onto the TV (Dan 2026-10-14). Only after the
        visitor's own scrolling (wheel, a finger that moved, scroll keys; never a
        script's scrollTo, an anchor jump or the bench), once it has gone idle
-       and no finger is down; only when the TV fits the screen, and only when
+       and no finger is down; only when the TV fits the screen (under the nav;
+       a sale strip above it does not count against the TV: trySnap), and only when
        its top stopped within --ww-snap-zone % of the screen from the nav. The
        target is worked out then, never cached. Lenis glides it there; under
        reduced motion there is no Lenis and no lock. */
@@ -1297,10 +1306,23 @@ const first = items[0]?.slug ?? '';
         // the page itself did not move: a sideways swipe, Space on a button, a wheel inside an open drawer
         const moved = window.scrollY - startY;
         if (Math.abs(moved) < 1 || document.querySelector('dialog[open]')) return;
-        const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-nav-h')) || 44;
+        const nav = navLine();
         const r = section.getBoundingClientRect();
-        if (r.height > window.innerHeight - nav + 2) return; // taller than the screen: nothing to land
-        const off = r.top - nav; // 0 = the TV sits exactly under the nav
+        /* Taller than the screen: nothing to land. The screen here is what is under the nav alone, as it always was:
+           while a sale strip is up, a TV that outgrew what is left under it by no more than the strip (46 px; a
+           phone's is 42) still lands, its top on the line and its last few px under the fold. Judged under nav +
+           strip (the first cut of navLine, 2026-11-22) the lock stopped on sale days at 1440x900, where the TV is
+           823 px and the screen under the strip 813: the garage's walk, which leans on this lock to take up what the
+           wheel still carries past its own (170 to 184 px), then ended with the menu behind the nav, and a visitor
+           scrolling back up to the TV was left 80 px short. So the strip moves where the TV lands, never whether it
+           does. What goes under the fold is the bottom bezel: on a laptop the glass's lower edge stays 19 px or more
+           above it and the lowest name or key 34 px or more (measured with every plugin lit: Chrome at 7 widths from
+           1141 to 1920 px, WebKit at 1312 and 1440); on a phone (390 and 768 px wide, the list and an open plugin)
+           the lowest name or key clears it by 1 to 7 px at the worst height, and the glass's lower edge is under
+           it. */
+        const strip = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sale-h')) || 0;
+        if (r.height > window.innerHeight - (nav - strip) + 2) return;
+        const off = r.top - nav; // 0 = the TV sits exactly under the nav (and the strip)
         const pct = parseFloat(getComputedStyle(wall).getPropertyValue('--ww-snap-zone')); // 0 = never
         const zone = ((Number.isFinite(pct) ? pct : 30) / 100) * window.innerHeight;
         if (Math.abs(off) < 1 || Math.abs(off) > zone) return;
@@ -1348,7 +1370,7 @@ const first = items[0]?.slug ?? '';
     max-width: var(--maxw);
     margin: 0 auto;
     padding: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 4vw, 2.5rem);
-    --ww-list-share: 46;  /* the plugins' share of the screen's width, % (laptop) */
+    --ww-list-share: 46;  /* the plugins' share of the screen's width, % (laptop; 40 from 1101 to 1366 px wide: LAPTOP WINDOWS, below) */
     --ww-name-max: 5.5;   /* rem: the biggest a plugin name gets */
     --ww-thumb-w: 9.8;    /* rem: the thumbnail's width in the list */
     --ww-dim: 1;          /* the unlit names and thumbnails: how much they show */
@@ -2118,10 +2140,12 @@ const first = items[0]?.slug ?? '';
      glide park it: exactly under the nav. global.css pads every anchor jump
      by --nav-h + 0.75rem (html scroll-padding-top, for focus); this takes
      that back and adds the real bar (--site-nav-h, from the header script: a
-     phone's bar is taller than --nav-h). Negative on a laptop, which
-     scroll-margin allows. */
+     phone's bar is taller than --nav-h), and the sale strip above it while
+     one is up (--sale-h: without it the jump parked the TV 46 px under the
+     nav on a sale day, like the lock; navLine in the script). Negative on a
+     laptop with no strip, which scroll-margin allows. */
   :global(section#plugins) {
-    scroll-margin-top: calc(var(--site-nav-h, var(--nav-h)) - var(--nav-h) - 0.75rem);
+    scroll-margin-top: calc(var(--site-nav-h, var(--nav-h)) + var(--sale-h, 0px) - var(--nav-h) - 0.75rem);
   }
 
   /* ---- ONE SCREEN (Dan 2026-10-14: "when I scroll, the site fits the screen
@@ -2131,7 +2155,8 @@ const first = items[0]?.slug ?? '';
      their full size, centred in the opening. svh = the screen with the
      browser's bars shown, so nothing moves when they slide away. min-height,
      not height: whatever still can't fit grows the TV instead of clipping
-     (and the lock then leaves it alone). The scroll lock is in the script. */
+     (and the lock then leaves it alone, unless it is only by a sale strip's
+     height that it doesn't fit). The scroll lock is in the script. */
   .ww {
     --ww-nav: calc(var(--site-nav-h, var(--nav-h)) + var(--sale-h, 0px)); /* + the BF/CM strip while it's up */
     --ww-breath: 15px;         /* glass showing above and below the content */
@@ -2274,6 +2299,64 @@ const first = items[0]?.slug ?? '';
   @media (min-width: 861px) and (max-width: 1200px), (max-width: 860px) and (max-height: 760px) {
     .ww-blurb { font-size: 1rem; line-height: 1.4; }
     .ww-pwords { font-size: 0.9rem; }
+  }
+  /* LAPTOP WINDOWS (1101 to 1439 px wide): the menu on one row, the lit plugin's side wider. Dan 2026-11-21, looking
+     at the TV in a short Chrome window (the page 1312x612: Chrome's grey "not your default browser" bar, and a window
+     that stops above the Dock): "the html is too tiny, too small". ONE SCREEN, above, pays for a short window with
+     the plugin's window and the names: at 1312x612 RevLimiter's window was 27x13 px. His pick, option B of the Laptop
+     TV review: keep one screen, and find the height in the layout:
+     - the ask ("PICK A CATEGORY") sits on the categories' row, the keys a little closer together: the menu is one
+       row, 32 to 36 px instead of 65 to 74, from 1175 px wide. Narrower than that the ask keeps its own row;
+     - the list takes 40 % of the screen's width, not 46. This overrides the bench pick of 2026-10-18 (--ww-list-share,
+       at the top) on these windows only. The names are sized to the list's width, so in a window tall enough that
+       the height was not what held them they get smaller (1141x734: 41.6 -> 32.5 px); in a short one they stay or
+       grow;
+     - so the lit plugin's text runs the width of its column (no 40rem cap): the blurb on fewer lines, Product page on
+       the buy row where it fits. The window gets the height that frees.
+     Measured (Chrome and WebKit at 2x, the sale strip up), RevLimiter's window, before -> after: 1312x612 27x13 ->
+     256x124, 1312x734 269x130 -> 499x241, 1366x633 119x57 -> 295x142, 1141x636 129x62 -> 174x84. With no strip,
+     1312x734 now fits one screen (the TV 763 -> 693 px, the screen 693).
+     Where it starts and stops (2026-11-22, after the first build's check):
+     - from 1101 px, not 861: narrower than that the keys never fit beside the ask and RevLimiter's blurb keeps its
+       three lines, so the narrower list only made the names a quarter smaller (861x734: 25.5 -> 18.5 px, the window
+       304x147 before and after). Under 1101 everything is as it was. Not 1141: Dan's Safari at 115 % is 1140.87 px;
+     - to 1439 px: from 1440 the categories already fit one row beside the ask and no window is tiny (623x301 at
+       1440x900). Phones (<= 860 px) are not touched.
+     Here on purpose, after the tight-screen blocks: column-gap and padding-inline are longhands, and a gap / padding
+     shorthand coming after them would reset them (the base's and the 861-1200 block's are above). The script is as
+     it was: fit() measures the menu's and the text's real heights (--ww-osd-h, --ww-info-h), so the window takes
+     what frees. */
+  @media (min-width: 1101px) and (max-width: 1439px) {
+    .ww { --ww-list-share: 40; }
+    .ww-osd { column-gap: 1rem; }
+    .ww-cats { gap: 0.2rem 0.15rem; }
+    .ww-cat { padding-inline: 0.55rem; }
+    .ww-info { max-width: none; }
+  }
+  /* 1201 to 1299 px: the menu's type grows with the window. The tight screen's menu (the ask 1.6rem, the keys
+     1.52rem, to 1200 px) fits one row beside the ask; the full size (1.9rem / 1.75rem) needs 119 px more and from
+     1201 it had 1 px more: the ask went back to its own row until 1300 (the menu 74 px, RevLimiter's window 89x43 at
+     1210x640, as before the laptop block). So the two sizes are joined by a straight line across those 100 px
+     (4.8 px and 3.68 px of type): one row all the way (at least 4 px to spare, Chrome and WebKit, every 5 px), and
+     nothing changes at 1200 or from 1300. The menu's type is smaller than it was only here (1201: 25.6 / 24.3 px,
+     were 30.4 / 28; 1280: 29.4 / 27.3). RevLimiter's window, before the laptop block -> now: 1210x640 89x43 ->
+     176x85, 1280x720 243x117 -> 472x228. */
+  @media (min-width: 1201px) and (max-width: 1299px) {
+    .ww[data-ww-lib='on'] .ww-tag-ask { font-size: clamp(1.6rem, calc(1.6rem + (100vw - 1200px) * 0.048), 1.9rem); }
+    .ww-cat { font-size: clamp(1.52rem, calc(1.52rem + (100vw - 1200px) * 0.0368), 1.75rem); }
+  }
+  /* 1367 to 1439 px: the list widens back to its 46 % (the base's --ww-list-share), so the list, the names and the
+     windows join 1440 px with no step (the menu's keys still step there: 73 px closer together at 1439).
+     At a flat 40 % a tall window just under 1440 only lost name size (1439x900: 62.3 -> 50.5 px, and 12 px back one
+     pixel wider), which is why 1440 and up were left alone. On top of its 40 % the list gains 1.04 px per px of
+     window: 46 % of the screen is 76 px more than 40 % at 1440 (the content 1261 px wide), reached just before
+     1439; min() holds it there (1439x900 is as it was before the laptop block: names 62.3 px, the window 623x301).
+     The lit plugin's column narrows 35 px on the way (658 -> 623 px), never under its width at 1440, where
+     RevLimiter's text already sits as it does at 1366: the blurb on two lines, Product page on the buy row. */
+  @media (min-width: 1367px) and (max-width: 1439px) {
+    .ww {
+      grid-template-columns: minmax(0, min(46%, calc(var(--ww-list-share) * 1% + (100vw - 1366px) * 1.04))) minmax(0, 1fr);
+    }
   }
   @supports (height: 100svh) {
     @media (max-width: 860px) {

@@ -86,6 +86,13 @@ sharp the loading picture is against the live room, 1.00 = the same.
 A new light: put it in a bank (`props`, or a new bank in `LIGHT_BANKS` and its lines in `lightRoom`), re-render.
 A new skin = new pictures from the same script.
 
+## Checks (2026-11-22, real Chrome, the home TV in laptop windows: Dan's option B in WordWall.astro)
+
+- The page's TV changed from 1101 to 1439 px wide, so the pictures that show it at 1141x636 were re-rendered from
+  the new page: set `1141` banks 1 and 4 to 9, `1440`'s `bank-1@1141x636.webp`, `tv-1141x636{,-sale}.webp` and
+  `below-1141.webp`. Set `1440` otherwise and the 1920 and phone pictures are unchanged (the TV is the same there).
+- Hand-off at 1141x636 @2x: blurred mean 2.11, p99 8: PASS. 1440x900 @2x: 2.49, 10: PASS. 1920x1080 @1x: 2.00, 9: PASS.
+
 ## Checks (2026-11-20, real Chrome, the seam round: the sign back at its place, two sets, the sign's own picture)
 
 - Hand-off at 1141x636 @2x (set `1141`): blurred mean 2.12, p99 8, worst area 6.2: PASS. Not blurred, loading picture
