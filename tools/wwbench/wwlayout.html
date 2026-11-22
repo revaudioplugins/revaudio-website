@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>TV Bench · Layout</title>
+<!-- TV layout bench (Dan 2026-11-22, on the live homepage TV: from plugin to plugin "the gap is really big", and "the
+     words will stay in the same place and just the plugin will change"). Four same-origin iframes of the REAL dev
+     homepage: today's TV, then layouts A / B / C, each one a <style> dropped into its frame (nothing in the page's code
+     changes). In A / B / C every text slot has a set size (one-line name, a set number of blurb lines, one line of
+     words, the keys on a grid), so the words sit at the same pixels on every channel and only the picture changes in a
+     fixed stage. The readout under each frame says how far the words moved across the channels seen, how big each
+     picture got, and whether the TV fits one screen. Laptop only (>= 861 px); the phone is a later round. -->
+<style>
+  :root { --bg: #0d0a0a; --panel: #171110; --line: #33261f; --ink: #f3ebe4; --dim: #b3a497; --acc: #ff9a3c; --ok: #7fd18b; --warn: #ffb35c; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.35 -apple-system, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 3; background: var(--bg); }
+  header h1 { margin: 0 8px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+  button { background: #261c17; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  button:hover { background: #33251d; }
+  .seg { display: inline-flex; flex-wrap: wrap; }
+  .seg button { border-radius: 0; margin-left: -1px; padding: 6px 10px; }
+  .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .seg button.on, button.on { background: var(--acc); border-color: var(--acc); color: #221004; font-weight: 700; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .spacer { flex: 1; }
+  #run.on { animation: pulse 1s infinite alternate; }
+  @keyframes pulse { to { filter: brightness(1.25); } }
+  main { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 18px; padding: 16px; }
+  .card { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: 12px; border: 2px solid transparent; }
+  .card.picked { border-color: var(--acc); background: #1c1410; }
+  .card[hidden] { display: none; }
+  .head { display: flex; align-items: center; gap: 10px; }
+  .badge { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: #2e231d; font-weight: 800; }
+  .card:not([data-o='today']) .badge { background: var(--acc); color: #221004; }
+  .head h2 { margin: 0; font-size: 15px; letter-spacing: .04em; }
+  .head .mine { color: var(--acc); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .head .tools { margin-left: auto; display: flex; gap: 6px; }
+  .head .tools button { padding: 4px 10px; font-size: 12px; }
+  .line { margin: 0; color: var(--dim); font-size: 13px; max-width: 80ch; min-height: calc(3 * 1.35em); }
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #050303; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #050303; }
+  .read { margin: 0; font: 12px/1.45 ui-monospace, Menlo, monospace; color: var(--dim); }
+  .read b { color: var(--ink); font-weight: 600; }
+  .read .ok { color: var(--ok); }
+  .read .bad { color: var(--warn); }
+  footer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 0 16px 24px; }
+  footer textarea { flex: 1 1 420px; min-height: 64px; background: #120d0b; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TV bench · Layout</h1>
+  <span class="lbl">Plugin</span>
+  <span class="seg" id="chan" title="Light the same plugin in all four TVs"></span>
+  <button type="button" id="run" title="Change channel through every plugin, in all four TVs at once">▶ Run the channels</button>
+  <span class="lbl">Category</span>
+  <span class="seg" id="cat" title="ALL, or the one-plugin REVERB: does the lit plugin stay put when the list gets short?"></span>
+  <span class="lbl">Screen</span>
+  <span class="seg" id="size" title="The window the TVs are drawn in">
+    <button data-s="1312x734" title="Chrome at 100 % on Dan's laptop">Laptop · Chrome</button><button data-s="1141x636" title="Safari at 115 % on Dan's laptop">Laptop · Safari</button><button data-s="1440x900">1440</button>
+  </span>
+</header>
+<main id="cards"></main>
+<footer>
+  <textarea id="notes" placeholder="Notes for Claude (optional): what you like, what to change…"></textarea>
+  <button type="button" id="copy">Copy pick + notes</button>
+  <span class="lbl" id="copied"></span>
+</footer>
+<script>
+(() => {
+  const KEY = 'wwlayout:v1';
+  const WALL = '[data-wordwall]';
+  // laptop only: the phone keeps its one-pane-at-a-time TV in every option
+  const P = "html:not(.hc) .ww[data-wordwall][data-ww-bg='screen']";
+  const L = (css) => `@media (min-width: 861px) {\n${css}\n}`;
+
+  /* What A, B and C share: the words change in place (they fade, they never travel), the menu fits one line, and the
+     lit plugin's text is a stack of set-size slots, so it never moves from one plugin to the next. The picture sits in
+     a fixed stage, as big as the stage allows, centred. */
+  const SHARED = `
+${P} { --ww-mv-text-px: 0 !important; --ww-mv-out-px: 0 !important; }
+${P} .ww-osd { flex-wrap: nowrap; gap: .4rem 1.1rem; }
+${P}[data-ww-lib='on'] .ww-tag-ask { font-size: clamp(1.25rem, 1.9vw, 1.6rem); }
+${P} .ww-cats { flex-wrap: nowrap; gap: .1rem .15rem; }
+${P} .ww-cat { font-size: clamp(1.1rem, 1.75vw, 1.5rem); padding: .28rem .5rem .14rem; }
+${P} > .ww-panel { align-content: stretch; align-items: stretch; align-self: start; grid-template-rows: minmax(0, 1fr); }
+${P} > .ww-panel .ww-ui { grid-area: ui; container-type: size; display: grid; place-items: center; min-width: 0; min-height: 0; height: 100%; }
+${P} > .ww-panel .ww-ui img,
+${P} > .ww-panel .ww-ui video {
+  width: min(100cqw, calc(100cqh * var(--ww-ar))) !important; height: auto !important;
+  max-width: none !important; max-height: none !important; aspect-ratio: var(--ww-ar) !important;
+}
+${P} > .ww-panel .ww-info { grid-area: info; align-self: center; max-width: none; min-width: 0; display: grid; gap: .55rem; justify-items: start; }
+${P} > .ww-panel .ww-phead { display: grid; gap: .35rem; }
+${P} > .ww-panel .ww-pname { font-size: var(--lay-nm) !important; line-height: .95; white-space: nowrap; }
+${P} > .ww-panel .ww-ptype { font-size: .82rem; white-space: nowrap; }
+${P} > .ww-panel .ww-blurb {
+  font-size: var(--lay-bl, 1rem); line-height: 1.42; height: calc(var(--lay-bl-lines) * 1.42em); overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lay-bl-lines);
+}
+${P} > .ww-panel .ww-pwords { font-size: .86rem; line-height: 1.4; height: 1.4em; white-space: nowrap; overflow: hidden; }
+/* the keys on a grid: the price, Try, Product page and Add to cart each keep their spot (a free plugin just has no
+   cart); the stack is set per layout (--lay-buy) */
+${P} > .ww-panel .ww-buy {
+  display: grid; grid-template-columns: var(--lay-buy-cols); grid-template-areas: var(--lay-buy);
+  justify-content: start; align-items: center; gap: .5rem .9rem; margin-top: .2rem;
+}
+${P} > .ww-panel .ww-price { grid-area: price; font-size: 1.6rem; }
+${P} > .ww-panel .ww-try { grid-area: try; justify-self: start; }
+${P} > .ww-panel .ww-more { grid-area: more; justify-self: start; }
+${P} > .ww-panel .ww-cart { grid-area: cart; justify-self: start; }
+`;
+  // A and C: the list stays a column, smaller, so the lit plugin's words and picture both get a fixed column
+  const COLUMNS = `
+${P} {
+  grid-template-columns: minmax(0, 27%) minmax(0, 1fr); --ww-thumb-w: 5.4; --ww-name-max: 2.6;
+  --lay-nm: clamp(2.3rem, 3.3vw, 3rem); --lay-bl-lines: 4;
+  /* a narrow column: the price over Try, the two small keys under it */
+  --lay-buy-cols: max-content max-content; --lay-buy: 'price price' 'try try' 'more cart';
+}
+${P} .ww-type { white-space: nowrap; }
+${P} .ww-list { gap: clamp(.15rem, .9vh, .6rem); }
+${P} > .ww-panel { height: var(--ww-main); column-gap: clamp(1.5rem, 3vw, 2.75rem); }
+`;
+
+  const OPTS = [
+    { id: 'today', badge: '·', name: 'Today (live)', line: 'The live TV. A wide plugin puts its words under the picture, a tall one (GAS, GAS 2) beside it, so the words jump around and the picture swings from small to big. Watch the readout: the name moves by hundreds of px.', css: '' },
+    { id: 'a', badge: 'A', name: 'Words beside the list', line: 'Three columns: the plugins, then the lit plugin\'s words, then its picture in a fixed stage on the right. The words sit right next to the name you clicked and never move; only the picture on the right changes.', css: L(SHARED + COLUMNS + `
+${P} > .ww-panel { grid-template-columns: minmax(0, clamp(17rem, 27vw, 22rem)) minmax(0, 1fr); grid-template-areas: 'info ui'; }
+`) },
+    { id: 'b', badge: 'B', name: 'Channel strip', line: 'The plugins become one row of channels under the categories, like a TV guide. That frees the whole width: the words sit in a fixed column on the left, and the picture gets the biggest stage of the three. Only the picture changes.', css: L(SHARED + `
+${P} {
+  grid-template-columns: minmax(0, 1fr); grid-template-areas: 'osd' 'list' 'panel';
+  --lay-strip: clamp(4.6rem, 12vh, 6.4rem); --lay-nm: clamp(2.2rem, 3.2vw, 3rem); --lay-bl-lines: 3;
+  /* a wider column: the price beside Try, the two small keys under Try */
+  --lay-buy-cols: 5.8rem max-content max-content; --lay-buy: 'price try try' '. more cart';
+}
+${P} > .ww-panel .ww-info { gap: .45rem; }
+${P} .ww-list { container-type: normal; height: var(--lay-strip); grid-template-columns: repeat(var(--ww-rows, 6), minmax(0, 1fr)); grid-auto-flow: column; align-content: stretch; gap: 0 clamp(.5rem, 1.2vw, 1rem); }
+${P} .ww-item { min-width: 0; min-height: 0; }
+${P} .ww-row { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; row-gap: .3rem; padding: .3rem .25rem; --ww-thumb-col: auto; }
+${P} .ww-thumb { height: calc(var(--lay-strip) - 2.4rem); width: auto; min-height: 0; aspect-ratio: 16 / 10; }
+${P} .ww-thumb img, ${P} .ww-thumb.is-tall img { width: auto !important; height: auto !important; max-width: 100%; max-height: calc(var(--lay-strip) - 2.4rem) !important; }
+${P} .ww-rtext { justify-items: center; text-align: center; }
+${P} .ww-name { font-size: clamp(1rem, 1.5vw, 1.4rem) !important; -webkit-text-stroke-width: 1px; }
+${P} .ww-type { display: none; }
+${P} > .ww-panel {
+  height: calc(var(--ww-main) - var(--lay-strip) - var(--ww-row-gap));
+  grid-template-columns: minmax(0, clamp(26rem, 34vw, 28rem)) minmax(0, 1fr); grid-template-areas: 'info ui';
+  column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+`) },
+    { id: 'c', badge: 'C', name: 'Picture in the middle', line: 'Three columns, the other way round: the plugins, then the picture in a fixed stage, then the words pinned to the right edge of the screen. The eye goes name, picture, words; the words and keys never move.', css: L(SHARED + COLUMNS + `
+${P} > .ww-panel { grid-template-columns: minmax(0, 1fr) minmax(0, clamp(17rem, 27vw, 22rem)); grid-template-areas: 'ui info'; }
+`) },
+  ];
+
+  const st = Object.assign({ slug: '', cat: 'all', size: '1312x734', zoom: '', pick: '', notes: '' },
+    (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })());
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  // the frames share this origin's storage: decline the cookie banner once so it never covers the TV
+  try { if (!localStorage.getItem('ra-cookie-consent')) localStorage.setItem('ra-cookie-consent', 'declined'); } catch (e) {}
+
+  const box = document.getElementById('cards');
+  box.innerHTML = OPTS.map((o) => `
+    <section class="card" data-o="${o.id}">
+      <div class="head"><span class="badge">${o.badge}</span><h2>${o.name}</h2><span class="mine"></span>
+        <span class="tools"><button class="pick" type="button">Pick</button><button class="zoom" type="button">Zoom</button></span></div>
+      <p class="line">${o.line}</p>
+      <div class="vp"><iframe title="Homepage TV, ${o.name}"></iframe></div>
+      <p class="read">…</p>
+    </section>`).join('');
+  const cards = OPTS.map((o) => ({ o, el: box.querySelector(`[data-o="${o.id}"]`), seen: {} }));
+  cards.forEach((c) => { c.frame = c.el.querySelector('iframe'); c.read = c.el.querySelector('.read'); });
+  // my pick, said on the page (Dan asked for a recommendation with the options)
+  box.querySelector('[data-o="b"] .mine').textContent = 'Claude\'s pick';
+
+  const dims = () => st.size.split('x').map(Number);
+  function layout() {
+    const [W, H] = dims();
+    const one = !!st.zoom;
+    cards.forEach((c) => (c.el.hidden = one && c.o.id !== st.zoom));
+    box.style.setProperty('--cols', one ? 1 : 2);
+    requestAnimationFrame(() => cards.forEach((c) => {
+      if (c.el.hidden) return;
+      const vp = c.el.querySelector('.vp');
+      const k = Math.min(1, vp.clientWidth / W);
+      vp.style.height = `${Math.round(H * k)}px`;
+      Object.assign(c.frame.style, { width: `${W}px`, height: `${H}px`, transform: `scale(${k})` });
+      c.el.querySelector('.zoom').textContent = one ? 'Back to all four' : 'Zoom';
+      c.el.classList.toggle('picked', st.pick === c.o.id);
+      c.el.querySelector('.pick').classList.toggle('on', st.pick === c.o.id);
+    }));
+  }
+
+  function send(c, detail) {
+    const win = c.frame.contentWindow, wallEl = win && win.document.querySelector(WALL);
+    if (wallEl) wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail }));
+  }
+  function wire(c) {
+    const doc = c.frame.contentDocument;
+    c.doc = doc;
+    const s = doc.createElement('style');
+    s.id = 'wwlayout';
+    // the bench hides the page's pop-ups; the frame is scrolled to the top, where the TV is
+    s.textContent = '#cookie-banner, dialog.wd-modal, dialog.exit-gas, dialog.sub-modal, #support-chat { display: none !important; }\n' + c.o.css;
+    doc.head.appendChild(s);
+    c.frame.contentWindow.dispatchEvent(new c.frame.contentWindow.Event('resize')); // the TV re-measures its menu row
+    if (!document.querySelector('#chan button')) buildControls(doc);
+    send(c, { cat: st.cat });
+    lightOne(c);
+  }
+  function waitFor(c, tries = 0) {
+    const doc = c.frame.contentDocument;
+    const wallEl = doc && doc.location.href !== 'about:blank' && doc.querySelector(WALL);
+    const ok = wallEl && wallEl.dataset.wwLib === 'on';
+    if (ok && doc !== c.old) return wire(c);
+    if (tries < 200) setTimeout(() => waitFor(c, tries + 1), 150);
+  }
+  function load() {
+    cards.forEach((c) => {
+      c.old = c.frame.contentDocument;
+      c.doc = null;
+      c.seen = {};
+      c.frame.src = '/' + (st.slug ? `?plugin=${encodeURIComponent(st.slug)}` : '');
+      waitFor(c);
+    });
+    layout();
+  }
+
+  // the plugins and categories come from the page's own list (library.ts), so the bench follows the data
+  let slugs = [], names = [];
+  function buildControls(doc) {
+    slugs = [...doc.querySelectorAll('[data-ww-pick]')].map((a) => a.getAttribute('href').replace(/^\//, ''));
+    names = [...doc.querySelectorAll('[data-ww-pick] .ww-name')].map((n) => n.textContent.trim());
+    if (!st.slug) st.slug = slugs[0];
+    document.getElementById('chan').innerHTML = slugs.map((s, i) => `<button type="button" data-slug="${s}">${names[i] || s}</button>`).join('');
+    document.querySelectorAll('#chan button').forEach((b) => (b.onclick = () => { stopRun(); pickSlug(b.dataset.slug); }));
+    const cats = [...doc.querySelectorAll('[data-ww-cat]')].map((b) => ({ id: b.dataset.wwCat, n: b.childNodes[0].textContent.trim(), k: +(b.querySelector('.ww-cat-n')?.textContent || 0) }));
+    const keep = cats.filter((x) => x.id === 'all' || x.k === 1); // ALL, and the one-plugin categories
+    document.getElementById('cat').innerHTML = keep.map((x) => `<button type="button" data-cat="${x.id}">${x.n}${x.k === 1 ? ' (1)' : ''}</button>`).join('');
+    document.querySelectorAll('#cat button').forEach((b) => (b.onclick = () => { stopRun(); st.cat = b.dataset.cat; save(); cards.forEach((c) => { send(c, { cat: st.cat }); measureSoon(c); }); paint(); }));
+    paint();
+  }
+  function pickSlug(s) { st.slug = s; save(); cards.forEach(lightOne); paint(); }
+  const lightOne = (c) => { send(c, { slug: st.slug }); measureSoon(c); };
+
+  // ▶ Run: every plugin once, in all four TVs together, then back to the first
+  let runT = 0;
+  const runBtn = document.getElementById('run');
+  function stopRun() { clearTimeout(runT); runT = 0; runBtn.classList.remove('on'); runBtn.textContent = '▶ Run the channels'; }
+  runBtn.onclick = () => {
+    if (runT) return stopRun();
+    if (st.cat !== 'all') { st.cat = 'all'; cards.forEach((c) => send(c, { cat: 'all' })); }
+    runBtn.classList.add('on'); runBtn.textContent = '■ Stop';
+    let i = 0;
+    const step = () => { pickSlug(slugs[i]); i++; runT = i <= slugs.length ? setTimeout(step, 2200) : (stopRun(), 0); if (i > slugs.length) pickSlug(slugs[0]); };
+    step();
+  };
+
+  /* The readout: where the words sat on every plugin seen in this frame (relative to the TV, so scrolling never
+     counts), how far they moved at most, how big the picture got, and whether the TV fits one screen. */
+  const timers = new Map();
+  function measureSoon(c) { clearTimeout(timers.get(c)); timers.set(c, setTimeout(() => measure(c), 1300)); }
+  function measure(c) {
+    const doc = c.doc; if (!doc) return;
+    const wallEl = doc.querySelector(WALL), panel = doc.querySelector('.ww-panel.is-active:not(.is-leaving)');
+    if (!wallEl || !panel) return;
+    const w = wallEl.getBoundingClientRect();
+    const at = (sel) => { const e = panel.querySelector(sel); if (!e || !e.offsetParent) return null; const r = e.getBoundingClientRect(); return [r.left - w.left, r.top - w.top]; };
+    const media = panel.querySelector('.ww-ui img, .ww-ui video'), m = media && media.getBoundingClientRect();
+    const blurb = panel.querySelector('.ww-blurb');
+    if (!m || m.height < 2) return measureSoon(c); // the lazy picture is not in yet: look again shortly
+    c.seen[panel.dataset.wwPanel] = {
+      name: at('.ww-pname'), blurb: at('.ww-blurb'), try: at('.ww-try'), more: at('.ww-more'),
+      pic: m ? [Math.round(m.width), Math.round(m.height)] : [0, 0],
+      cut: blurb && blurb.scrollHeight > blurb.clientHeight + 2,
+    };
+    const S = Object.entries(c.seen);
+    const drift = (k) => {
+      const pts = S.map(([, v]) => v[k]).filter(Boolean);
+      let d = 0;
+      pts.forEach((p) => pts.forEach((q) => { d = Math.max(d, Math.hypot(p[0] - q[0], p[1] - q[1])); }));
+      return Math.round(d);
+    };
+    const fmt = (k, label) => { const d = drift(k); return `${label} <span class="${d <= 1 ? 'ok' : 'bad'}">${d} px</span>`; };
+    const pics = S.map(([s, v]) => ({ s, h: v.pic[1], a: v.pic[0] * v.pic[1] })).sort((p, q) => p.h - q.h);
+    const nm = (s) => names[slugs.indexOf(s)] || s;
+    const over = Math.round(wallEl.offsetHeight - parseFloat(getComputedStyle(wallEl).minHeight));
+    const cut = S.filter(([, v]) => v.cut).map(([s]) => nm(s));
+    c.read.innerHTML =
+      `<b>Words moved</b> (${S.length} of ${slugs.length} plugins seen): ${fmt('name', 'name')} · ${fmt('blurb', 'text')} · ${fmt('try', 'Try key')} · ${fmt('more', 'Product page')}<br>` +
+      `<b>Picture</b> now ${m ? `${Math.round(m.width)}×${Math.round(m.height)}` : '–'}` +
+      (pics.length > 1 ? ` · smallest ${nm(pics[0].s)} ${pics[0].h} px tall, largest ${nm(pics[pics.length - 1].s)} ${pics[pics.length - 1].h} px tall` : '') + '<br>' +
+      `<b>One screen</b>: ${over <= 1 ? '<span class="ok">fits</span>' : `<span class="bad">${over} px taller than the screen</span>`}` +
+      (cut.length ? ` · <span class="bad">text cut on ${cut.join(', ')}</span>` : '');
+  }
+
+  function paint() {
+    document.querySelectorAll('#chan button').forEach((b) => b.classList.toggle('on', b.dataset.slug === st.slug));
+    document.querySelectorAll('#cat button').forEach((b) => b.classList.toggle('on', b.dataset.cat === st.cat));
+    document.querySelectorAll('#size button').forEach((b) => b.classList.toggle('on', b.dataset.s === st.size));
+  }
+  document.querySelectorAll('#size button').forEach((b) => (b.onclick = () => { stopRun(); st.size = b.dataset.s; save(); paint(); load(); }));
+  cards.forEach((c) => {
+    c.el.querySelector('.zoom').onclick = () => { st.zoom = st.zoom ? '' : c.o.id; save(); layout(); cards.forEach(measureSoon); };
+    c.el.querySelector('.pick').onclick = () => { st.pick = st.pick === c.o.id ? '' : c.o.id; save(); layout(); };
+  });
+  const notes = document.getElementById('notes');
+  notes.value = st.notes || '';
+  notes.oninput = () => { st.notes = notes.value; save(); };
+  document.getElementById('copy').onclick = async () => {
+    const o = OPTS.find((x) => x.id === st.pick);
+    const txt = `TV layout bench: ${o ? `${o.badge} (${o.name})` : 'no pick yet'}${st.notes.trim() ? `\nNotes: ${st.notes.trim()}` : ''}`;
+    try { await navigator.clipboard.writeText(txt); document.getElementById('copied').textContent = 'Copied. Paste it to Claude.'; }
+    catch (e) { document.getElementById('copied').textContent = 'Copy blocked: select the notes and copy them by hand.'; }
+  };
+  addEventListener('resize', layout);
+  paint();
+  load();
+})();
+</script>
+</body>
+</html>

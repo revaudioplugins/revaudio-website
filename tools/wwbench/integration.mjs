@@ -21,6 +21,8 @@ import { fileURLToPath } from 'node:url';
 const PAGES = {
   __wwbench: fileURLToPath(new URL('./wwbench.html', import.meta.url)),
   __wwkeys: fileURLToPath(new URL('./wwkeys.html', import.meta.url)),
+  /* /__wwlayout (Dan 2026-11-22): the TV's layout, today beside three where the words hold still and only the plugin changes */
+  __wwlayout: fileURLToPath(new URL('./wwlayout.html', import.meta.url)),
 };
 
 export default function wwbench() {
@@ -36,7 +38,7 @@ export default function wwbench() {
                 name: 'wwbench-server',
                 configureServer(server) {
                   server.middlewares.use(async (req, res, next) => {
-                    const m = /^\/(__wwbench|__wwkeys)\/?$/.exec((req.url || '').split('?')[0]);
+                    const m = /^\/(__wwbench|__wwkeys|__wwlayout)\/?$/.exec((req.url || '').split('?')[0]);
                     if (!m) return next();
                     res.setHeader('Content-Type', 'text/html; charset=utf-8');
                     try {

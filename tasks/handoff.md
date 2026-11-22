@@ -1,3 +1,17 @@
+## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
+
+Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
+`/__wwlayout` route), this entry. Later, after Dan's pick: `src/components/WordWall.astro` (CSS only).
+- Dan: on the live TV, from plugin to plugin "the gap is really big", and "the words will stay in the same place and
+  just the plugin will change". Asked: brainstorm + bench; composition, placements, fonts, not a full redesign.
+- Measured on revaudio.net (Chromium): across the 6 plugins the lit name moves up to 356 px (1312x734) / 223 px
+  (1141x636); RevLimiter's window is 130 px tall beside GAS 2's 419; the TV is 70 / 63 px taller than the screen, so
+  its bottom bezel is cut.
+- Bench `/__wwlayout` (npm run dev): today + A (list | words | picture), B (a channel strip under the categories, words
+  left, picture right; Claude's pick), C (list | picture | words), each a <style> in a frame of the real page. In A/B/C
+  every text slot has a set size: 0 px movement at both laptop sizes and in a one-plugin category, and the TV fits.
+- Not done: the phone (round 2); the garage's TV captures (`tvcap.mjs`) go stale once a layout is baked.
+
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
 Claim: OPEN 2026-11-18. Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
