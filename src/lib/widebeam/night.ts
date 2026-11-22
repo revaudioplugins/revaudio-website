@@ -9,11 +9,13 @@
  * In that same .3 s the bars dissolve into two points on the spot; only then do the points move, so the car's body
  * never fades in place while a second pair of lights slides out of it.
  */
-import type { Frame } from './intro';
+import { RATE, type Frame } from './intro';
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-const DISSOLVE = 300; // ms: bars -> points, nothing moves
-const TRAVEL = 2600; // ms: the points ease to the vanishing point
+const DISSOLVE = 300; // ms: bars -> points, nothing moves (the film's own .3 s fade, hero.css: not scaled)
+// ms: the points ease to the vanishing point. Scaled with the film's speed (intro.ts RATE): the car leaves faster, so
+// its lights must not slow down on the hand-off (2600 ms at 1x, ~1733 at 1.5x)
+const TRAVEL = 2600 / RATE;
 const BAR_W = 26, BAR_H = 4; // master px
 
 export function startNight(canvas: HTMLCanvasElement) {

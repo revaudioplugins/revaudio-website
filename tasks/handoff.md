@@ -106,6 +106,26 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
       it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
       local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-22 ~02:10 (all local on `feat/widebeam-page`, HEAD `9b81220`, NOT pushed):**
+    - `0ca2471` round 3 committed (from the dead run's journal). `a44ec19` merged Gil's `7a92522` + `3c91404` in (phase
+      stays `preopen`, so the page shows none of BUY NOW / the gate yet; his plugins.ts formats line still says AAX: fix
+      before `released`). The two bullets above about "NOT in it" are done.
+    - Dan, 2026-11-21, "remove the player" -> "TRACK, VOLUME, Stop the engine": `0f16610` removes the console's TRACK,
+      VOLUME fader and engine key and the deck's TRACK; the 4 demo clips are deleted (so the loops' licence question
+      and "the clips by ear" are moot). Sound starts on SOUND, "Take it for a drive", a touch of the demo or a chosen
+      file, at the fader's old level (-3.9 dB); any start lights the face. Column beside the face: A/B over MONO CHECK.
+    - `72e8275` the spec's stub answers the Cloudflare beacon with an empty script (a production build failed "no page
+      errors" on JSON parsed as JS). `c64a7fe` the gate kit is in the repo: `tools/widebeam-gates/` (README there).
+    - `9b81220` the console switch picks its art by layout width: the 256 px toggle file had loaded during the dash's
+      rise (+49.6 KB), putting L1440's full visit at 3.32 MB > 3.30. Now 3.27 MB.
+    - Final check at `0f16610`, run rg-1121-235515 + fixture rerun rg-1122-005214 + G11 rg-1122-014335 at the fix:
+      build green (34 pages); G11 9/9 PASS; G0 open/released, G3-G10, G13 PASS. Left: G1 (baseline-B1 from 11-18 is
+      stale; new shots in scratchpad `team/gates/baseline-final`, WebKit shots there are unstable run to run), G0's
+      "every JS file" row (a dev-server count; the dist row passes). House specs: 86 pass; the /drift WebKit smoke fails
+      on WebKit's own video-control icons (not this page; not checked on main). Not run: the timing gates.
+    - QA: merged locally as `203ea3d` in scratchpad `team/qa/wt` (feat `9b81220` + origin/main `2851c19`), build
+      green, served on 127.0.0.1:4394. NOT pushed: auto mode refused the agent's push; Dan runs the push line.
+      origin/qa/widebeam-page-1121 is still `7b3e9ba`, Gil's `3c91404`, main `2851c19`.
   - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
     plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
     film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE

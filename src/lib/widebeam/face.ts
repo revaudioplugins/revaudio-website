@@ -802,9 +802,10 @@ export function initFace(page: HTMLElement, art: FaceArt, store: Store, reducedM
   page.addEventListener('keydown', intent, true);
   page.addEventListener('click', intent, true);
   // the page at rest: a visitor who has not scrolled or touched the demo gets the art once the first view is over (the
-  // plan's first 10 s, G11 / team/perf/measure.cjs; 12 s for margin) and the browser is idle. The intro runs 8 s, so the
-  // old triggers (8 s, or the hand-off + idle) put 1.47 MB of below-the-fold art into the first view (2.69 MB against
-  // its 1.9 MB bar); keyed to the page clock, not the hand-off, so a skipped or absent intro waits the same.
+  // plan's first 10 s, G11 / team/perf/measure.cjs; 12 s for margin) and the browser is idle. The intro ran 8 s then
+  // (about 5.4 s at 1.5x since 2026-11-22), so the old triggers (8 s, or the hand-off + idle) put 1.47 MB of
+  // below-the-fold art into the first view (2.69 MB against its 1.9 MB bar); keyed to the page clock, not the hand-off,
+  // so a skipped or absent intro, or a faster one, waits the same.
   // On an upright phone the strips are the deck's (D.4: they load only when the deck nears): the dash coming near, or an
   // act on the demo, never the clock alone
   const idle = (fn: () => void) => ((window as any).requestIdleCallback ? (window as any).requestIdleCallback(fn, { timeout: 2000 }) : window.setTimeout(fn, 600));
