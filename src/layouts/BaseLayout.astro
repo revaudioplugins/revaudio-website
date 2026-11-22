@@ -26,7 +26,7 @@ const analyticsOn = import.meta.env.PROD && !!site.cfBeaconToken;
 // Black Friday / Cyber Monday 2026 gate (src/data/sale.ts): the instants the head
 // script compares the clock with; ?sale=bf|cm|off previews in dev only.
 const saleClock = salePhases.map((p) => [p.id, Date.parse(p.start), Date.parse(p.end)]);
-// the week before: the home page's "Black Friday in…" countdown (html[data-sale-soon])
+// the week before: the "Black Friday in…" countdown on every page (html[data-sale-soon])
 const saleSoon = [Date.parse(saleSoonFrom), Date.parse(salePhases[0].start)];
 const salePreviewOk = import.meta.env.DEV;
 
@@ -114,15 +114,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
         var sH = document.documentElement, sNow = Date.now(), sPick = null;
         for (var i = 0; i < saleClock.length; i++)
           if (sNow >= saleClock[i][1] && sNow < saleClock[i][2]) sPick = saleClock[i][0];
-        // the week before Black Friday: the countdown bar, home page only
-        var sHome = location.pathname === '/' || location.pathname === '/index.html';
-        var sSoon = sHome && sNow >= saleSoon[0] && sNow < saleSoon[1];
+        // the week before Black Friday: the countdown bar, on every page (Yoni 2026-11-22; was home only)
+        var sSoon = sNow >= saleSoon[0] && sNow < saleSoon[1];
         if (salePreviewOk) {
           var sQ = new URLSearchParams(location.search).get('sale');
           if (sQ === 'off') sessionStorage.removeItem('sale-preview');
           else if (sQ === 'bf' || sQ === 'cm' || sQ === 'soon') sessionStorage.setItem('sale-preview', sQ);
           var sP = sessionStorage.getItem('sale-preview');
-          if (sP) { sPick = sP === 'soon' ? null : sP; sSoon = sP === 'soon' && sHome; sH.dataset.salePreview = '1'; }
+          if (sP) { sPick = sP === 'soon' ? null : sP; sSoon = sP === 'soon'; sH.dataset.salePreview = '1'; }
         }
         if (sPick) sH.dataset.sale = sPick;
         else if (sSoon) sH.dataset.saleSoon = '1';

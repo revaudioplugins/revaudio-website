@@ -48,8 +48,8 @@ export const salePhases: SalePhase[] = [
   },
 ];
 
-/** The home page's "Black Friday in…" countdown runs from here until Black Friday starts
- *  (Gil 2026-11-02: a week before). Preview: ?sale=soon. */
+/** The "Black Friday in…" countdown runs on every page from here until Black Friday starts
+ *  (Gil 2026-11-02: a week before; every page, not just home: Yoni 2026-11-22). Preview: ?sale=soon. */
 export const saleSoonFrom = '2026-11-20T00:00:00-08:00';
 
 /** What the bundle holds. OBDTune comes out on Nov 22 if it isn't released by then
