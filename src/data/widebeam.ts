@@ -44,7 +44,7 @@
  *     'released' without it) and aaxReady (README "Build": the PACE wcguid for AAX is not created).
  *  4. Ilay: MANUAL_URL to /widebeam/#manual before the release build (D14). The film goes from Unlisted to Public, and
  *     manual.youtubeId / length / poster / transcript get filled in here, and each manual.chapters[].at (seconds into
- *     the film; null keeps that chapter going to the road step): the chapters start the film only once their times are in.
+ *     the film; null keeps that chapter going to the dash): the chapters start the film only once their times are in.
  *  5. Listing: listed: true (the home TV and the /plugins entry), remove '/widebeam/' from NOINDEX in astro.config.mjs,
  *     index on, canonical, the 153-character meta description, SoftwareApplication JSON-LD with no rating.
  *  6. Cloudflare: add widebeam/ to the long-cache rule.
@@ -109,7 +109,8 @@ export const compatRows = () => [
   ...(widebeam.aaxReady ? [] : [{ k: 'PRO TOOLS', v: 'Not yet', d: '' }]),
 ];
 
-/* ---------- the stereo road: six steps (the manual's six chapters land on their ids) ---------- */
+/* ---------- the stereo road: six steps. The road is cut from the page (Dan's page map, 2026-11-22); the steps stay as the
+   manual's six chapter titles (label + h; a chapter now drives to the dash) and to bring the road back ---------- */
 export interface Step { n: string; id: string; label: string; h: string; p: string; }
 export const STEPS: Step[] = [
   {

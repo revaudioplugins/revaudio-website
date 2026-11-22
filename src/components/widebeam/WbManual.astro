@@ -7,7 +7,9 @@
  *
  * Three states, picked by the data alone:
  *  - stand-by (youtubeId and src null): the LCD line and one sentence. No play icon, length, poster, date or email
- *    promise. Each chapter is a plain link to its step of the stereo road (works without JS; manual.ts drives there).
+ *    promise. Each chapter is a plain link to the dash, #wb-drive (works without JS; manual.ts drives the face there).
+ *    It went to its step of the stereo road until Dan cut the road from his page map (2026-11-22); the titles still
+ *    come from STEPS.
  *  - youtubeId: the house click-to-load facade ([slug].astro's Driver's Manual): our own poster through getImage (lazy,
  *    600 px at 1x), a <button> named with the length; nothing from YouTube loads before the tap. A chapter with `at`
  *    (seconds) starts the film there.
@@ -50,14 +52,15 @@ const filmTitle = `WIDE BEAM ${m.title}`;
 const headOf = (id: string) => STEPS.find((s) => s.id === id)?.h ?? '';
 const WORDS = ['none', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const timed = m.chapters.filter((c) => c.at != null).length;
-// with the film in but no chapter timed yet, the chapters still go to the road, and the note no longer says "until"
+// with the film in but no chapter timed yet, the chapters still go to the dash (above the manual since Dan's page map,
+// 2026-11-22), and the note no longer says "until"
 const note = !film
-  ? 'Until the film is ready, each chapter takes you to that step of the stereo road above.'
+  ? 'Until the film is ready, each chapter takes you to the dash above.'
   : !timed
-  ? 'Each chapter takes you to that step of the stereo road above.'
+  ? 'Each chapter takes you to the dash above.'
   : timed === m.chapters.length
     ? 'Each chapter starts the film at that step.'
-    : 'A chapter starts the film at that step, or takes you to that step of the stereo road above.';
+    : 'A chapter starts the film at that step, or takes you to the dash above.';
 const paras = (m.transcript ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 ---
 {/* ============ THE OWNER'S MANUAL (D6 A) ============ */}
@@ -111,7 +114,7 @@ const paras = (m.transcript ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(
         <ol>
           {m.chapters.map((c, i) => (
             <li>
-              <a href={`#${c.step}`} data-wb-chapter data-at={film && c.at != null ? c.at : undefined}>
+              <a href="#wb-drive" data-wb-chapter data-at={film && c.at != null ? c.at : undefined}>
                 <b>{String(i + 1).padStart(2, '0')}</b>
                 <span>{c.label}</span>
                 <em>{headOf(c.step)}</em>

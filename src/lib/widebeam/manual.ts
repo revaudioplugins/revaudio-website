@@ -1,11 +1,12 @@
 /**
  * /widebeam Owner's Manual (lane S): #manual, WbManual.astro, the words in `manual` (src/data/widebeam.ts).
  *
- * Chapters: each is an <a href="#wb-step-0N"> that works without JS. With JS a click drives the page to the middle of
- * that step's lit range (the step's [data-step-mark], placed by story.ts) and is stopped there, so Lenis's own anchor
- * handling (motion.ts `anchors`, a click listener on window) never moves the page as well: one mover. Focus follows to the
- * step on arrival. A modified click (new tab, etc.) is left alone. Once a film exists, a chapter with a time starts the
- * film there instead.
+ * Chapters: each is an <a href="#wb-drive"> that works without JS (until Dan's page map, 2026-11-22, each went to its step
+ * of the stereo road, which he cut). With JS a click drives the face to the screen (driveTo align 'face', the glove box's
+ * old drive: the dash rises and its art loads on the way) and is stopped there, so Lenis's own anchor handling (motion.ts
+ * `anchors`, a click listener on window) never moves the page as well: one mover. Focus follows to the dash's heading on
+ * arrival, without a scroll. A modified click (new tab, etc.) is left alone. Once a film exists, a chapter with a time
+ * starts the film there instead.
  *
  * The film (only when manual.youtubeId or manual.src is set): the click on the facade builds the player then, never
  * before (0 bytes from YouTube until the tap), stops the page's own sound (stopForFilm), moves focus into the player
@@ -89,8 +90,8 @@ export function initManual(page: HTMLElement) {
   sec.querySelectorAll<HTMLAnchorElement>('[data-wb-chapter]').forEach((a) => a.addEventListener('click', (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const at = a.dataset.at != null ? Number(a.dataset.at) : null;
-    const step = document.getElementById(decodeURIComponent(a.hash.slice(1)));
-    if (at == null && !step) return; // nothing to drive to: let the browser have it
+    const dash = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+    if (at == null && !dash) return; // nothing to drive to: let the browser have it
     e.preventDefault();
     e.stopPropagation(); // Lenis's anchor listener sits on window: it never sees this click
     if (at != null && film) {
@@ -98,7 +99,8 @@ export function initManual(page: HTMLElement) {
       if (frame) driveTo(frame, { align: 'face' });
       return;
     }
-    const mark = step!.querySelector<HTMLElement>('[data-step-mark]') ?? step!;
-    driveTo(mark, { align: 'top', onArrive: () => step!.focus({ preventScroll: true }) });
+    // the dash's heading takes focus (a tabindex -1 it gets only here), so the next Tab goes on into the dash's controls
+    const h = dash!.querySelector<HTMLElement>('h2') ?? dash!;
+    driveTo(dash!, { align: 'face', onArrive: () => { if (!h.hasAttribute('tabindex')) h.tabIndex = -1; h.focus({ preventScroll: true }); } });
   }));
 }

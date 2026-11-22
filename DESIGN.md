@@ -608,3 +608,17 @@ came up with, or it rescales under the finger.
 - 2026-11-22 Dan: "make the car scene go faster". The /widebeam intro film plays at 1.5x (playbackRate, the files
   untouched): about 5.4 s instead of 8 s, the title up about 3.4 s after the film starts, and the canvas tail lights
   after the hand-off travel 1.5x faster too (night.ts TRAVEL), so the car never slows down on the hand-off (§7).
+- 2026-11-22 Dan's page map (Black Friday; "simplify and minimize this page as much as we can ... the plugin is
+  really simple"): /widebeam is now hero, dash, ask plate, Owner's Manual, closer, footer. The glove box (#wb-presets)
+  and the stereo road (#wb-story) are cut: their components, data and scripts stay (presets.ts and story.ts are
+  null-safe in init.ts), off the page and out of the stylesheet; bringing either back is its section line and its import
+  in widebeam.astro and its @import in widebeam.css (the chapters would still go to the dash). The dash moved up, unchanged (Dan's bench the same day: both dash screens ticked, "may MOVE,
+  not change"). The manual's six chapters keep their titles (STEPS) and now drive the face to the screen (the glove
+  box's old drive, align 'face'); the note under them says "the dash above". The below-the-fold art's 3/4-screen
+  look-ahead now starts with the first scroll, so the face-still and the console's road stay out of the first view
+  now that the dash sits under the hero. This map supersedes, dated 2026-11-22: the plan's "the ask plate, right under
+  the hero" (tasks/widebeam-polish-plan-2026-11-18.md:87), "the glove box, moved up right under the dash"
+  (plan:105-107), the stereo road per D4 C and plan:108-112, the manual note "the stereo road above", and D2 B's rule
+  that the body copy keeps the two facts around the hero line (plan:9): the side below LOW FOCUS is removed at any
+  WIDTH, and MIX under 100 blends the dry back. They lived in the road's steps 01-02; where they still show is in
+  tasks/handoff.md, for Dan to decide. widebeam.astro's header called the order final after lane F: Dan changed it.
