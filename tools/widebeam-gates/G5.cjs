@@ -40,6 +40,7 @@ G.main(async () => {
     if (!G.ARGS.timing) await G.step(GATE, `preset glide stays in range (knobs + LCD) ${T}`, async () => {
       const { b, ctx, page } = await fresh(engine, 'L1141');
       try {
+        if (await G.skipIfCut(page, GATE, `preset glide stays in range (knobs + LCD) ${T}`, 'presets')) return;
         if (!(await G.has(page, '[data-preset="3"]'))) return G.missing(GATE, `preset glide stays in range (knobs + LCD) ${T}`, 'no [data-preset] cards');
         await page.evaluate(() => {
           window.__rec = []; window.__lcd = [];
@@ -110,6 +111,9 @@ G.main(async () => {
       await G.step(GATE, name, async () => {
         const { b, ctx, page } = await fresh(engine, 'L1141');
         try {
+          if (await G.skipIfCut(page, GATE, name, 'presets')) return;
+          // the link mode's second mover is a chapter to the road's step 05: without the road it has no target of its own
+          if (mode === 'link' && await G.skipIfCut(page, GATE, name, 'story')) return;
           if (!(await G.has(page, '[data-preset="9"]'))) return G.missing(GATE, name, 'no preset cards');
           let used = '';
           const inject = () => page.evaluate(() => {

@@ -106,6 +106,16 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
       it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
       local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-22 ~12:40, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
+    `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
+    stereo road are cut (files kept; bring back = two lines in widebeam.astro + one in widebeam.css). The manual's
+    chapters drive to the dash; its note says "the dash above". The art look-ahead starts on the first scroll (G11's
+    first view). Gate rows for the two cut sections SKIP while they are off the page. Superseded by the map (dated
+    2026-11-22): plan:87 the plate under the hero, plan:105-107 the glove box under the dash, the road per D4 C /
+    plan:108-112, the manual note "the stereo road above", D2 B's body-copy rule (plan:9). Open for Dan: D2 B's two facts
+    (the side below LOW FOCUS removed at any WIDTH; MIX under 100 blends the dry back) now show only behind the closed
+    Specs fold, and only in part (LOW FOCUS "the side below it is removed", no "at any WIDTH"; MIX "Dry blend"); in
+    view: the odometer's "24 dB/oct mono-bass split" and chapter 02's title. No copy added; he decides.
   - **State 2026-11-22 ~11:30 (local on `feat/widebeam-page`, NOT pushed; Dan: Black Friday, Gil wants it today):**
     - `a040c17` the car film plays at 1.5x (intro.ts `RATE`, defaultPlaybackRate on every start; night.ts TRAVEL /
       RATE). Measured Chrome / WebKit / portrait, Replay, Skip, slow line, hidden tab: ~5.4 s film, title ~3.4 s.

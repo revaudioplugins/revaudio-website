@@ -66,7 +66,7 @@ const CASES = [
   { id: 'SOUND key', exp: 'on', act: async (p, t) => { await G.hideCookie(p); await G.sleep(700); await clickSel(p, '[data-wb-sound]', t); } },
   // n32 (stage 4): the intro film covers the key until it ends (at 2.3 s it is still playing): Skip first, as a visitor would
   { id: 'Take it for a drive (hero key)', exp: 'on', act: async (p, t) => { await G.hideCookie(p); if (await p.locator('[data-wb-skip]').isVisible().catch(() => false)) { await clickSel(p, '[data-wb-skip]', t); await G.sleep(900); } await clickSel(p, '[data-wb-start]', t); } },
-  { id: 'preset card', exp: 'on', act: async (p, t) => { await G.hideCookie(p); await G.bring(p, '[data-preset]', t, 0.55); await clickSel(p, '[data-preset="3"]', t); } },
+  { id: 'preset card', exp: 'on', cut: 'presets', act: async (p, t) => { await G.hideCookie(p); await G.bring(p, '[data-preset]', t, 0.55); await clickSel(p, '[data-preset="3"]', t); } },
   { id: 'a tutorial play stops the sound', exp: 'stops', fixture: true, act: async (p, t) => { await G.hideCookie(p); await G.sleep(700); await clickSel(p, '[data-wb-sound]', t); for (let i = 0; i < 20 && !(await G.soundOn(p)); i++) await G.sleep(100); if (!(await G.soundOn(p))) throw new Error('NOSTART could not start the sound first'); await G.bring(p, '[data-wb-manual]', t); await clickSel(p, await facadeSel(p), t); } },
 ];
 async function facadeSel(page) { // the click-to-load YouTube facade inside the manual frame (lane S): a button in [data-wb-manual] that is not a chapter link
@@ -88,6 +88,7 @@ async function runCase(engine, c) {
     await page.addInitScript(COUNT_AC);
     if (c.noNav) await page.addInitScript(NO_NAV);
     await G.goto(page, base, '/widebeam', 2300);
+    if (c.cut && await G.skipIfCut(page, GATE, label, c.cut)) { await ctx.close(); return; }
     const before = await G.soundOn(page);
     try { await c.act(page, touch); } catch (e) {
       if (/^MISSING|Error: MISSING/.test(e.message) || /MISSING/.test(e.message)) { await ctx.close(); return G.missing(GATE, label, e.message.replace(/^.*MISSING/, 'MISSING').split('\n')[0]); }

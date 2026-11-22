@@ -51,6 +51,7 @@ G.main(async () => {
       try {
         const { ctx, page } = await G.page(b, engine, 'L1141', { reducedMotion: 'reduce' });
         await G.goto(page, G.BASE, '/widebeam', 2200); await G.hideCookie(page);
+        if (await G.skipIfCut(page, GATE, `reduced motion: story canvas identical over 1 s at rest ${T}`, 'story')) return;
         const cv = '[data-wb-story] canvas, #wb-story canvas'; if (!(await G.has(page, cv))) return G.missing(GATE, `reduced motion: story canvas identical over 1 s at rest ${T}`, 'no story canvas');
         await G.bring(page, cv, false, 0.45); await G.sleep(1500);
         const snap = () => page.evaluate((cv) => { const c = document.querySelector(cv); try { return c.toDataURL(); } catch { return 'ERR'; } }, cv);

@@ -42,6 +42,7 @@ G.main(async () => {
       const name = `every story step lit + readable >= ${need} px of scroll [${engine} ${size}]`; const { b, ctx, page } = await fresh(engine, size);
       try {
         await G.hideCookie(page);
+        if (await G.skipIfCut(page, GATE, name, 'story')) return;
         const info = await page.evaluate(() => { const steps = [...document.querySelectorAll('[id^="wb-step-"]')]; const stage = document.querySelector('.wb-story-stage,[data-wb-stage]'); const wrap = document.querySelector('.wb-steps,[data-wb-steps]') || (steps[0] && steps[0].parentElement); if (!steps.length || !stage || !wrap) return null; const r = wrap.getBoundingClientRect(); return { n: steps.length, a: Math.round(r.top + scrollY - innerHeight), z: Math.round(r.bottom + scrollY) }; });
         if (!info) return G.missing(GATE, name, 'no [id^=wb-step-] steps / .wb-story-stage');
         const lit = {}; const best = {};
@@ -111,7 +112,8 @@ G.main(async () => {
     await G.step(GATE, `a tapped preset card does not stay lifted by sticky hover ${T}`, async () => {
       const name = `a tapped preset card does not stay lifted by sticky hover ${T}`; const { b, ctx, page } = await fresh(engine, 'P390');
       try {
-        await G.hideCookie(page); if (!(await G.has(page, '[data-preset="1"]'))) return G.missing(GATE, name, 'no preset card');
+        await G.hideCookie(page); if (await G.skipIfCut(page, GATE, name, 'presets')) return;
+        if (!(await G.has(page, '[data-preset="1"]'))) return G.missing(GATE, name, 'no preset card');
         await G.bring(page, '[data-preset="1"]', true, 0.6); await G.sleep(500);
         const r = await G.rect(page, '[data-preset="1"]'); await page.touchscreen.tap(r.cx, r.cy); await G.sleep(3800);
         const c = await page.evaluate(() => { const e = document.querySelector('[data-preset="1"]'); return { tr: getComputedStyle(e).transform, hover: e.matches(':hover'), hoverMq: matchMedia('(hover:hover)').matches }; });

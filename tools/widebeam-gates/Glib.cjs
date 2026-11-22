@@ -125,6 +125,14 @@ G.declineCookie = async (page) => { const b = page.locator('#cookie-decline'); i
 G.soundOn = (page) => page.evaluate(() => { const s = document.querySelector('[data-wb-sound]'); return !!s && s.getAttribute('aria-pressed') === 'true' || !!document.querySelector('.wb-page.is-playing'); });
 G.rect = (page, sel) => page.evaluate((sel) => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height, cx: r.x + r.width / 2, cy: r.y + r.height / 2, top: r.top, bottom: r.bottom, left: r.left, right: r.right }; }, sel);
 G.has = (page, sel) => page.evaluate((s) => !!document.querySelector(s), sel);
+// sections Dan cut from his page map (2026-11-22). A row that needs one of them SKIPs, with this reason, ONLY while the
+// section itself is absent from the page: a section that is back (or still there with a broken hook) runs its row as
+// before, so a renamed hook is still MISSING.
+G.CUT = { presets: ['#wb-presets', 'the glove box'], story: ['#wb-story', 'the stereo road'] };
+G.CUT_WHY = 'section cut by Dan 2026-11-22 (page map)';
+G.isCut = async (page, which) => !(await G.has(page, G.CUT[which][0]));
+// true (and the SKIP row written) when `which` is off the page
+G.skipIfCut = async (page, gate, check, which) => { if (!(await G.isCut(page, which))) return false; G.skip(gate, check, `${G.CUT[which][1]} (${G.CUT[which][0]}): ${G.CUT_WHY}`); return true; };
 G.knobSel = (label) => `[role=slider][aria-label="${label}"]`;
 G.val = (page, label) => page.evaluate((l) => { const e = document.querySelector(`[role=slider][aria-label="${l}"]`); return e ? Number(e.getAttribute('aria-valuenow')) : null; }, label);
 G.scrollY = (page) => page.evaluate(() => Math.round(scrollY));

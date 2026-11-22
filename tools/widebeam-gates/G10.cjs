@@ -87,7 +87,8 @@ G.main(async () => {
     await G.step(GATE, `a glove-box card (Enter) hands focus to the face ${T}`, async () => {
       const name = `a glove-box card (Enter) hands focus to the face ${T}`; const { b, ctx, page } = await fresh(engine, 'L1141');
       try {
-        await G.hideCookie(page); if (!(await G.has(page, '[data-preset="8"]'))) return G.missing(GATE, name, 'no preset card 09');
+        await G.hideCookie(page); if (await G.skipIfCut(page, GATE, name, 'presets')) return;
+        if (!(await G.has(page, '[data-preset="8"]'))) return G.missing(GATE, name, 'no preset card 09');
         await G.bring(page, '[data-preset="8"]'); await page.locator('[data-preset="8"]').focus(); await page.keyboard.press('Enter'); await G.sleep(2800);
         const a = await page.evaluate(() => { const e = document.activeElement; return { inFace: !!e && !!e.closest('[data-wb-face]'), what: e ? (e.getAttribute('aria-label') || e.tagName) : 'none', y: Math.round(scrollY) }; });
         await page.keyboard.press('Tab'); await G.sleep(700); const y2 = await G.scrollY(page);
@@ -101,7 +102,8 @@ G.main(async () => {
     await G.step(GATE, `a glove-box card (Enter) hands focus to the deck's 'Next preset' [${engine} P390]`, async () => {
       const name = `a glove-box card (Enter) hands focus to the deck's 'Next preset' [${engine} P390]`; const { b, ctx, page } = await fresh(engine, 'P390');
       try {
-        await G.hideCookie(page); if (!(await G.has(page, '[data-preset="8"]'))) return G.missing(GATE, name, 'no preset card 09');
+        await G.hideCookie(page); if (await G.skipIfCut(page, GATE, name, 'presets')) return;
+        if (!(await G.has(page, '[data-preset="8"]'))) return G.missing(GATE, name, 'no preset card 09');
         if (!(await G.has(page, '[data-wb-deck] [aria-label="Next preset"]'))) return G.missing(GATE, name, "no deck 'Next preset'");
         await G.bring(page, '[data-preset="8"]', true); await page.locator('[data-preset="8"]').focus(); await page.keyboard.press('Enter'); await G.sleep(2800);
         const a = await page.evaluate(() => { const e = document.activeElement; const r = e ? e.getBoundingClientRect() : null; const nav = document.querySelector('nav[data-site-nav], header'); const top = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;

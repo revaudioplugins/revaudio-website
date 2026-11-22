@@ -14,15 +14,17 @@ const ENGINES = L.parseList(argv, '--engines', ['chromium', 'webkit']);
 if (!/^https?:/.test(BASE)) { console.error('usage: sections.cjs <base> <outdir> [--sizes ..] [--engines ..]'); process.exit(2); }
 fs.mkdirSync(OUT, { recursive: true });
 
-// Top-level sections of src/pages/widebeam.astro, in page order. Each is found by a stable id (or the hero's class),
+// Top-level sections of src/pages/widebeam.astro (the list predates Dan's page map of 2026-11-22: the order no longer matters,
+// each is found by selector). Each is found by a stable id (or the hero's class),
 // with fallbacks, so a pure refactor that keeps ids/classes keeps the shots comparable. The footer is the site's own.
+const CUT = new Set(['story', 'presets']); // absent = cut (written to CUT.json for G1), not a MISSING section
 const SECTIONS = [
   ['hero', ['.wb-hero', '[data-wb-page] > section:first-of-type']],
   ['get', ['#wb-get', '.wb-get']],
   ['drive', ['#wb-drive', '.wb-drive']],
-  ['story', ['#wb-story', '.wb-story']],
+  ['story', ['#wb-story', '.wb-story']], // cut by Dan 2026-11-22 (page map): CUT below while it is off the page
   ['manual', ['#manual', '.wb-manual']],
-  ['presets', ['#wb-presets', '.wb-presets']],
+  ['presets', ['#wb-presets', '.wb-presets']], // cut by Dan 2026-11-22 (page map): CUT below while it is off the page
   ['specs', ['#wb-specs', '.wb-specs']],
   ['notify', ['#wb-notify', '.wb-notify']],
   ['footer', ['footer.site-footer', 'footer']],
@@ -58,7 +60,7 @@ async function find(page, sels) {
 }
 
 (async () => {
-  let wrote = 0, missing = [];
+  let wrote = 0, missing = []; const cut = new Set();
   for (const engine of ENGINES) {
     const browser = await L.launch(engine, true);
     for (const size of SIZES) {
@@ -97,7 +99,7 @@ async function find(page, sels) {
 
       for (const [name, sels] of SECTIONS) {
         const f = await find(page, sels);
-        if (!f) { missing.push(`${size}-${engine}-${name}`); continue; }
+        if (!f) { if (CUT.has(name)) cut.add(name); else missing.push(`${size}-${engine}-${name}`); continue; }
         // bring the section to the top of the screen so its own scroll-tied state is the same every run
         const top = await f.h.evaluate((e) => e.getBoundingClientRect().top + scrollY);
         await scrollTo(page, Math.max(0, Math.round(top)));
@@ -123,5 +125,6 @@ async function find(page, sels) {
     await browser.close();
   }
   console.log(`sections: wrote ${wrote} shots to ${OUT}`);
+  if (cut.size) { fs.writeFileSync(path.join(OUT, 'CUT.json'), JSON.stringify([...cut])); console.log('CUT sections (section cut by Dan 2026-11-22, page map; not shot): ' + [...cut].join(', ')); }
   if (missing.length) { console.log('MISSING sections (selector not found): ' + missing.join(', ')); process.exit(1); }
 })().catch((e) => { console.error(e); process.exit(1); });

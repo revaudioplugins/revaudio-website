@@ -23,11 +23,14 @@ G.main(async () => {
   const sizeNames = sizes.split(',');
   const section = (f) => { const m = f.match(/^[A-Z]\d+-(?:chromium|webkit)-(.+)\.png$/); return m ? m[1].replace(/-p\d$/, '') : f; };
   const owned = (f) => own.includes(section(f));
+  // sections Dan cut (2026-11-22, page map) that the page under test no longer has: kit/sections.cjs lists them in CUT.json
+  const cutList = (() => { try { return JSON.parse(fs.readFileSync(path.join(outDir, 'sections', 'CUT.json'), 'utf8')); } catch { return []; } })();
+  for (const c of cutList) G.skip(GATE, `the ${c} section's shots [${sizes}, ${engines.join('+')}]`, 'section cut by Dan 2026-11-22 (page map)');
   const res = { same: 0, diffs: [], skipped: 0 };
   for (const l of lines) {
     const m = l.match(/^(IDENTICAL|DIFF \d+|MISSING|SIZE-CHANGED)\s+(\S+\.png)(.*)$/); if (!m) continue;
     const f = m[2], sec = section(f); if (!sizeNames.some((s) => f.startsWith(s + '-')) || !engines.some((e) => f.includes('-' + e + '-'))) continue;
-    if (sec === 'fold' || owned(f)) { res.skipped++; continue; }
+    if (sec === 'fold' || owned(f) || (cutList.includes(sec) && /not in B/.test(m[3]))) { res.skipped++; continue; }
     if (m[1] === 'IDENTICAL') res.same++; else res.diffs.push(`${f} ${m[1]}${m[3].replace(/ ->.*/, '')}`);
   }
   G.ok(GATE, `sections you do not own are identical to ${path.basename(baseline)} [${sizes}, ${engines.join('+')}]`, res.diffs.length === 0 && res.same > 0, res.diffs.length ? `${res.diffs.length} differ (${res.same} identical, ${res.skipped} skipped as owned/fold): ${res.diffs.slice(0, 5).join(' | ')} (diff pngs: ${path.join(outDir, 'diff')})` : `${res.same} section shots identical (${res.skipped} skipped: fold${own.length ? ', owned ' + own.join('/') : ''})`);
