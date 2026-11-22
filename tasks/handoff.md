@@ -106,6 +106,18 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
       it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
       local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-22 ~11:30 (local on `feat/widebeam-page`, NOT pushed; Dan: Black Friday, Gil wants it today):**
+    - `a040c17` the car film plays at 1.5x (intro.ts `RATE`, defaultPlaybackRate on every start; night.ts TRAVEL /
+      RATE). Measured Chrome / WebKit / portrait, Replay, Skip, slow line, hidden tab: ~5.4 s film, title ~3.4 s.
+      Known: under ~1 Mbit/s the 720 file stalls at 1.5x (1x stalls there too); fallback to 1x = a follow-up.
+    - `85b596c` lag: the empty haze plates are `display: none` until the footer nears (base.css). Measured on the qa
+      preview: wheel input to motion 40 -> 25 ms, wheel scroll 12.8 -> 10.3 s, rest 9 -> 4-5 % busy, 0 pixels differ.
+      The page itself drops no frames (even at 4x CPU). The rest: three orphaned headless Playwright Chromes on
+      Dan's Mac (12 days old, parent pid 1; PIDs 28952, 30280, 99358), one burning ~45 % CPU nonstop.
+    - qa worktree merged = `e36b6af`, built, preview on 4394 restarted (serves both). The qa push still waits on
+      Dan's `!` line. Bench for Dan's notes, round 1: https://claude.ai/artifact/NErJDGkBE3RyAsHDkWjjDh (24 screens
+      at 1312x734 from 203ea3d; db collection `notes`). Its two asks: the film speed, the site-wide Lenis glide
+      (lerp 0.1; 0.15-0.2 or smoothWheel off are the options; motion.ts is shared, not a WIDE BEAM file).
   - **State 2026-11-22 ~02:10 (all local on `feat/widebeam-page`, HEAD `9b81220`, NOT pushed):**
     - `0ca2471` round 3 committed (from the dead run's journal). `a44ec19` merged Gil's `7a92522` + `3c91404` in (phase
       stays `preopen`, so the page shows none of BUY NOW / the gate yet; his plugins.ts formats line still says AAX: fix
