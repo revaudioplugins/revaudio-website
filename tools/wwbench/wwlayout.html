@@ -102,7 +102,7 @@ ${P} > .ww-panel .ww-blurb {
   font-size: var(--lay-bl, 1rem); line-height: 1.42; height: calc(var(--lay-bl-lines) * 1.42em); overflow: hidden;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lay-bl-lines);
 }
-${P} > .ww-panel .ww-pwords { font-size: .86rem; line-height: 1.4; height: 1.4em; white-space: nowrap; overflow: hidden; }
+${P} > .ww-panel .ww-pwords { width: 100%; font-size: .86rem; line-height: 1.4; height: 1.4em; white-space: nowrap; overflow: hidden; }
 /* the keys on a grid: the price, Try, Product page and Add to cart each keep their spot (a free plugin just has no
    cart); the stack is set per layout (--lay-buy) */
 ${P} > .ww-panel .ww-buy {
@@ -123,6 +123,7 @@ ${P} {
   --lay-buy-cols: max-content max-content; --lay-buy: 'price price' 'try try' 'more cart';
 }
 ${P} .ww-type { white-space: nowrap; }
+${P} > .ww-panel .ww-pwords { font-size: .8rem; letter-spacing: .08em; }
 ${P} .ww-list { gap: clamp(.15rem, .9vh, .6rem); }
 ${P} > .ww-panel { height: var(--ww-main); column-gap: clamp(1.5rem, 3vw, 2.75rem); }
 `;
@@ -279,6 +280,11 @@ ${P} > .ww-panel { grid-template-columns: minmax(0, 1fr) minmax(0, clamp(17rem, 
       name: at('.ww-pname'), blurb: at('.ww-blurb'), try: at('.ww-try'), more: at('.ww-more'),
       pic: m ? [Math.round(m.width), Math.round(m.height)] : [0, 0],
       cut: blurb && blurb.scrollHeight > blurb.clientHeight + 2,
+      // a line clipped by its own box, or any of the words past the panel's edge (into the picture or the bezel)
+      clip: (() => { const pw = panel.querySelector('.ww-pwords'); return !!pw && pw.scrollWidth > pw.clientWidth + 1; })(),
+      past: (() => { const pr = panel.getBoundingClientRect(), ir = panel.querySelector('.ww-info').getBoundingClientRect(), ui = panel.querySelector('.ww-ui').getBoundingClientRect();
+        const kids = [...panel.querySelectorAll('.ww-info *')].filter((e) => e.offsetParent && !e.closest('.sr-only')).map((e) => e.getBoundingClientRect());
+        return kids.some((k) => k.right > pr.right + 1 || k.left < pr.left - 1 || (ui.left >= ir.right - 1 ? k.right > ui.left + 1 : ui.right <= ir.left + 1 ? k.left < ui.right - 1 : false)); })(),
     };
     const S = Object.entries(c.seen);
     const drift = (k) => {
@@ -292,12 +298,16 @@ ${P} > .ww-panel { grid-template-columns: minmax(0, 1fr) minmax(0, clamp(17rem, 
     const nm = (s) => names[slugs.indexOf(s)] || s;
     const over = Math.round(wallEl.offsetHeight - parseFloat(getComputedStyle(wallEl).minHeight));
     const cut = S.filter(([, v]) => v.cut).map(([s]) => nm(s));
+    const clip = S.filter(([, v]) => v.clip).map(([s]) => nm(s));
+    const past = S.filter(([, v]) => v.past).map(([s]) => nm(s));
     c.read.innerHTML =
       `<b>Words moved</b> (${S.length} of ${slugs.length} plugins seen): ${fmt('name', 'name')} · ${fmt('blurb', 'text')} · ${fmt('try', 'Try key')} · ${fmt('more', 'Product page')}<br>` +
       `<b>Picture</b> now ${m ? `${Math.round(m.width)}×${Math.round(m.height)}` : '–'}` +
       (pics.length > 1 ? ` · smallest ${nm(pics[0].s)} ${pics[0].h} px tall, largest ${nm(pics[pics.length - 1].s)} ${pics[pics.length - 1].h} px tall` : '') + '<br>' +
       `<b>One screen</b>: ${over <= 1 ? '<span class="ok">fits</span>' : `<span class="bad">${over} px taller than the screen</span>`}` +
-      (cut.length ? ` · <span class="bad">text cut on ${cut.join(', ')}</span>` : '');
+      (cut.length ? ` · <span class="bad">text cut on ${cut.join(', ')}</span>` : '') +
+      (clip.length ? ` · <span class="bad">words line cut on ${clip.join(', ')}</span>` : '') +
+      (past.length ? ` · <span class="bad">words past the column on ${past.join(', ')}</span>` : '');
   }
 
   function paint() {
