@@ -77,6 +77,8 @@ button, input, textarea { font: inherit; }
 .stamp { font-family: var(--display); font-weight: 400; letter-spacing: .02em; line-height: 1; color: var(--ivory); text-shadow: var(--engrave-cut); margin: 0; text-wrap: balance; }
 .fine { margin: 0; color: var(--ivory-2); font-size: .8rem; line-height: 1.45; max-width: 46ch; }
 .status { margin: 0; font-size: .9rem; color: var(--ivory-2); min-height: 1.2em; }
+/* the line under an email box clears the box's brass ring (its shadow rings reach 4 px below the box) */
+.gate .status { margin-top: 10px; line-height: 1.35; }
 .status.ok { color: var(--ok); } .status.err { color: var(--err); }
 
 /* a well cut into the steel: dark recess, shaded top lip, a brass bezel ring; the key sits IN it */
@@ -134,14 +136,16 @@ button, input, textarea { font: inherit; }
   radial-gradient(60% 70% at 50% 46%, rgba(8, 7, 5, .62), rgba(8, 7, 5, .3) 60%, rgba(8, 7, 5, 0) 85%),
   linear-gradient(180deg, rgba(8, 7, 5, .5), transparent 26%, transparent 70%, rgba(8, 7, 5, .75)); }
 .s1-in { position: relative; z-index: 1; display: grid; align-content: center; justify-items: center; text-align: center; gap: 24px; padding-block: clamp(28px, 6vh, 64px) clamp(24px, 5vh, 48px); max-width: 1240px; width: 100%; margin: 0 auto; box-sizing: border-box; }
-.lock { display: grid; gap: 6px; max-width: 46rem; justify-items: center; }
-.lock-name { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(1.9rem, 3.4vw, 2.9rem); letter-spacing: .36em; line-height: 1; white-space: nowrap;
-  background: linear-gradient(180deg, #f7e7b8, #d9b56c 55%, #9c7a3e); -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .8)); }
-.lock-sub { font-size: .95rem; letter-spacing: .38em; }
-@media (max-width: 560px) { .lock-sub { font-size: .9rem; letter-spacing: .2em; } }
-.lock-head { margin: 10px 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 4vw, 3.3rem); line-height: .95; letter-spacing: .01em; color: var(--ivory); text-wrap: balance; }
-.lock-line { margin: 4px auto 0; font-size: 1.06rem; line-height: 1.55; color: var(--ivory-2); max-width: 40ch; }
+/* the name exactly as on the plugin: its own engraved letters, cut from the plugin's face (title.webp, unmixed from the
+   plate's #242424 so the bevel and the brushed gold stay), and under it the plugin's ruled subtitle line, in its gold
+   (#bcaf8d letters, #bda989 rules, measured on face.webp), carrying the tagline */
+.lock { --lw: min(560px, 46vw); display: grid; gap: 10px; justify-items: center; }
+.lock-name { margin: 0; width: var(--lw); line-height: 0; }
+.lock-name img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .85)) drop-shadow(0 0 1px rgba(0, 0, 0, .7)); }
+.lock-sub { display: flex; align-items: center; gap: .9em; width: var(--lw); font-size: .95rem; letter-spacing: .38em; color: #cbbd97; white-space: nowrap; }
+.lock-sub span { margin-right: -.38em; }
+.lock-sub::before, .lock-sub::after { content: ''; flex: 1; min-width: 14px; height: 1.5px; border-radius: 1px; background: #bda989; box-shadow: 0 1px 1px rgba(0, 0, 0, .6); }
+@media (max-width: 560px) { .lock { --lw: min(88vw, 380px); } .lock-sub { font-size: .85rem; letter-spacing: .2em; gap: .7em; } .lock-sub span { margin-right: -.2em; } }
 .s1-plate { width: min(100%, 540px); --ps: .34; justify-self: center; }
 .s1-plate .plate-body { gap: 9px; padding: 12px 20px 8px; }
 .s1-plate .plate-body { justify-items: center; text-align: center; }
@@ -185,7 +189,7 @@ button, input, textarea { font: inherit; }
 /* the small print is one row on a laptop; a phone is too narrow, so there it wraps */
 .s1-plate .fine { max-width: none; }
 @media (min-width: 561px) { .s1-plate .fine { white-space: nowrap; } }
-.scroll-cue { position: absolute; z-index: 1; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 18px; font-size: .8rem; color: var(--ivory-3); letter-spacing: .2em; font-variant: small-caps; }
+.scroll-cue { position: absolute; z-index: 1; left: 50%; translate: -50% 0; bottom: 20px; margin: 0; padding-left: .2em; white-space: nowrap; font-size: 1.05rem; color: var(--ivory-2); letter-spacing: .2em; font-variant: small-caps; }
 
 /* ================= Section 2: the projector ================= */
 .s2 { position: relative; height: 100svh; min-height: 560px; overflow: clip; background: #060504; }
@@ -359,9 +363,20 @@ button, input, textarea { font: inherit; }
 .fp-road img { position: absolute; width: 208.7%; height: 467.6%; left: -54.21%; top: -100.9%; max-width: none; transform-origin: 49.9% 27.3%; }
 .fp-lcd { left: 42.25%; top: 16.7%; width: 15.43%; height: 4.39%; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; color: var(--lcd-ink);
   font-size: clamp(9px, 1.45vw, 15px); letter-spacing: .12em; text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); }
-.pin { position: absolute; width: clamp(20px, 2.4vw, 28px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; translate: -50% -50%;
-  font-family: var(--label); font-weight: 400; font-size: clamp(14px, 1.4vw, 18px); color: var(--key-ink);
-  background: radial-gradient(circle at 35% 30%, #fbe9b6, #d6b066 55%, #8a6a39); box-shadow: 0 2px 4px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 250, 230, .7); }
+/* the numbers: flat brass coins, an exact circle (a set height, so no grid row can stretch one), a dark rim and a
+   fine light ring inside; lit evenly, so they read round, not as a lit bead. On the face each one sits just before
+   its control's printed name ("1 WIDTH"), clear of every knob, switch and label: --x is where that name starts
+   (measured on face.webp: LOW FOCUS 16.93 %, MIX 32.29 %, WIDTH 46.78 %, HIGH BEAM 60.97 %; the names' centre line is
+   78.05 % down). Sizes follow the face (cqw). Under 640 px of face the printed names are ~5 px tall, so the face's
+   numbers go and the list under it carries the names alone. */
+.pin { --d: clamp(18px, 2.2cqw, 26px); position: absolute; box-sizing: border-box; width: var(--d); height: var(--d); border-radius: 50%;
+  display: grid; place-items: center; padding-top: .06em; translate: -50% -50%;
+  font-family: var(--label); font-weight: 400; font-size: calc(var(--d) * .6); line-height: 1; color: var(--key-ink);
+  background: radial-gradient(circle, #f3dc9a 0 52%, #d8b467 100%); border: 1.5px solid #5e4526;
+  box-shadow: inset 0 0 0 1px rgba(255, 246, 220, .5), 0 1px 3px rgba(0, 0, 0, .55); }
+.faceset { container: face / inline-size; }
+.faceset .pin { --d: clamp(14px, 2.2cqw, 26px); left: calc(var(--x) - .6cqw - var(--d)); top: 78.05%; translate: 0 -50%; }
+@container face (max-width: 639px) { .faceset .pin { display: none; } }
 .legend { list-style: none; margin: 26px auto 0; padding: 0; max-width: 1060px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; }
 .legend li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; }
 .legend .pin { position: static; translate: none; grid-row: span 2; }
@@ -398,7 +413,6 @@ button, input, textarea { font: inherit; }
   .s1-film { position: relative; height: 58svh; }
   .s1-shade { height: 58svh; background: linear-gradient(180deg, rgba(8, 7, 5, .2), transparent 40%, rgba(8, 7, 5, .95)); }
   .s1-in { margin-top: -30svh; padding-block: 0 28px; }
-  .lock-name { letter-spacing: .3em; }
   .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .scroll-cue { display: none; }
 }
@@ -426,10 +440,8 @@ button, input, textarea { font: inherit; }
     <div class="s1-shade"></div>
     <div class="s1-in gut">
       <div class="lock">
-        <h1 class="lock-name">WIDE BEAM</h1>
-        <p class="eng lock-sub">The precise, gentle widener</p>
-        <p class="lock-head">Wider mix. Bass dead centre.</p>
-        <p class="lock-line">One big knob spreads your track, and a steep split keeps the bass in mono.</p>
+        <h1 class="lock-name"><img src="title.webp" alt="WIDE BEAM" width="1231" height="82"></h1>
+        <p class="eng lock-sub"><span>The precise, gentle widener</span></p>
       </div>
       <div class="plate s1-plate" data-plate="s1"></div>
     </div>
@@ -507,10 +519,10 @@ button, input, textarea { font: inherit; }
         <div class="fp fp-lamp l"></div><div class="fp fp-lamp r"></div>
         <div class="fp fp-knob" id="knob"></div>
         <div class="fp fp-lcd" id="lcd">WIDTH 100%</div>
-        <span class="pin" style="left:43.2%;top:52.8%">1</span>
-        <span class="pin" style="left:17.6%;top:61.6%">2</span>
-        <span class="pin" style="left:65.1%;top:63.8%">3</span>
-        <span class="pin" style="left:29.3%;top:61.6%">4</span>
+        <span class="pin" style="--x:46.78%">1</span>
+        <span class="pin" style="--x:16.93%">2</span>
+        <span class="pin" style="--x:60.97%">3</span>
+        <span class="pin" style="--x:32.29%">4</span>
       </div>
       <ol class="legend">
         <li><span class="pin">1</span><b>Width</b><span>Turn it up: the sides spread, the centre holds.</span></li>

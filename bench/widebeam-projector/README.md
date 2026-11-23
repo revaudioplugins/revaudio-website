@@ -16,7 +16,8 @@ The direction, in Dan's words: no player, no music. Three sections:
 - **Stand-ins:** `standin.mp4` is cut from the car film and stills of the plugin face, and tagged "STAND-IN · Gil's film
   goes here". `standin-voice.mp4` is the take-2 voice from `revaudio-films/widebeam-1950-ad`. Gil's film replaces both.
 - **The rest:** `car*.{mp4,jpg}`, `knob-width.webp` and `parts/` are the site's own files (`public/widebeam/`,
-  `src/assets/widebeam/`). `face.webp` is the plugin's face.
+  `src/assets/widebeam/`). `face.webp` is the plugin's face. `title.webp` is the plugin's own WIDE BEAM lettering,
+  cut from `face.webp` (x 829-2304, y 71-276 crop) and unmixed from the plate's grey, so it sits on any background.
 - **Open it locally:** `index.html` is a page fragment (the Artifact tool adds the doctype), so wrap it first.
   Safari only plays the films from a server that answers range requests; `python3 -m http.server` does not.
 - **Type:** two faces on the whole page, Bebas Neue (stamped: headlines, keys, prices, labels) and Gelasio (read:

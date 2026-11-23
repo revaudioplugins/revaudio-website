@@ -126,6 +126,13 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       and the lede "One big knob spreads your track, and a steep split keeps the bass in mono." (gentle = it opens a
       touch wider, at most +6 dB side; precise = the 24 dB/oct split); two typefaces on the whole page, Bebas Neue +
       Gelasio (the plugin face's LCD keeps Courier New). Checked in Playwright WebKit 1141 + Chrome 1312 + WebKit 390.
+    - Later the same day (Dan): the top text is down to the name + the tagline (the lede, then "Wider mix. Bass dead
+      centre." removed; the bass point now lives in section 3's heading); the name is the plugin's own engraved
+      letters (`title.webp`, cut from face.webp and unmixed from the plate's #242424), over the plugin's ruled subtitle
+      line carrying the tagline (in Gelasio, not the plugin's sans, to stay at two faces); "Scroll for the film"
+      centred and bigger; the email error line sits 10 px under the box's brass ring; the face's number pins are flat
+      round coins just before each printed name ("1 WIDTH"), hidden under 640 px of face (the names are ~5 px tall).
+      Left-to-right they read 2 4 1 3 (the list puts WIDTH first); 1-2-3-4 across would reorder the list too.
     - Open for Dan: my picks P1 "Beam in the dark" + F1 "Turning sign" (not saved yet); section 3's face still or
       moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for the Buy
       plate and section 3's plate too (they are still leather + brass).
