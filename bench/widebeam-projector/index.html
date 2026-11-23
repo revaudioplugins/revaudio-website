@@ -116,6 +116,20 @@ button, input, textarea { font: inherit; }
 /* ================= Section 1: the car film + the gate from the start ================= */
 .s1 { position: relative; min-height: 100svh; display: grid; overflow: clip; background: #070605; }
 .s1-film { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* the open: on every load the words rise in over black, then the film fades up behind them once it really plays
+   (script adds .is-in), like a lamp coming up. Opacity and transform sit on the card itself, never on an ancestor,
+   so its glass blur keeps working during the fade. */
+/* opacity 0 also sits inline on the <video>, so it is dark from the first paint even while a stylesheet is still
+   loading (Safari once painted it whole, then faded it out and in). The fade lives on .is-in only. */
+.s1-film { opacity: 0; }
+.s1-film.is-in { opacity: 1 !important; transition: opacity 1.6s cubic-bezier(.25, .6, .3, 1); }
+@keyframes s1-rise { from { opacity: 0; transform: translateY(12px); } }
+.s1 .lock { animation: s1-rise .8s cubic-bezier(.2, .7, .2, 1) .1s both; }
+.s1 .s1-plate { animation: s1-rise .8s cubic-bezier(.2, .7, .2, 1) .28s both; }
+@media (prefers-reduced-motion: reduce) {
+  .s1-film.is-in { transition-duration: .6s; }
+  @keyframes s1-rise { from { opacity: 0; } }
+}
 .s1-shade { position: absolute; inset: 0; background:
   radial-gradient(60% 70% at 50% 46%, rgba(8, 7, 5, .62), rgba(8, 7, 5, .3) 60%, rgba(8, 7, 5, 0) 85%),
   linear-gradient(180deg, rgba(8, 7, 5, .5), transparent 26%, transparent 70%, rgba(8, 7, 5, .75)); }
@@ -406,7 +420,7 @@ button, input, textarea { font: inherit; }
 <main class="wb">
   <!-- ============ 1. the car film, gate from the start ============ -->
   <section class="s1" id="s1" aria-label="WIDE BEAM">
-    <video class="s1-film" id="carFilm" muted playsinline autoplay preload="auto" poster="car-poster.jpg" aria-hidden="true">
+    <video class="s1-film" id="carFilm" style="opacity:0" muted playsinline preload="auto" poster="car-poster.jpg" aria-hidden="true">
       <source src="car.mp4" type="video/mp4">
     </video>
     <div class="s1-shade"></div>
@@ -622,8 +636,25 @@ button, input, textarea { font: inherit; }
   const car = $('#carFilm');
   const carRate = () => { car.playbackRate = 1.5; car.defaultPlaybackRate = 1.5; };
   car.addEventListener('loadedmetadata', carRate); car.addEventListener('play', carRate); carRate();
-  if (RM()) { car.removeAttribute('autoplay'); car.pause(); car.poster = 'car-end.jpg'; }
-  else { const p = car.play(); if (p) p.catch(() => {}); }
+  if (RM()) car.poster = 'car-end.jpg';
+  // The open: the film waits, black, on its first frame until the screen has painted and the words are coming in
+  // (FADE_AFTER ms), then it starts playing as it fades up, so the fade is always seen and the car's first second
+  // is never spent in the dark. No `autoplay` in the markup: a fast cache would start it unseen. Reduced motion: the
+  // still end frame fades up. Autoplay refused (Low Power Mode): the frame fades up anyway, at the latest 2.5 s on.
+  const FADE_AFTER = 420;
+  let carPainted = false, carStarted = false;
+  const carShow = () => car.classList.add('is-in');
+  const carStart = () => {
+    if (!carPainted || carStarted) return;
+    if (RM()) { carShow(); return; }
+    if (car.readyState < 3) return;                       // not enough film yet: 'canplay' calls again
+    carStarted = true;
+    const p = car.play(); if (p) p.then(carShow, carShow); else carShow();
+  };
+  car.addEventListener('canplay', carStart);
+  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => {
+    carPainted = true; carStart(); setTimeout(carShow, 2500);
+  }, FADE_AFTER)));
 
   /* ---------------- Section 2: layout per look ---------------- */
   function layout() {

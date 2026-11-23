@@ -113,7 +113,14 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       plugin's face, presented, with the gate again under it. Why WIDE BEAM exists (Dan's pick A, same day): the cheap
       first purchase that brings new customers in.
     - The look: `bench/widebeam-projector/` (README there), published at
-      https://claude.ai/artifact/6bbysbnKpcaGSKtCZu7hLL (private; db `pick/dan` = {look, flip, note}, empty so far).
+      https://claude.ai/artifact/4oWMU9NiWGPcZniDsHee3Y (private; db `pick/dan` = {look, flip, note}, empty so far).
+      The first link (`6bbysbnKpcaGSKtCZu7hLL`) was deleted or lost its write access on 2026-11-23 (not by this
+      session); its db held no pick.
+    - The open, Dan 2026-11-23 ("the film just snaps" on reload): the screen starts black, the words rise in, and the
+      car film waits on its first frame until ~0.4 s after the first paint, then plays as it fades up (1.6 s). No
+      `autoplay` in the markup and `opacity:0` inline on the video (WebKit once painted it whole before the sheet
+      applied). Reduced motion: the still end frame fades up. Checked frame by frame (WebKit + Chrome, 1141 and 390,
+      film delayed 1.5 s too).
     - Dan's calls on it, 2026-11-23: section 1 centred; its email card is smoked glass, then "more transparent"; the
       small print on one row on a laptop (wraps on a phone); the line under the name is "THE PRECISE, GENTLE WIDENER"
       and the lede "One big knob spreads your track, and a steep split keeps the bass in mono." (gentle = it opens a
