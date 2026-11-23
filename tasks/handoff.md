@@ -106,6 +106,27 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
       it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
       local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-23 ~15:00, Dan's NEW DIRECTION: the projector look (a look only; the site is unchanged):**
+    - Dan, 2026-11-22: "no player at all. no music nothing", in 3 sections: (1) the car film with the email gate from the
+      start; (2) the manual film full screen on a projector, a vintage educational film with our ElevenLabs voice (Gil
+      provides it), which turns over mechanically into the Buy plate + gate when it ends; (3) "understand it": the
+      plugin's face, presented, with the gate again under it. Why WIDE BEAM exists (Dan's pick A, same day): the cheap
+      first purchase that brings new customers in.
+    - The look: `bench/widebeam-projector/` (README there), published at
+      https://claude.ai/artifact/6bbysbnKpcaGSKtCZu7hLL (private; db `pick/dan` = {look, flip, note}, empty so far).
+    - Dan's calls on it, 2026-11-23: section 1 centred; its email card is smoked glass, then "more transparent"; the
+      small print on one row on a laptop (wraps on a phone); the line under the name is "THE PRECISE, GENTLE WIDENER"
+      and the lede "One big knob spreads your track, and a steep split keeps the bass in mono." (gentle = it opens a
+      touch wider, at most +6 dB side; precise = the 24 dB/oct split); two typefaces on the whole page, Bebas Neue +
+      Gelasio (the plugin face's LCD keeps Courier New). Checked in Playwright WebKit 1141 + Chrome 1312 + WebKit 390.
+    - Open for Dan: my picks P1 "Beam in the dark" + F1 "Turning sign" (not saved yet); section 3's face still or
+      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for the Buy
+      plate and section 3's plate too (they are still leather + brass).
+    - For Gil: the film as 16:9 (laptop) + 9:16 (phone); the captions as a cue file (VTT / SRT), not burned in; the $9
+      shown before launch (reverses P1 A's "Price at launch").
+    - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
+      in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
+      (fast-forward to `a58715c`); `qa/widebeam-page-1121` still waits for Dan's push line.
   - **State 2026-11-22 ~13:30, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
     `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
     stereo road are cut (files kept; bring back = per section its line + import in widebeam.astro and its @import in
