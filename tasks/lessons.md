@@ -544,3 +544,17 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
 - A load-path change can break another branch with no conflict at all: `prefetchModels()` starts before `createRoom()`
   and merges cleanly into the phone cut, whose filter lives later, in `loadModels()` (test merge: 100 model requests
   instead of 30). After a merge that touches the boot line, count the `.glb` requests of every page that filters.
+
+## 2026-11-23 - Testing the walk's hold: stop the wheel when the TV shows, and mind the notch steps (`3D Garage – סגירת האתר`)
+
+The walk's wheel code (`HomeOpening.astro`, the `FEEL` block) holds a fast scroll at the TV. A wheel that keeps pushing
+after `holdMs` is let go by design. Three traps from checking Dan's tuned numbers:
+- A test stream that keeps going past the TV ends at the page bottom with any numbers: it tests the release, not the hold.
+  Stop the stream relative to the TV coming into view (about 300 px to go), or to `html.ho-held` appearing. Never stop
+  it relative to "reached the line": the page eases onto the line for about a second after the hold starts.
+- `holdOver` reads what the wheel asked for over the last 0.2 s. A mouse's 100 px notches therefore read in steps of
+  500 px/s, and timing jitter moves a stream across a step: at 1,800 a 1,500 px/s notch stream was held. Test a
+  threshold one notch rate below it and one above.
+- Use one gesture per stream. Overlapped `page.mouse.wheel` or CDP calls queue and reach the page 0.3-3.6 s late, and the
+  quiet timer (it uses `e.timeStamp`) then lets go at once. Log `performance.now() - e.timeStamp` before trusting a
+  timing result.
