@@ -133,9 +133,18 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       centred and bigger; the email error line sits 10 px under the box's brass ring; the face's number pins are flat
       round coins just before each printed name ("1 WIDTH"), hidden under 640 px of face (the names are ~5 px tall).
       Left-to-right they read 2 4 1 3 (the list puts WIDTH first); 1-2-3-4 across would reorder the list too.
-    - Open for Dan: my picks P1 "Beam in the dark" + F1 "Turning sign" (not saved yet); section 3's face still or
-      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for the Buy
-      plate and section 3's plate too (they are still leather + brass).
+    - The film's ending, Dan 2026-11-23, in steps: the latches off the panel ("let remove them"), then no flip at all
+      ("play like the film"), then "the card will be the film ... a little bit of glitch ... seamless", then "it moves
+      too much", then "it blinks too much, make it more like a real film". Now: the film cuts to its own 1930s title
+      card inside the film frame (black and white, double-ruled frame, the plugin's lettering in film white, the gate as
+      a white box + a white block key), under the film's grain (now every frame), a light that wavers a little each
+      frame (no blinks) and a single-frame dust speck now and then. The cut: one small shiver, a one-frame slip with the
+      frame line, one faint splice frame. The held card does not move (0 px over 12 s, both engines). Watch again runs
+      it back. On phones the film frame grows to hold the card (the film letterboxes in it). The flips (F1-F3), the
+      latches and the pivots stay in the code, switched off; the Look controls lost the flip and hardware rows.
+    - Open for Dan: the projector look (P1-P3; my pick P1 "Beam in the dark", not saved yet); section 3's face still or
+      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for section
+      3's plate too (still leather + brass).
     - For Gil: the film as 16:9 (laptop) + 9:16 (phone); the captions as a cue file (VTT / SRT), not burned in; the $9
       shown before launch (reverses P1 A's "Price at launch").
     - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;

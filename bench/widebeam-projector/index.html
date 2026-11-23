@@ -258,6 +258,19 @@ button, input, textarea { font: inherit; }
   background: repeating-linear-gradient(90deg, transparent 0 calc(var(--slw) / 2 - 4px), #3d2e18 calc(var(--slw) / 2 - 4px) calc(var(--slw) / 2 + 4px), transparent calc(var(--slw) / 2 + 4px) var(--slw)),
     linear-gradient(180deg, #f6e3ad, #c9a35c 42%, #7a5c31 78%, #4a3618); }
 .s2[data-flip="f1"] .latch, .s2[data-flip="f2"] .latch, .s2[data-flip="f3"] .rod { display: block; }
+/* Panel hardware: Dan removed it, 2026-11-23 ("let remove them"), so the page runs on "none" and the switch is gone
+   from the Look controls; the other two stay in the code to bring back. "pivot" = two brass pivot bolts on the axis the sign turns on (F1: the
+   left and right edges at mid-height; F2: top and bottom at mid-width). They hold still while the panel turns between
+   them, so the turn reads as a sign on its axle. "none" = no hardware (the rig's jolt and click stay). "catch" = the
+   earlier swing catches that snap open and drop shut. F3's tie rod is part of the louvers and stays in all three. */
+.pivot { position: absolute; display: none; z-index: 4; pointer-events: none; box-sizing: border-box;
+  width: var(--ph); height: var(--ph); margin: calc(var(--ph) / -2) 0 0 calc(var(--ph) / -2); border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, #f6e3ad 0 26%, #d9b467 48%, #9c7a3e 74%, #5e4526 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .8), 0 0 0 1px rgba(20, 14, 6, .85), inset 0 1px 1px rgba(255, 248, 225, .6), inset 0 -1px 2px rgba(50, 34, 12, .7); }
+.pivot::before { content: ''; position: absolute; left: 20%; right: 20%; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px;
+  background: #3a2b16; box-shadow: 0 1px 0 rgba(255, 238, 196, .45); transform: rotate(-38deg); }
+.s2[data-hw="pivot"][data-flip="f1"] .pivot, .s2[data-hw="pivot"][data-flip="f2"] .pivot { display: block; }
+.s2[data-hw="pivot"] .latch, .s2[data-hw="none"] .latch { display: none; }
 .tap { position: absolute; z-index: 3; right: 12px; bottom: 12px; min-height: 36px; padding: 0 14px 0 10px; display: inline-flex; align-items: center; gap: 8px;
   border-radius: 8px; border: 1px solid rgba(201, 163, 92, .55); background: rgba(14, 12, 10, .78); color: var(--brass-hi); cursor: pointer;
   font-family: var(--label); font-weight: 400; font-size: 17px; letter-spacing: .1em; text-transform: uppercase; }
@@ -269,7 +282,7 @@ button, input, textarea { font: inherit; }
 /* the back: the Buy plate is the whole panel */
 .back .plate, .plate-rest .plate { position: absolute; inset: 0; --ps: var(--pps, .45); display: grid; place-items: center; }
 .plate-rest { position: absolute; inset: 0; display: none; }
-.s2.on-plate .plate-rest { display: block; }
+.s2.on-plate .plate-rest, .s2.crossing .plate-rest { display: block; }
 .s2.on-plate .panel { visibility: hidden; }
 .stage-plate .plate-body { max-width: 560px; zoom: var(--pz, 1); } /* the gate grows with a big panel, so the price and the key never sit small in an empty plate */
 .stage-plate .head, .s3-plate .head { font-size: clamp(1.7rem, 3vw, 2.6rem); }
@@ -284,6 +297,52 @@ button, input, textarea { font: inherit; }
 .slat .face { overflow: hidden; }
 .slat .back { display: block; transform: rotateY(180deg); }
 .slat .clip { position: absolute; top: 0; height: 100%; width: var(--sw); }
+
+/* ---- F0: the Buy card IS the film (Dan, 2026-11-23: "the card will be the film ... a little bit of glitch ... seamless").
+   The film's last shot cuts to a 1930s title card on the same strip: black and white, a double-ruled frame, the
+   plugin's own lettering in film white, the gate as a title-card box. It sits inside the film frame, under the film's
+   own grain, flicker, scratches and vignette, which keep running, so nothing changes but the picture. The cut is a
+   film glitch: the frame shivers, slips a frame up in the gate (the frame line rolls through), a splice flashes, the
+   card settles. While it holds it stays still, like a held title card: grain that changes every frame, a light that
+   wavers slightly, a speck of dust on a single frame now and then. No blinks, no flashes. Reduced motion: a plain
+   cut, the grain and dust stop. */
+.endcard { position: absolute; inset: 0; display: none; container-type: inline-size; background: #0c0b09; color: #ece6d6; }
+.s2.carding .endcard, .s2.carded .endcard { display: grid; }
+.endcard::before { content: ''; position: absolute; inset: clamp(8px, 2.6cqi, 22px); pointer-events: none;
+  border: 1.5px solid rgba(236, 230, 214, .7); outline: 1px solid rgba(236, 230, 214, .3); outline-offset: clamp(3px, .7cqi, 6px); }
+.ec-body { position: relative; box-sizing: border-box; min-height: 100%; display: grid; align-content: center; justify-items: center; text-align: center;
+  gap: clamp(7px, 1.5cqi, 14px); padding: clamp(26px, 6.4cqi, 54px) clamp(22px, 7cqi, 64px); }
+/* .film img stretches the film's own stills full-frame: the card's title is an image too, so it opts out */
+.endcard img.ec-title { position: static; inset: auto; display: block; width: clamp(170px, 44cqi, 420px); height: auto; object-fit: initial; filter: grayscale(1) brightness(1.32) contrast(1.06); }
+.ec-tag { margin: 0; display: flex; align-items: center; gap: .9em; width: fit-content; min-width: clamp(170px, 44cqi, 420px); max-width: 100%; font-family: var(--serif); font-variant: small-caps;
+  letter-spacing: .3em; font-size: clamp(10px, 1.75cqi, 15px); color: #cfc8b6; white-space: nowrap; }
+.ec-tag span { margin-right: -.3em; }
+.ec-tag::before, .ec-tag::after { content: ''; flex: 1; min-width: 10px; height: 1px; background: rgba(236, 230, 214, .6); }
+.ec-head { margin: clamp(2px, .8cqi, 8px) 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(24px, 5.2cqi, 46px); line-height: 1; letter-spacing: .03em; color: #f3eddd; text-wrap: balance; }
+.endcard .price { font-family: inherit; color: #fff; text-shadow: none; }
+.endcard .eng { color: #cfc8b6; text-shadow: none; }
+.endcard .fine { color: #a9a293; font-size: clamp(11px, 1.6cqi, 14px); }
+.endcard .gate { width: min(100%, 520px); }
+.endcard .well { background: none; box-shadow: none; padding: 0; gap: 10px; border-radius: 0; }
+.endcard .rail .divider { display: none; }
+.endcard .rail input { height: 46px; border: 1.5px solid #e6dfcd; border-radius: 2px; background: rgba(0, 0, 0, .45); color: #f3eddd; box-shadow: none; }
+.endcard .rail input::placeholder { color: #9d978a; }
+.endcard .rail input:focus-visible, .endcard .key:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.endcard .key { transform: none; border-radius: 2px; background: #ece6d6; color: #0c0b09; text-shadow: none; box-shadow: none; transition: background .12s; }
+.endcard .key:hover { background: #fff; }
+.endcard .key:active, .endcard .key.down { transform: none; box-shadow: none; background: #d6cfbd; }
+.endcard .key--ghost { background: transparent; color: #cfc8b6; box-shadow: inset 0 0 0 1px rgba(236, 230, 214, .45); }
+.endcard .key--ghost:hover { background: rgba(236, 230, 214, .1); }
+.endcard .or::before, .endcard .or::after { background: linear-gradient(90deg, transparent, rgba(236, 230, 214, .55), transparent); }
+.endcard .status { color: #cfc8b6; } .endcard .status.ok { color: #d6e4cf; } .endcard .status.err { color: #f0c2a6; }
+.endcard .plate-foot { margin-top: 2px; }
+.fx-splice { background: #f4efe2; opacity: 0; }
+.fx-dust { opacity: 0; } /* a speck of dust on one frame now and then (script) */
+.s2.carding .cap, .s2.carded .cap, .s2.carding .tap, .s2.carded .tap { display: none; }
+.s2.carded:not(.rm) .fx-grain { animation: grain .21s steps(1) infinite; }
+.s2.carded:not(.rm) .fx-flick { animation: flick .5s steps(1) infinite; }
+.s2[data-look="p2"].carded:not(.rm) .fx-scratch { animation: scratch .7s steps(1) infinite; }
+/* Dan, 2026-11-23: "it moves too much": the held card stays still (no gate weave); grain and flicker keep the film alive */
 
 /* ---- P1: beam in the dark ---- */
 .s2[data-look="p1"] .screen { border-radius: 14px; background: #0a0908; }
@@ -332,12 +391,15 @@ button, input, textarea { font: inherit; }
 .s2.is-on .lens-glow { opacity: 1; }
 
 /* motion that runs only while the film runs */
-.s2.playing:not(.rm) .fx-grain { animation: grain .42s steps(1) infinite; }
+.s2.playing:not(.rm) .fx-grain { animation: grain .21s steps(1) infinite; }
 .s2.playing:not(.rm) .fx-flick { animation: flick .5s steps(1) infinite; }
 .s2[data-look="p2"].playing:not(.rm) .film { animation: weave .5s steps(1) infinite; }
 .s2[data-look="p2"].playing:not(.rm) .fx-scratch { animation: scratch .7s steps(1) infinite; }
 @keyframes grain { 0% { background-position: 0 0; } 20% { background-position: -60px 40px; } 40% { background-position: 80px -30px; } 60% { background-position: -20px -90px; } 80% { background-position: 110px 70px; } }
-@keyframes flick { 0% { opacity: .05; } 17% { opacity: .12; } 33% { opacity: 0; } 50% { opacity: .09; } 67% { opacity: .03; } 83% { opacity: .14; } }
+/* a real projector's light wavers a little on every frame (24 a second); it never blinks (Dan, 2026-11-23: "it blinks
+   too much, make it more like a real film") */
+@keyframes flick { 0% { opacity: .022; } 8.3% { opacity: .045; } 16.7% { opacity: .03; } 25% { opacity: .052; } 33.3% { opacity: .026; } 41.7% { opacity: .04; }
+  50% { opacity: .034; } 58.3% { opacity: .05; } 66.7% { opacity: .024; } 75% { opacity: .043; } 83.3% { opacity: .031; } 91.7% { opacity: .047; } }
 @keyframes weave { 0% { translate: 0 0; } 25% { translate: .6px -1.4px; } 50% { translate: -.4px .8px; } 75% { translate: .3px 1.6px; } }
 @keyframes scratch { 0% { background-position: 0 0, 0 0, 0 0; opacity: 1; } 33% { background-position: 7% 0, -11% 0, 4% 0; opacity: .7; } 66% { background-position: -5% 0, 3% 0, -9% 0; opacity: 0; } }
 .s2.lampup .film { animation: lampup .75s steps(1) 1; }
@@ -449,7 +511,7 @@ button, input, textarea { font: inherit; }
   </section>
 
   <!-- ============ 2. the manual film on the projector ============ -->
-  <section class="s2" id="s2" data-look="p1" data-flip="f1" aria-label="The WIDE BEAM film">
+  <section class="s2" id="s2" data-look="p1" data-flip="f0" data-hw="none" aria-label="The WIDE BEAM film">
     <div class="room" aria-hidden="true"><canvas class="beam" id="beam"></canvas><canvas class="beam dust" id="dust"></canvas></div>
     <div class="roller" aria-hidden="true"></div>
     <div class="stage" id="stage">
@@ -463,7 +525,8 @@ button, input, textarea { font: inherit; }
                   <source src="standin.mp4" type="video/mp4">
                 </video>
                 <img class="still" src="standin-end.jpg" alt="">
-                <div class="fx fx-grain"></div><div class="fx fx-scratch"></div><div class="fx fx-flick"></div><div class="fx fx-vig"></div><div class="fx fx-burn"></div>
+                <div class="endcard" data-plate="card" role="group" aria-label="Get WIDE BEAM"></div>
+                <div class="fx fx-grain"></div><div class="fx fx-scratch"></div><div class="fx fx-flick"></div><div class="fx fx-vig"></div><div class="fx fx-burn"></div><div class="fx fx-dust"></div><div class="fx fx-splice"></div>
                 <p class="cap" id="cap"></p>
               </div>
             </div>
@@ -482,7 +545,7 @@ button, input, textarea { font: inherit; }
         <div class="plate-rest" id="plateRest">
           <div class="plate stage-plate" data-plate="s2"></div>
         </div>
-        <i class="latch" id="latchA" aria-hidden="true"></i><i class="latch" id="latchB" aria-hidden="true"></i><i class="rod" id="rod" aria-hidden="true"></i>
+        <i class="latch" id="latchA" aria-hidden="true"></i><i class="latch" id="latchB" aria-hidden="true"></i><i class="rod" id="rod" aria-hidden="true"></i><i class="pivot" id="pivotA" aria-hidden="true"></i><i class="pivot" id="pivotB" aria-hidden="true"></i>
       </div>
     </div>
     <div class="batten" aria-hidden="true"></div>
@@ -547,13 +610,6 @@ button, input, textarea { font: inherit; }
         <button type="button" data-v="p3"><b>P3</b>Garage wall</button>
       </div>
     </div>
-    <div class="cp-row"><span>Flip to Buy</span>
-      <div class="seg" data-set="flip">
-        <button type="button" data-v="f1"><b>F1</b>Turning sign</button>
-        <button type="button" data-v="f2"><b>F2</b>Card flip</button>
-        <button type="button" data-v="f3"><b>F3</b>Louvers</button>
-      </div>
-    </div>
     <div class="cp-row"><span>Phase</span>
       <div class="seg" data-set="phase">
         <button type="button" data-v="pre">Before launch</button>
@@ -582,7 +638,7 @@ button, input, textarea { font: inherit; }
   const rmq = matchMedia('(prefers-reduced-motion: reduce)');
   const RM = () => rmq.matches;
 
-  const state = { look: 'p1', flip: 'f1', phase: 'pre' };
+  const state = { look: 'p1', flip: 'f0', phase: 'pre', hw: 'none' };
   const s1 = $('#s1'), s2 = $('#s2'), s3 = $('#s3');
   const stage = $('#stage'), rig = $('#rig'), panel = $('#panel'), front = $('#front'), back = $('#back');
   const film = $('#film'), manual = $('#manual'), louvers = $('#louvers'), plateRest = $('#plateRest');
@@ -598,7 +654,21 @@ button, input, textarea { font: inherit; }
         <button class="key" type="submit">${keyLabel}</button></div>
       <p class="status" role="status" aria-live="polite"></p></form>`;
   }
+  function cardHTML(phase) {
+    const again = `<div class="plate-foot"><button class="key key--ghost key--small" type="button" data-again><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.4 1.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Watch again</button></div>`;
+    const top = `<img class="ec-title" src="title.webp" alt="WIDE BEAM" width="1231" height="82"><p class="ec-tag"><span>The precise, gentle widener</span></p>`;
+    if (phase === 'pre') return `<div class="plate-body ec-body">${top}
+        <p class="ec-head">Get it the day it launches · <span class="price">$9</span></p>
+        ${railHTML('card-email', 'Email me at launch ' + ICON)}
+        <p class="fine">Free 30-day trial on launch day. One email, unsubscribe anytime.</p>${again}</div>`;
+    return `<div class="plate-body ec-body">${top}
+        <div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
+        <div class="or"><span class="eng" style="font-size:.95rem">or try it free for 30 days</span></div>
+        ${railHTML('card-email', 'Send my trial ' + ICON)}
+        <p class="fine">Full version, no credit card. Mac VST3 · AU · Windows VST3.</p>${again}</div>`;
+  }
   function plateHTML(where, phase) {
+    if (where === 'card') return cardHTML(phase);
     const id = where + '-email';
     const again = where === 's2' ? `<div class="plate-foot"><button class="key key--ghost key--small" type="button" data-again><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.4 1.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Watch again</button></div>` : '';
     if (where === 's1') {
@@ -694,7 +764,16 @@ button, input, textarea { font: inherit; }
     const need = pr.offsetHeight + 8;
     pr.style.position = ''; pr.style.inset = ''; pr.style.width = '';
     plateRest.style.display = prevDisplay; plateRest.style.visibility = '';
-    H = Math.max(H0, need);
+    H = state.flip === 'f0' ? H0 : Math.max(H0, need);
+    // F0: the card lives inside the film frame, so the frame grows to hold it (the film then letterboxes in it)
+    const fInset = state.look === 'p3' ? W * 0.05 : state.look === 'p1' ? Math.max(6, W * 0.008) : 0;
+    let cardNeed = 0;
+    if (state.flip === 'f0') {
+      const ec = $('.endcard', film), prevCss = ec.style.cssText;
+      ec.style.cssText = `display:grid;position:absolute;visibility:hidden;inset:auto;left:0;top:0;width:${Math.round(W - fInset * 2)}px;height:auto`;
+      cardNeed = Math.ceil(ec.scrollHeight); ec.style.cssText = prevCss;
+      H = Math.max(H, cardNeed + Math.ceil(fInset * 2));
+    }
     if (state.look === 'p2' && phone) H = Math.max(H, Math.min(vh * 0.8, 600));
     const left = Math.round((vw - W) / 2);
     if (state.look === 'p3') top = Math.round(Math.max(40, (vh - H) / 2 - (phone ? 30 : 46)));
@@ -705,7 +784,8 @@ button, input, textarea { font: inherit; }
     // the film: the largest 16:9 box on the screen (P3 leaves the fabric border)
     const inset = state.look === 'p3' ? W * 0.05 : state.look === 'p1' ? Math.max(6, W * 0.008) : 0;
     let fw = W - inset * 2, fh = fw * 9 / 16;
-    if (fh > H - inset * 2) { fh = H - inset * 2; fw = fh * 16 / 9; }
+    if (state.flip === 'f0' && cardNeed > fh) fh = cardNeed;
+    else if (fh > H - inset * 2) { fh = H - inset * 2; fw = fh * 16 / 9; }
     s2.style.setProperty('--fw', Math.round(fw) + 'px'); s2.style.setProperty('--fh', Math.round(fh) + 'px');
     geo = { vw, vh, W, H, left, top, fw, fh };
     placeLatches();
@@ -723,8 +803,18 @@ button, input, textarea { font: inherit; }
                                   : [[W / 2 - lw / 2, e, 0], [W / 2 + lw / 2, H - e, 180]];    // F1 turns on the horizontal axis: held at the top and bottom edges
     return P.map(([x, y, b]) => ({ x, y, b, lh, lw }));
   }
+  const pivotA = $('#pivotA'), pivotB = $('#pivotB');
+  function placePivots() {
+    if (!geo) return;
+    const { W, H } = geo, ph = Math.round(Math.max(14, Math.min(26, W * 0.026)));
+    s2.style.setProperty('--ph', ph + 'px');
+    const e = state.look === 'p2' ? ph : 0; // P2's panel meets the screen edge: keep the bolts in frame
+    const P = state.flip === 'f2' ? [[W / 2, e], [W / 2, H - e]] : [[e, H / 2], [W - e, H / 2]];
+    P.forEach(([x, y], i) => { const el = [pivotA, pivotB][i]; el.style.left = x + 'px'; el.style.top = y + 'px'; });
+  }
   function placeLatches() {
     if (!geo) return;
+    placePivots();
     latchPose().forEach((p, i) => { const el = [latchA, latchB][i]; el.style.left = (p.x - p.lh / 2) + 'px'; el.style.top = (p.y - p.lh / 2) + 'px'; el.style.transform = `rotate(${p.b}deg)`; });
   }
 
@@ -929,16 +1019,21 @@ button, input, textarea { font: inherit; }
     c.classList.remove('front'); c.setAttribute('inert', '');
     return c;
   }
+  function settleCard() {
+    clearAnims(); turning = false; onPlate = true;
+    s2.classList.remove('carding'); s2.classList.add('carded');
+  }
   function settlePlate() {
+    if (state.flip === 'f0') { settleCard(); return; }
     clearAnims(); turning = false; onPlate = true;
     panel.classList.remove('turning'); panel.style.transform = ''; rig.style.transform = '';
-    s2.classList.remove('louvering'); louvers.innerHTML = '';
+    s2.classList.remove('louvering', 'crossing'); louvers.innerHTML = '';
     s2.classList.add('on-plate');
   }
   function settleFront() {
     clearAnims(); turning = false; onPlate = false;
     panel.classList.remove('turning'); panel.style.transform = ''; rig.style.transform = '';
-    s2.classList.remove('louvering', 'on-plate'); louvers.innerHTML = '';
+    s2.classList.remove('louvering', 'on-plate', 'crossing', 'carding', 'carded'); louvers.innerHTML = '';
     back.innerHTML = '';
     for (const el of $$('.sheen, .shade, .edge i', panel)) el.style.opacity = '';
   }
@@ -954,7 +1049,24 @@ button, input, textarea { font: inherit; }
     const axis = state.flip === 'f1' ? 'X' : 'Y', sign = state.flip === 'f1' ? -1 : 1;
     const rigAt = (dur, impact, clicks) => sample((t) => { const [sx, sy] = shakeAt(t, impact, clicks); return { transform: `translate(${sx.toFixed(2)}px, ${sy.toFixed(2)}px)` }; }, dur);
     let done;
-    if (state.flip === 'f3') {
+    if (state.flip === 'f0') {
+      // F0: the film cuts to its own title card (see the F0 CSS). Forward: the last frame shivers, slips one frame up
+      // in the gate with the frame line rolling through, a splice flashes, the card shivers and its exposure settles.
+      // Back (Watch again): the card slips up and away, the film's first frame rolls in, then it plays.
+      const ec = $('.endcard', film), still = $('.still', film), splice = $('.fx-splice', film), scr = $('.fx-scratch', film);
+      const step3 = (t, a, b) => (t < a ? 0 : t >= b ? 1 : Math.min(1, Math.floor((t - a) / ((b - a) / 3)) / 3 + 1 / 3)); // a frame-by-frame slip in 3 steps
+      s2.classList.remove('carded'); s2.classList.add('carding');
+      if (reverse) { film.classList.remove('show-still'); manual.pause(); manual.currentTime = 0; }
+      const outEl = reverse ? ec : still, inEl = reverse ? manual : ec;
+      const D0 = reverse ? 720 : 900, A = reverse ? 70 : 200, B = A + 130;          // the slip runs A..B
+      const shiver = (t) => (t < A - 110 || t >= A ? 0 : t < A - 55 ? -.8 : .5);        // a small shiver before it slips
+      anim(outEl, sample((t) => ({ transform: `translateY(${(shiver(t) - 100 * step3(t, A, B)).toFixed(2)}%)` }), D0), { duration: D0 });
+      const settle = (t) => (t < B ? 0 : t < B + 50 ? .7 : t < B + 100 ? -.3 : 0);
+      const expo = (t) => (t >= B && t < B + 42 ? .93 : 1);                              // one denser frame at the splice, as a new shot has
+      done = anim(inEl, sample((t) => ({ transform: `translateY(${(t < B ? 105 - 105 * step3(t, A, B) : settle(t)).toFixed(2)}%)`, filter: `brightness(${expo(t)})` }), D0), { duration: D0 });
+      anim(splice, sample((t) => ({ opacity: t >= B - 42 && t < B ? .12 : 0 }), D0), { duration: D0 });                 // the splice: one faint frame
+      anim(scr, sample((t) => ({ opacity: t >= A - 42 && t < B + 84 ? (Math.floor(t / 42) % 2 ? .8 : .4) : 0, backgroundPosition: `${(Math.floor(t / 45) * 37) % 100}% 0, ${(Math.floor(t / 45) * 61) % 100}% 0, ${(Math.floor(t / 45) * 23) % 100}% 0` }), D0), { duration: D0 });
+    } else if (state.flip === 'f3') {
       s2.classList.add('louvering');
       const N = geo.vw < 640 ? 7 : 10, sw = geo.W / N, STAG = 40;
       const lastDelay = (N - 1) * STAG, TOTAL = D + lastDelay;
@@ -1017,6 +1129,22 @@ button, input, textarea { font: inherit; }
     for (const a of anims) { a.pause(); a.currentTime = ms; }
   }
 
+  // dust: now and then one frame (42 ms) carries a speck or two, on the film and on the card alike, as a real print
+  // does; light specks, a pixel or two, at random places. Not with reduced motion, not in a hidden tab.
+  (function filmDust() {
+    setTimeout(() => {
+      const on = (s2.classList.contains('carded') || s2.classList.contains('playing')) && !RM() && !document.hidden;
+      if (on) {
+        const d = $('.fx-dust', film), n = 1 + (Math.random() < .35 ? 1 : 0);
+        d.style.background = Array.from({ length: n }, () => {
+          const x = (6 + Math.random() * 88).toFixed(1), y = (6 + Math.random() * 88).toFixed(1), r = (0.7 + Math.random() * 1.1).toFixed(2);
+          return `radial-gradient(circle at ${x}% ${y}%, rgba(238, 232, 216, .8) 0 ${r}px, transparent ${(+r + .7).toFixed(2)}px)`;
+        }).join(', ');
+        d.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 42 });
+      }
+      filmDust();
+    }, 350 + Math.random() * 1400);
+  })();
   function seekEnd() { if (manual.duration) manual.currentTime = Math.max(0, manual.duration - 1); }
   function resetFilm(play) {
     settleFront(); ended = false; film.classList.remove('show-still');
@@ -1037,13 +1165,14 @@ button, input, textarea { font: inherit; }
     if (onPlate) { settleFront(); ended = true; film.classList.add('show-still'); runFlip(false); } // show the new turn right away
   }
   function setPhase(v) { state.phase = v; renderPlates(); layout(); updateSeg(); }
+  function setHw(v) { state.hw = v; s2.dataset.hw = v; updateSeg(); placeLatches(); }
   function updateSeg() {
     for (const seg of $$('.seg')) for (const b of $$('button', seg)) b.setAttribute('aria-pressed', String(state[seg.dataset.set] === b.dataset.v));
-    $('#cpNow').textContent = state.look.toUpperCase() + ' · ' + state.flip.toUpperCase();
+    $('#cpNow').textContent = state.look.toUpperCase();
   }
   for (const seg of $$('.seg')) seg.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    ({ look: setLook, flip: setFlip, phase: setPhase })[seg.dataset.set](b.dataset.v);
+    ({ look: setLook, flip: setFlip, phase: setPhase, hw: setHw })[seg.dataset.set](b.dataset.v);
   });
   $('#cpTop').addEventListener('click', () => { const c = $('#cp').classList.toggle('closed'); $('#cpTop').setAttribute('aria-expanded', String(!c)); });
   $('#skip').addEventListener('click', () => {
@@ -1067,20 +1196,21 @@ button, input, textarea { font: inherit; }
   const note = $('#note'), pickStatus = $('#pickStatus');
   function showPick(where) {
     if (!pick || !pick.look) { pickStatus.textContent = 'No pick saved yet.'; return; }
-    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()} + ${pick.flip.toUpperCase()} · ` + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
+    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()} · ` + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
   }
   function readLocal() { try { const v = JSON.parse(localStorage.getItem(LS) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; } }
   function writeLocal(v) { try { localStorage.setItem(LS, JSON.stringify(v)); return true; } catch (e) { return false; } }
   function applyPick(v) {
-    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', hw: v.hw || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (/^(pivot|none|catch)$/.test(pick.hw) && pick.hw !== state.hw) setHw(pick.hw);
     if (document.activeElement !== note) note.value = pick.note;
     if (/^p[123]$/.test(pick.look) && pick.look !== state.look) setLook(pick.look);
-    if (/^f[123]$/.test(pick.flip) && pick.flip !== state.flip) { state.flip = pick.flip; s2.dataset.flip = pick.flip; updateSeg(); placeLatches(); }
+    // the flip is gone (Dan, 2026-11-23: "don't flip it ... play like the film"): a saved flip is kept in the record, not applied
   }
   async function flush() {
     if (saving) { dirty = true; return; }
     saving = true;
-    const v = { look: pick.look, flip: pick.flip, note: pick.note, updatedAt: new Date().toISOString() };
+    const v = { look: pick.look, flip: pick.flip, hw: pick.hw || '', note: pick.note, updatedAt: new Date().toISOString() };
     let where = 'local';
     if (db) { try { await db.doc('pick/dan').set(v); where = 'db'; } catch (e) { where = 'local'; } }
     writeLocal(v); showPick(where);
@@ -1088,8 +1218,8 @@ button, input, textarea { font: inherit; }
     if (dirty) { dirty = false; flush(); }
   }
   function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
-  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
-  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
+  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, hw: state.hw, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
+  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', hw: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
   applyPick(readLocal()); showPick('local');
   (async () => {
     try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
