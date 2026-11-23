@@ -1,7 +1,7 @@
 ## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
 
 Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
-`/__wwlayout` route), this entry. Later, after Dan's pick: `src/components/WordWall.astro` (CSS only).
+`/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), this entry.
 - Dan: on the live TV, from plugin to plugin "the gap is really big", and "the words will stay in the same place and
   just the plugin will change". Asked: brainstorm + bench; composition, placements, fonts, not a full redesign.
 - Measured on revaudio.net (Chromium): across the 6 plugins the lit name moves up to 356 px (1312x734) / 223 px
@@ -11,6 +11,15 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   left, picture right; Claude's pick), C (list | picture | words), each a <style> in a frame of the real page. In A/B/C
   every text slot has a set size: 0 px movement at both laptop sizes and in a one-plugin category, and the TV fits.
 - Not done: the phone (round 2); the garage's TV captures (`tvcap.mjs`) go stale once a layout is baked.
+- 2026-11-23: Dan picked **B** ("b is good but we need to work on it") and asked for "a bench to move things around,
+  resize" for the reading and the buttons. B's CSS is now in `WordWall.astro` (an `is:global` block at the end, exactly
+  the CSS the layout bench injected; laptop only), so `/__wwlayout` is spent (its frames now stack A / C on top of B).
+  The live bench is `/?bench` (the shared harness): a dev-only block in the TV's script gives every part a stable id
+  (`wwb-<panel|item|cat>-<slug>-<class path>`; the harness had saved selectors carrying `is-active` / `is-lit`, which
+  missed on the next load) and copies whatever the harness sets on one plugin's part to the same part of the other
+  five, live and after a reload. Checked in Chromium: a move and a resize land on all six, survive a reload with
+  another plugin lit. Next: Dan's EXPORT, then "apply bench" (each `#wwb-...` selector becomes its generic
+  `.ww-panel .ww-...` rule, folded into B's block).
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 

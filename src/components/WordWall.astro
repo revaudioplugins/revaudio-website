@@ -1274,6 +1274,87 @@ const first = items[0]?.slug ?? '';
       if (kind && glOk()) glitch(kind, false);
     });
 
+    /* The live bench (?bench, dev only; Dan 2026-11-23: "a bench to move things around, resize"): the harness styles
+       ONE element, but each plugin has its own copy of every part (a panel per plugin, a strip row per plugin, a key
+       per category), so what is moved or resized on one is copied to the same part of all the others, and the words
+       stay put from channel to channel. Only the harness's own values travel (it sets them !important; the channel
+       change's GSAP transform / opacity are not). Each part also gets a stable id first: the harness names what it
+       saves by the shortest unique selector, which otherwise carried the lit plugin's is-active / is-lit and missed on
+       the next load. The build drops this block (import.meta.env.DEV). */
+    if (import.meta.env.DEV && new URLSearchParams(location.search).has('bench')) {
+      const KINDS: [string, string][] = [['.ww-panel', 'wwPanel'], ['.ww-item', 'wwItem'], ['.ww-cat', 'wwCat']];
+      const GROUP = KINDS.map((k) => k[0]).join(', ');
+      const relPath = (el: Element, root: Element) => {
+        const path: string[] = [];
+        for (let n: Element | null = el; n && n !== root; n = n.parentElement) {
+          const c = n.classList[0];
+          if (!c || c.startsWith('bench')) return null;
+          path.unshift('.' + CSS.escape(c));
+        }
+        return path.length ? `:scope > ${path.join(' > ')}` : ':scope';
+      };
+      // stable ids: <kind>-<slug>-<class path>, only where the part is the one of its kind in its group
+      KINDS.forEach(([k, data]) => wall.querySelectorAll<HTMLElement>(k).forEach((root) => {
+        const key = `wwb-${k.slice(4)}-${root.dataset[data]}`;
+        if (!root.id) root.id = key;
+        root.querySelectorAll<HTMLElement>('[class]').forEach((el) => {
+          const path = relPath(el, root);
+          if (el.id || !path || root.querySelectorAll(path).length !== 1) return;
+          el.id = `${key}-${path.replace(/:scope > |\.|\\/g, '').replace(/ > /g, '-')}`;
+        });
+      }));
+      const own = (el: HTMLElement) => {
+        const o: Record<string, string> = {};
+        for (let i = 0; i < el.style.length; i++) {
+          const p = el.style[i];
+          if (el.style.getPropertyPriority(p) === 'important') o[p] = el.style.getPropertyValue(p);
+        }
+        return o;
+      };
+      const seen = new WeakMap<Element, string>();
+      const mirror = (src: HTMLElement) => {
+        const root = src.closest(GROUP);
+        const path = root && relPath(src, root);
+        if (!root || !path) return;
+        const want = own(src);
+        const key = JSON.stringify(want);
+        const kind = KINDS.find(([k]) => root.matches(k))![0];
+        wall.querySelectorAll(kind).forEach((other) => {
+          if (other === root) return;
+          const to = (path === ':scope' ? other : other.querySelector(path)) as HTMLElement | null;
+          if (!to) return;
+          const has = own(to);
+          for (const p in has) if (!(p in want)) to.style.removeProperty(p);
+          for (const p in want) if (has[p] !== want[p]) to.style.setProperty(p, want[p], 'important');
+          seen.set(to, key);
+        });
+        seen.set(src, key);
+      };
+      const mo = new MutationObserver((recs) => {
+        const changed = new Set<HTMLElement>();
+        recs.forEach((r) => {
+          const el = r.target as HTMLElement;
+          if (seen.get(el) !== JSON.stringify(own(el))) changed.add(el);
+        });
+        changed.forEach(mirror);
+        mo.takeRecords(); // our own copies: never mirrored back
+      });
+      mo.observe(wall, { subtree: true, attributes: true, attributeFilter: ['style'] });
+      // the harness may have restored its saved work before the ids above existed: put it back on, then mirror it
+      try {
+        const saved = JSON.parse(localStorage.getItem('bench:index') || '{}') as Record<string, { props?: Record<string, string> }>;
+        Object.entries(saved).forEach(([sel, d]) => {
+          let el: HTMLElement | null = null;
+          try { el = wall.querySelector<HTMLElement>(sel); } catch { /* a selector this page can't parse */ }
+          if (el) Object.entries(d.props ?? {}).forEach(([p, v]) => el!.style.setProperty(p, v, 'important'));
+        });
+      } catch { /* no saved work */ }
+      // an unchanged value fires no mutation: copy what is on now by hand
+      wall.querySelectorAll<HTMLElement>('[style]').forEach((el) => {
+        if (el.closest(GROUP) && Object.keys(own(el)).length) mirror(el);
+      });
+    }
+
     /* One screen: lock the scroll onto the TV (Dan 2026-10-14). Only after the
        visitor's own scrolling (wheel, a finger that moved, scroll keys; never a
        script's scrollTo, an anchor jump or the bench), once it has gone idle
@@ -2328,4 +2409,70 @@ const first = items[0]?.slug ?? '';
   :global(html.hc) .ww-row.is-lit .ww-name { color: var(--oxide-text); }
   :global(html.hc) .ww-thumb { opacity: 1; }
   :global(html.hc) :is(.ww-tag, .ww-tag-ask, .ww-cat, .ww-pname, .ww-blurb, .ww-pw, .ww-price) { text-shadow: none; }
+</style>
+
+<style is:global>
+  /* ==========================================================================
+     LAYOUT B, "the channel strip" (Dan 2026-11-23, picked on /__wwlayout over A and C: from plugin to plugin the
+     words jumped up to 356 px and the picture swung from 130 to 419 px tall). Laptop only (>= 861 px); the phone keeps
+     its one pane at a time. The plugins are one row of channels under the categories; the lit plugin's words sit in a
+     fixed column on the left, each text slot a set size (one-line name, three blurb lines, one line of words, the keys
+     on a grid), so they never move; the picture changes in a fixed stage on the right, as big as the stage allows.
+     The words change in place (they fade, never travel). Global, as the bench injected it, so it is exactly the B Dan
+     picked; Dan is tuning it next on the live bench (?bench), then it folds into the rules above.
+     ========================================================================== */
+  @media (min-width: 861px) {
+
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] { --ww-mv-text-px: 0 !important; --ww-mv-out-px: 0 !important; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-osd { flex-wrap: nowrap; gap: .4rem 1.1rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'][data-ww-lib='on'] .ww-tag-ask { font-size: clamp(1.25rem, 1.9vw, 1.6rem); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-cats { flex-wrap: nowrap; gap: .1rem .15rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-cat { font-size: clamp(1.1rem, 1.75vw, 1.5rem); padding: .28rem .5rem .14rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel { align-content: stretch; align-items: stretch; align-self: start; grid-template-rows: minmax(0, 1fr); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui { grid-area: ui; container-type: size; display: grid; place-items: center; min-width: 0; min-height: 0; height: 100%; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui img,
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui video {
+  width: min(100cqw, calc(100cqh * var(--ww-ar))) !important; height: auto !important;
+  max-width: none !important; max-height: none !important; aspect-ratio: var(--ww-ar) !important;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { grid-area: info; align-self: center; max-width: none; min-width: 0; display: grid; gap: .55rem; justify-items: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-phead { display: grid; gap: .35rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-pname { font-size: var(--lay-nm) !important; line-height: .95; white-space: nowrap; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ptype { font-size: .82rem; white-space: nowrap; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-blurb {
+  font-size: var(--lay-bl, 1rem); line-height: 1.42; height: calc(var(--lay-bl-lines) * 1.42em); overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lay-bl-lines);
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-pwords { width: 100%; font-size: .86rem; line-height: 1.4; height: 1.4em; white-space: nowrap; overflow: hidden; }
+/* the keys on a grid: the price, Try, Product page and Add to cart each keep their spot (a free plugin just has no
+   cart); the stack is set per layout (--lay-buy) */
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-buy {
+  display: grid; grid-template-columns: var(--lay-buy-cols); grid-template-areas: var(--lay-buy);
+  justify-content: start; align-items: center; gap: .5rem .9rem; margin-top: .2rem;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price { grid-area: price; font-size: 1.6rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-try { grid-area: try; justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-more { grid-area: more; justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-cart { grid-area: cart; justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] {
+  grid-template-columns: minmax(0, 1fr); grid-template-areas: 'osd' 'list' 'panel';
+  --lay-strip: clamp(4.6rem, 12vh, 6.4rem); --lay-nm: clamp(2.2rem, 3.2vw, 3rem); --lay-bl-lines: 3;
+  /* a wider column: the price beside Try, the two small keys under Try */
+  --lay-buy-cols: 5.8rem max-content max-content; --lay-buy: 'price try try' '. more cart';
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { gap: .45rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list { container-type: normal; height: var(--lay-strip); grid-template-columns: repeat(var(--ww-rows, 6), minmax(0, 1fr)); grid-auto-flow: column; align-content: stretch; gap: 0 clamp(.5rem, 1.2vw, 1rem); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-item { min-width: 0; min-height: 0; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-row { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; row-gap: .3rem; padding: .3rem .25rem; --ww-thumb-col: auto; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb { height: calc(var(--lay-strip) - 2.4rem); width: auto; min-height: 0; aspect-ratio: 16 / 10; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb img, html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb.is-tall img { width: auto !important; height: auto !important; max-width: 100%; max-height: calc(var(--lay-strip) - 2.4rem) !important; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-rtext { justify-items: center; text-align: center; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-name { font-size: clamp(1rem, 1.5vw, 1.4rem) !important; -webkit-text-stroke-width: 1px; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-type { display: none; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel {
+  height: calc(var(--ww-main) - var(--lay-strip) - var(--ww-row-gap));
+  grid-template-columns: minmax(0, clamp(26rem, 34vw, 28rem)) minmax(0, 1fr); grid-template-areas: 'info ui';
+  column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+  }
 </style>
