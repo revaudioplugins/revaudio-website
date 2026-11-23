@@ -106,6 +106,50 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
       it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
       local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-23 ~15:00, Dan's NEW DIRECTION: the projector look (a look only; the site is unchanged):**
+    - Dan, 2026-11-22: "no player at all. no music nothing", in 3 sections: (1) the car film with the email gate from the
+      start; (2) the manual film full screen on a projector, a vintage educational film with our ElevenLabs voice (Gil
+      provides it), which turns over mechanically into the Buy plate + gate when it ends; (3) "understand it": the
+      plugin's face, presented, with the gate again under it. Why WIDE BEAM exists (Dan's pick A, same day): the cheap
+      first purchase that brings new customers in.
+    - The look: `bench/widebeam-projector/` (README there), published at
+      https://claude.ai/artifact/4oWMU9NiWGPcZniDsHee3Y (private; db `pick/dan` = {look, flip, note}, empty so far).
+      The first link (`6bbysbnKpcaGSKtCZu7hLL`) was deleted or lost its write access on 2026-11-23 (not by this
+      session); its db held no pick.
+    - The open, Dan 2026-11-23 ("the film just snaps" on reload): the screen starts black, the words rise in, and the
+      car film waits on its first frame until ~0.4 s after the first paint, then plays as it fades up (1.6 s). No
+      `autoplay` in the markup and `opacity:0` inline on the video (WebKit once painted it whole before the sheet
+      applied). Reduced motion: the still end frame fades up. Checked frame by frame (WebKit + Chrome, 1141 and 390,
+      film delayed 1.5 s too).
+    - Dan's calls on it, 2026-11-23: section 1 centred; its email card is smoked glass, then "more transparent"; the
+      small print on one row on a laptop (wraps on a phone); the line under the name is "THE PRECISE, GENTLE WIDENER"
+      and the lede "One big knob spreads your track, and a steep split keeps the bass in mono." (gentle = it opens a
+      touch wider, at most +6 dB side; precise = the 24 dB/oct split); two typefaces on the whole page, Bebas Neue +
+      Gelasio (the plugin face's LCD keeps Courier New). Checked in Playwright WebKit 1141 + Chrome 1312 + WebKit 390.
+    - Later the same day (Dan): the top text is down to the name + the tagline (the lede, then "Wider mix. Bass dead
+      centre." removed; the bass point now lives in section 3's heading); the name is the plugin's own engraved
+      letters (`title.webp`, cut from face.webp and unmixed from the plate's #242424), over the plugin's ruled subtitle
+      line carrying the tagline (in Gelasio, not the plugin's sans, to stay at two faces); "Scroll for the film"
+      centred and bigger; the email error line sits 10 px under the box's brass ring; the face's number pins are flat
+      round coins just before each printed name ("1 WIDTH"), hidden under 640 px of face (the names are ~5 px tall).
+      Left-to-right they read 2 4 1 3 (the list puts WIDTH first); 1-2-3-4 across would reorder the list too.
+    - The film's ending, Dan 2026-11-23, in steps: the latches off the panel ("let remove them"), then no flip at all
+      ("play like the film"), then "the card will be the film ... a little bit of glitch ... seamless", then "it moves
+      too much", then "it blinks too much, make it more like a real film". Now: the film cuts to its own 1930s title
+      card inside the film frame (black and white, double-ruled frame, the plugin's lettering in film white, the gate as
+      a white box + a white block key), under the film's grain (now every frame), a light that wavers a little each
+      frame (no blinks) and a single-frame dust speck now and then. The cut: one small shiver, a one-frame slip with the
+      frame line, one faint splice frame. The held card does not move (0 px over 12 s, both engines). Watch again runs
+      it back. On phones the film frame grows to hold the card (the film letterboxes in it). The flips (F1-F3), the
+      latches and the pivots stay in the code, switched off; the Look controls lost the flip and hardware rows.
+    - Open for Dan: the projector look (P1-P3; my pick P1 "Beam in the dark", not saved yet); section 3's face still or
+      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for section
+      3's plate too (still leather + brass).
+    - For Gil: the film as 16:9 (laptop) + 9:16 (phone); the captions as a cue file (VTT / SRT), not burned in; the $9
+      shown before launch (reverses P1 A's "Price at launch").
+    - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
+      in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
+      (fast-forward to `a58715c`); `qa/widebeam-page-1121` still waits for Dan's push line.
   - **State 2026-11-22 ~13:30, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
     `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
     stereo road are cut (files kept; bring back = per section its line + import in widebeam.astro and its @import in

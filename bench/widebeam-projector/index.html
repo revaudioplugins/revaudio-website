@@ -1,0 +1,1266 @@
+<title>WIDE BEAM Projector Look</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gelasio&display=swap">
+<style>
+/* Layout: three full-screen rooms down one dark garage: the car film with the gate, the projector film that turns
+   into the Buy plate, the plugin's face presented silent with the gate under it. A control panel rides bottom-left. */
+:root {
+  color-scheme: dark;
+  --bg: #0b0a08; --charcoal: #15130f; --steel: #24211c;
+  --brass-hi: #f3dca0; --brass: #c9a35c; --brass-lo: #6f5430;
+  --ivory: #efe6d2; --ivory-2: #b8ad98; --ivory-3: #9c927f;
+  --halo: #fff1cb; --ox: #6b1d1a;
+  --key: #e8c878; --key-hi: #f4dc9c; --key-lo: #b48d45; --key-ink: #1e1710;
+  --well: #0a0907; --glass: #0d0c0a;
+  --lcd-ink: #b9e8ff; --lcd-glow: #2894fa;
+  --ok: #85a287; --err: #db8354;
+  /* two faces on the whole page: Bebas Neue for what is stamped (headlines, keys, prices, labels), Gelasio for what
+     is read (everything else). The LCD on the plugin's face keeps the plugin's own screen type (--mono). */
+  --serif: 'Gelasio', Georgia, 'Times New Roman', serif;
+  --display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --label: var(--display);
+  --mono: 'Courier New', ui-monospace, monospace;
+  --engrave-ink: #e3d6bc;
+  --engrave-cut: 0 1px 0 rgba(8, 6, 4, .9), 0 -1px 0 rgba(255, 240, 210, .07);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b0a08; --ivory: #efe6d2; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0b0a08; --ivory: #efe6d2; color-scheme: dark; }
+:root[data-theme="light"] { --bg: #0b0a08; --ivory: #efe6d2; color-scheme: dark; }
+
+html, body { background: var(--bg); color: var(--ivory); }
+body { font-family: 'Gelasio', Georgia, serif; font-size: 16px; overflow-x: clip; }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, textarea { font: inherit; }
+:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
+
+/* ================= the plate (the website's WIDE BEAM parts kit, cut from the plugin's photo) ================= */
+.plate {
+  --ps: .45; --pb: 199;
+  position: relative; isolation: isolate; box-sizing: border-box;
+  border-style: solid;
+  border-width: calc(var(--ps) * 68px) calc(var(--ps) * 62px) calc(var(--ps) * var(--pb) * 1px) calc(var(--ps) * 62px);
+  border-image-source: url(parts/plate.webp);
+  border-image-slice: 68 62 68 62;
+  border-image-width: calc(var(--ps) * 68px) calc(var(--ps) * 62px) 0 calc(var(--ps) * 62px);
+  border-image-repeat: round;
+  background:
+    radial-gradient(130% 120% at 24% 0%, rgba(255, 236, 200, .075), transparent 60%),
+    linear-gradient(180deg, transparent 55%, rgba(8, 6, 4, .22)),
+    url(parts/field.webp) 0 0 / calc(var(--ps) * 180px) calc(var(--ps) * 128px) repeat;
+  background-origin: border-box; background-clip: border-box;
+  color: var(--ivory);
+}
+.plate::before, .plate::after { content: ''; position: absolute; z-index: -1; pointer-events: none; }
+.plate::before {
+  inset: calc(var(--ps) * -68px) calc(var(--ps) * -62px) calc(var(--ps) * var(--pb) * -1px) calc(var(--ps) * -62px);
+  --sc: calc(var(--ps) * 36px);
+  background:
+    url(parts/screw-tl.webp) left calc(var(--ps) * 48px) top calc(var(--ps) * 56px) / var(--sc) no-repeat,
+    url(parts/screw-tr.webp) right calc(var(--ps) * 48px) top calc(var(--ps) * 56px) / var(--sc) no-repeat,
+    url(parts/screw-bl.webp) left calc(var(--ps) * 48px) bottom calc(var(--ps) * 188px) / var(--sc) no-repeat,
+    url(parts/screw-br.webp) right calc(var(--ps) * 48px) bottom calc(var(--ps) * 188px) / var(--sc) no-repeat;
+}
+.plate::after {
+  box-sizing: border-box; left: calc(var(--ps) * -62px); right: calc(var(--ps) * -62px);
+  bottom: calc(var(--ps) * -199px); height: calc(var(--ps) * 199px); padding: 0 calc(var(--ps) * 100px);
+  background-image: url(parts/badge.webp), url(parts/strap-l.webp), url(parts/strap-r.webp), url(parts/strap-run.webp);
+  background-position: 50% calc(var(--ps) * 43px), left top, right top, left top;
+  background-size: calc(var(--ps) * 250px) auto, calc(var(--ps) * 100px) 100%, calc(var(--ps) * 100px) 100%, calc(var(--ps) * 400px) 100%;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
+  background-origin: border-box, border-box, border-box, content-box;
+  background-clip: border-box, border-box, border-box, content-box;
+}
+.plate-body { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 18px clamp(14px, 3vw, 34px) 14px; }
+.eng { font-family: var(--serif); font-variant: small-caps; letter-spacing: .16em; color: var(--engrave-ink); text-shadow: var(--engrave-cut); margin: 0; }
+.stamp { font-family: var(--display); font-weight: 400; letter-spacing: .02em; line-height: 1; color: var(--ivory); text-shadow: var(--engrave-cut); margin: 0; text-wrap: balance; }
+.fine { margin: 0; color: var(--ivory-2); font-size: .8rem; line-height: 1.45; max-width: 46ch; }
+.status { margin: 0; font-size: .9rem; color: var(--ivory-2); min-height: 1.2em; }
+/* the line under an email box clears the box's brass ring (its shadow rings reach 4 px below the box) */
+.gate .status { margin-top: 10px; line-height: 1.35; }
+.status.ok { color: var(--ok); } .status.err { color: var(--err); }
+
+/* a well cut into the steel: dark recess, shaded top lip, a brass bezel ring; the key sits IN it */
+.well {
+  position: relative; box-sizing: border-box; display: flex; align-items: stretch; gap: 6px; padding: 6px; border-radius: 14px;
+  background: linear-gradient(180deg, #050403, #100e0b 60%, #17140f);
+  box-shadow:
+    inset 0 4px 8px rgba(0, 0, 0, .85), inset 0 -1px 0 rgba(255, 232, 190, .06),
+    0 0 0 1px #3a2c18, 0 0 0 2px #8a6a39, 0 0 0 3px #3d2e18, 0 1px 0 3px rgba(255, 236, 200, .08);
+}
+.key {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  min-height: 48px; padding: 0 22px; border: 0; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  font-family: var(--label); font-weight: 400; font-size: 21px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--key-ink); text-shadow: 0 1px 0 rgba(255, 244, 214, .55);
+  background: linear-gradient(180deg, var(--key-hi), var(--key) 38%, #d9b464 70%, var(--key-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 250, 230, .8), inset 0 -2px 0 rgba(90, 64, 24, .55), 0 3px 0 #4a3618, 0 5px 7px rgba(0, 0, 0, .75);
+  transform: translateY(-2px); transition: transform .12s cubic-bezier(.2, .9, .25, 1.25), box-shadow .12s;
+}
+.key:active, .key.down { transform: translateY(1px); box-shadow: inset 0 3px 5px rgba(80, 56, 20, .55), inset 0 -1px 0 rgba(90, 64, 24, .4), 0 0 0 #4a3618, 0 1px 2px rgba(0, 0, 0, .8); }
+.key--big { min-height: 60px; padding: 0 30px; font-size: 26px; }
+.key--ghost { color: var(--key); text-shadow: 0 1px 0 #000; background: linear-gradient(180deg, #2b2620, #1b1814 60%, #14110e); box-shadow: inset 0 1px 0 rgba(255, 236, 200, .12), 0 3px 0 #090806, 0 5px 7px rgba(0, 0, 0, .7); }
+.key--small { min-height: 36px; padding: 0 14px; font-size: 17px; }
+.rail { width: min(100%, 520px); }
+.rail input {
+  flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 9px; border: 1px solid #2a2117;
+  background: linear-gradient(180deg, #070605, #12100d); color: var(--ivory); font-family: 'Gelasio', Georgia, serif; font-size: 16px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 236, 200, .05);
+}
+.rail input::placeholder { color: var(--ivory-3); opacity: 1; }
+.rail input:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: -1px; }
+.rail .divider { width: 2px; margin: 4px 0; background: linear-gradient(#3a2c18, #8a6a39, #3a2c18); border-radius: 1px; }
+.or { display: flex; align-items: center; gap: 12px; width: min(100%, 420px); }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 163, 92, .6), transparent); }
+.price { font-family: var(--display); color: var(--brass-hi); text-shadow: var(--engrave-cut); }
+
+/* ================= Section 1: the car film + the gate from the start ================= */
+.s1 { position: relative; min-height: 100svh; display: grid; overflow: clip; background: #070605; }
+.s1-film { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* the open: on every load the words rise in over black, then the film fades up behind them once it really plays
+   (script adds .is-in), like a lamp coming up. Opacity and transform sit on the card itself, never on an ancestor,
+   so its glass blur keeps working during the fade. */
+/* opacity 0 also sits inline on the <video>, so it is dark from the first paint even while a stylesheet is still
+   loading (Safari once painted it whole, then faded it out and in). The fade lives on .is-in only. */
+.s1-film { opacity: 0; }
+.s1-film.is-in { opacity: 1 !important; transition: opacity 1.6s cubic-bezier(.25, .6, .3, 1); }
+@keyframes s1-rise { from { opacity: 0; transform: translateY(12px); } }
+.s1 .lock { animation: s1-rise .8s cubic-bezier(.2, .7, .2, 1) .1s both; }
+.s1 .s1-plate { animation: s1-rise .8s cubic-bezier(.2, .7, .2, 1) .28s both; }
+@media (prefers-reduced-motion: reduce) {
+  .s1-film.is-in { transition-duration: .6s; }
+  @keyframes s1-rise { from { opacity: 0; } }
+}
+.s1-shade { position: absolute; inset: 0; background:
+  radial-gradient(60% 70% at 50% 46%, rgba(8, 7, 5, .62), rgba(8, 7, 5, .3) 60%, rgba(8, 7, 5, 0) 85%),
+  linear-gradient(180deg, rgba(8, 7, 5, .5), transparent 26%, transparent 70%, rgba(8, 7, 5, .75)); }
+.s1-in { position: relative; z-index: 1; display: grid; align-content: center; justify-items: center; text-align: center; gap: 24px; padding-block: clamp(28px, 6vh, 64px) clamp(24px, 5vh, 48px); max-width: 1240px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+/* the name exactly as on the plugin: its own engraved letters, cut from the plugin's face (title.webp, unmixed from the
+   plate's #242424 so the bevel and the brushed gold stay), and under it the plugin's ruled subtitle line, in its gold
+   (#bcaf8d letters, #bda989 rules, measured on face.webp), carrying the tagline */
+.lock { --lw: min(560px, 46vw); display: grid; gap: 10px; justify-items: center; }
+.lock-name { margin: 0; width: var(--lw); line-height: 0; }
+.lock-name img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .85)) drop-shadow(0 0 1px rgba(0, 0, 0, .7)); }
+.lock-sub { display: flex; align-items: center; gap: .9em; width: var(--lw); font-size: .95rem; letter-spacing: .38em; color: #cbbd97; white-space: nowrap; }
+.lock-sub span { margin-right: -.38em; }
+.lock-sub::before, .lock-sub::after { content: ''; flex: 1; min-width: 14px; height: 1.5px; border-radius: 1px; background: #bda989; box-shadow: 0 1px 1px rgba(0, 0, 0, .6); }
+@media (max-width: 560px) { .lock { --lw: min(88vw, 380px); } .lock-sub { font-size: .85rem; letter-spacing: .2em; gap: .7em; } .lock-sub span { margin-right: -.2em; } }
+.s1-plate { width: min(100%, 540px); --ps: .34; justify-self: center; }
+.s1-plate .plate-body { gap: 9px; padding: 12px 20px 8px; }
+.s1-plate .plate-body { justify-items: center; text-align: center; }
+.s1-plate .rail { width: 100%; }
+.buyrow { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.buyrow .eng { font-size: .95rem; }
+.s1-plate .price { font-size: 1.5em; letter-spacing: .02em; vertical-align: -.06em; }
+/* Section 1's card is smoked glass over the car film, held by four brass screws: the film shows through it, blurred.
+   It drops the leather plate, the strap and the badge; RevAudio is etched into the glass instead. Its ancestors carry
+   no opacity, filter, mask or blend, or the blur would see nothing (a backdrop root). */
+.plate.s1-plate {
+  border: 1px solid rgba(255, 238, 205, .18); border-image: none; border-radius: 20px;
+  padding: 16px 22px 22px;
+  background:
+    linear-gradient(112deg, rgba(255, 246, 225, 0) 28%, rgba(255, 246, 225, .08) 40%, rgba(255, 246, 225, 0) 52%),
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 236, 200, .09), transparent 62%),
+    linear-gradient(180deg, rgba(34, 29, 22, .08), rgba(10, 9, 7, .2));
+  -webkit-backdrop-filter: blur(7px) saturate(140%) brightness(.9);
+  backdrop-filter: blur(7px) saturate(140%) brightness(.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 225, .32), inset 0 -1px 0 rgba(0, 0, 0, .4),
+    inset 0 0 0 4px rgba(255, 238, 205, .025), inset 0 0 22px rgba(255, 236, 200, .04),
+    0 28px 60px -16px rgba(0, 0, 0, .75), 0 2px 8px rgba(0, 0, 0, .4);
+}
+.plate.s1-plate::before {
+  inset: 0; --sc: 12px;
+  background:
+    url(parts/screw-tl.webp) left 11px top 11px / var(--sc) no-repeat, url(parts/screw-tr.webp) right 11px top 11px / var(--sc) no-repeat,
+    url(parts/screw-bl.webp) left 11px bottom 11px / var(--sc) no-repeat, url(parts/screw-br.webp) right 11px bottom 11px / var(--sc) no-repeat;
+}
+.plate.s1-plate::after {
+  content: 'RevAudio'; left: 0; right: 0; bottom: 8px; height: auto; padding: 0; background: none;
+  font-family: var(--serif); font-size: 10px; letter-spacing: .32em; text-align: center;
+  color: rgba(255, 240, 210, .26); text-shadow: 0 -1px 0 rgba(0, 0, 0, .5);
+}
+.s1-plate .plate-body { padding: 8px 14px 2px; }
+.s1-plate .well { background: linear-gradient(180deg, rgba(4, 3, 2, .4), rgba(14, 12, 9, .22) 60%, rgba(22, 19, 14, .14)); }
+.s1-plate .rail input { background: linear-gradient(180deg, rgba(0, 0, 0, .38), rgba(10, 9, 7, .2)); border-color: rgba(255, 236, 200, .14); }
+/* thinner glass lets more film through: a soft dark halo keeps the words readable over bright frames */
+.s1-plate .stamp, .s1-plate .eng, .s1-plate .fine { text-shadow: 0 1px 2px rgba(0, 0, 0, .85), 0 0 14px rgba(0, 0, 0, .55); }
+/* the small print is one row on a laptop; a phone is too narrow, so there it wraps */
+.s1-plate .fine { max-width: none; }
+@media (min-width: 561px) { .s1-plate .fine { white-space: nowrap; } }
+.scroll-cue { position: absolute; z-index: 1; left: 50%; translate: -50% 0; bottom: 20px; margin: 0; padding-left: .2em; white-space: nowrap; font-size: 1.05rem; color: var(--ivory-2); letter-spacing: .2em; font-variant: small-caps; }
+
+/* ================= Section 2: the projector ================= */
+.s2 { position: relative; height: 100svh; min-height: 560px; overflow: clip; background: #060504; }
+.room { position: absolute; inset: 0; pointer-events: none; }
+.beam { position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(10px); }
+.beam.dust { filter: none; }
+.stage { position: absolute; left: var(--sx); top: var(--sy); width: var(--sw); height: var(--sh); }
+.rig { position: absolute; inset: 0; perspective: calc(var(--sw) * 2.1); }
+.glow { position: absolute; inset: -6%; border-radius: 40px; background: radial-gradient(closest-side, rgba(255, 236, 200, .09), transparent); opacity: 0; transition: opacity .6s; }
+.s2.is-on .glow { opacity: 1; }
+.panel { position: absolute; inset: 0; }
+.panel.turning { transform-style: preserve-3d; }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.panel.turning .front { transform: translateZ(calc(var(--d) / 2)); }
+.panel.turning .back { display: block; }
+.back { display: none; }
+.s2[data-flip="f1"] .panel.turning .back { transform: rotateX(180deg) translateZ(calc(var(--d) / 2)); }
+.s2[data-flip="f2"] .panel.turning .back { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+.edge { position: absolute; display: none; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background: linear-gradient(90deg, #3d2e18, #b08a4c 18%, #6f5430 50%, #c9a35c 82%, #3d2e18); }
+.panel.turning .edge { display: block; }
+.s2[data-flip="f1"] .edge { left: 0; right: 0; top: 50%; height: var(--d); margin-top: calc(var(--d) / -2); }
+.s2[data-flip="f1"] .edge-a { transform: rotateX(90deg) translateZ(calc(var(--sh) / 2)); }
+.s2[data-flip="f1"] .edge-b { transform: rotateX(-90deg) translateZ(calc(var(--sh) / 2)); }
+.s2[data-flip="f2"] .edge { top: 0; bottom: 0; left: 50%; width: var(--d); margin-left: calc(var(--d) / -2);
+  background: linear-gradient(180deg, #3d2e18, #b08a4c 18%, #6f5430 50%, #c9a35c 82%, #3d2e18); }
+.s2[data-flip="f2"] .edge-a { transform: rotateY(-90deg) translateZ(calc(var(--sw) / 2)); }
+.s2[data-flip="f2"] .edge-b { transform: rotateY(90deg) translateZ(calc(var(--sw) / 2)); }
+.edge i { position: absolute; inset: 0; background: rgba(255, 241, 203, 1); mix-blend-mode: screen; opacity: 0; }
+.sheen, .shade { position: absolute; inset: 0; pointer-events: none; opacity: 0; border-radius: inherit; }
+.sheen { background: linear-gradient(var(--sheen-dir, 180deg), rgba(255, 241, 203, .0) 20%, rgba(255, 241, 203, .85) 48%, rgba(255, 241, 203, 0) 62%); mix-blend-mode: screen; }
+.s2[data-flip="f2"] .sheen, .slat .sheen { --sheen-dir: 100deg; }
+.shade { background: #050403; }
+
+/* the front: the screen, the film on it */
+.screen { position: absolute; inset: 0; display: grid; place-items: center; background: #050403; overflow: hidden; }
+.film { position: relative; width: var(--fw); height: var(--fh); overflow: hidden; background: #000; }
+.film video, .film img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.film .still { visibility: hidden; }
+.film.show-still .still { visibility: visible; }
+.film.show-still video { visibility: hidden; }
+.fx { position: absolute; inset: 0; pointer-events: none; }
+.fx-grain { opacity: 0; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.2 -.1'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.fx-scratch { opacity: 0; background:
+  linear-gradient(90deg, transparent 0 18%, rgba(240, 236, 226, .35) 18% 18.12%, transparent 18.12%),
+  linear-gradient(90deg, transparent 0 63%, rgba(10, 9, 8, .55) 63% 63.15%, transparent 63.15%),
+  linear-gradient(90deg, transparent 0 81%, rgba(240, 236, 226, .2) 81% 81.08%, transparent 81.08%); }
+.fx-flick { background: #fff4dc; mix-blend-mode: soft-light; opacity: 0; }
+.fx-vig { background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(6, 5, 4, .6) 100%); opacity: 0; }
+.fx-burn { opacity: 0; background: radial-gradient(circle at 46% 54%, #fffbea 0 10%, #ffd27a 22%, #a2471a 34%, rgba(40, 14, 4, .85) 44%, transparent 60%); mix-blend-mode: screen; }
+/* captions: live text over the film, so they stay legible at every size and on any picture (the burned-in ones were 9 px on a phone) */
+.cap { position: absolute; z-index: 2; left: 50%; bottom: 6%; translate: -50% 0; width: max-content; max-width: 88%; margin: 0; padding: .2em .65em .26em;
+  text-align: center; text-wrap: balance; font-family: 'Gelasio', Georgia, serif; font-size: clamp(15px, calc(var(--fw) * .03), 28px); line-height: 1.3;
+  color: #f4efe2; background: rgba(6, 5, 4, .66); border-radius: 4px; text-shadow: 0 1px 2px #000; opacity: 0; transition: opacity .16s; pointer-events: none; }
+.cap.on { opacity: 1; }
+/* the hardware that holds the panel: two brass latches (F1, F2) or the louvers' tie rod (F3) */
+.latch, .rod { position: absolute; display: none; z-index: 4; pointer-events: none;
+  background: linear-gradient(180deg, #f6e3ad, #c9a35c 42%, #7a5c31 78%, #4a3618);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, .75), inset 0 1px 0 rgba(255, 250, 230, .75), inset 0 -1px 0 rgba(60, 40, 15, .6); }
+.latch { left: 0; top: 0; width: var(--lw); height: var(--lh); border-radius: calc(var(--lh) / 2); transform-origin: calc(var(--lh) / 2) 50%; }
+.latch::before { content: ''; position: absolute; left: calc(var(--lh) * .18); top: calc(var(--lh) * .18); width: calc(var(--lh) * .64); height: calc(var(--lh) * .64); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3cf, #9c7a3e 60%, #3d2e18); box-shadow: inset 0 0 0 1px rgba(40, 28, 10, .6); }
+.rod { left: 0; width: 100%; top: calc(var(--lh) * -.3); height: calc(var(--lh) * .7); border-radius: 99px;
+  /* a clip on the rod for every slat, so its slide reads */
+  background: repeating-linear-gradient(90deg, transparent 0 calc(var(--slw) / 2 - 4px), #3d2e18 calc(var(--slw) / 2 - 4px) calc(var(--slw) / 2 + 4px), transparent calc(var(--slw) / 2 + 4px) var(--slw)),
+    linear-gradient(180deg, #f6e3ad, #c9a35c 42%, #7a5c31 78%, #4a3618); }
+.s2[data-flip="f1"] .latch, .s2[data-flip="f2"] .latch, .s2[data-flip="f3"] .rod { display: block; }
+/* Panel hardware: Dan removed it, 2026-11-23 ("let remove them"), so the page runs on "none" and the switch is gone
+   from the Look controls; the other two stay in the code to bring back. "pivot" = two brass pivot bolts on the axis the sign turns on (F1: the
+   left and right edges at mid-height; F2: top and bottom at mid-width). They hold still while the panel turns between
+   them, so the turn reads as a sign on its axle. "none" = no hardware (the rig's jolt and click stay). "catch" = the
+   earlier swing catches that snap open and drop shut. F3's tie rod is part of the louvers and stays in all three. */
+.pivot { position: absolute; display: none; z-index: 4; pointer-events: none; box-sizing: border-box;
+  width: var(--ph); height: var(--ph); margin: calc(var(--ph) / -2) 0 0 calc(var(--ph) / -2); border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, #f6e3ad 0 26%, #d9b467 48%, #9c7a3e 74%, #5e4526 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .8), 0 0 0 1px rgba(20, 14, 6, .85), inset 0 1px 1px rgba(255, 248, 225, .6), inset 0 -1px 2px rgba(50, 34, 12, .7); }
+.pivot::before { content: ''; position: absolute; left: 20%; right: 20%; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px;
+  background: #3a2b16; box-shadow: 0 1px 0 rgba(255, 238, 196, .45); transform: rotate(-38deg); }
+.s2[data-hw="pivot"][data-flip="f1"] .pivot, .s2[data-hw="pivot"][data-flip="f2"] .pivot { display: block; }
+.s2[data-hw="pivot"] .latch, .s2[data-hw="none"] .latch { display: none; }
+.tap { position: absolute; z-index: 3; right: 12px; bottom: 12px; min-height: 36px; padding: 0 14px 0 10px; display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 8px; border: 1px solid rgba(201, 163, 92, .55); background: rgba(14, 12, 10, .78); color: var(--brass-hi); cursor: pointer;
+  font-family: var(--label); font-weight: 400; font-size: 17px; letter-spacing: .1em; text-transform: uppercase; }
+.tap svg { width: 18px; height: 18px; }
+.tap[aria-pressed="true"] { color: var(--ivory); border-color: rgba(239, 230, 210, .5); }
+.playkey { position: absolute; z-index: 3; left: 50%; top: 50%; translate: -50% -50%; display: none; }
+.s2.rm-wait .playkey { display: inline-flex; }
+
+/* the back: the Buy plate is the whole panel */
+.back .plate, .plate-rest .plate { position: absolute; inset: 0; --ps: var(--pps, .45); display: grid; place-items: center; }
+.plate-rest { position: absolute; inset: 0; display: none; }
+.s2.on-plate .plate-rest, .s2.crossing .plate-rest { display: block; }
+.s2.on-plate .panel { visibility: hidden; }
+.stage-plate .plate-body { max-width: 560px; zoom: var(--pz, 1); } /* the gate grows with a big panel, so the price and the key never sit small in an empty plate */
+.stage-plate .head, .s3-plate .head { font-size: clamp(1.7rem, 3vw, 2.6rem); }
+.again { position: absolute; right: 0; bottom: 0; }
+.plate-foot { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+/* F3: the louvers */
+.louvers { position: absolute; inset: 0; display: none; perspective: calc(var(--sw) * 2.1); }
+.s2.louvering .louvers { display: block; }
+.s2.louvering .panel { visibility: hidden; }
+.slat { position: absolute; top: 0; height: 100%; transform-style: preserve-3d; }
+.slat .face { overflow: hidden; }
+.slat .back { display: block; transform: rotateY(180deg); }
+.slat .clip { position: absolute; top: 0; height: 100%; width: var(--sw); }
+
+/* ---- F0: the Buy card IS the film (Dan, 2026-11-23: "the card will be the film ... a little bit of glitch ... seamless").
+   The film's last shot cuts to a 1930s title card on the same strip: black and white, a double-ruled frame, the
+   plugin's own lettering in film white, the gate as a title-card box. It sits inside the film frame, under the film's
+   own grain, flicker, scratches and vignette, which keep running, so nothing changes but the picture. The cut is a
+   film glitch: the frame shivers, slips a frame up in the gate (the frame line rolls through), a splice flashes, the
+   card settles. While it holds it stays still, like a held title card: grain that changes every frame, a light that
+   wavers slightly, a speck of dust on a single frame now and then. No blinks, no flashes. Reduced motion: a plain
+   cut, the grain and dust stop. */
+.endcard { position: absolute; inset: 0; display: none; container-type: inline-size; background: #0c0b09; color: #ece6d6; }
+.s2.carding .endcard, .s2.carded .endcard { display: grid; }
+.endcard::before { content: ''; position: absolute; inset: clamp(8px, 2.6cqi, 22px); pointer-events: none;
+  border: 1.5px solid rgba(236, 230, 214, .7); outline: 1px solid rgba(236, 230, 214, .3); outline-offset: clamp(3px, .7cqi, 6px); }
+.ec-body { position: relative; box-sizing: border-box; min-height: 100%; display: grid; align-content: center; justify-items: center; text-align: center;
+  gap: clamp(7px, 1.5cqi, 14px); padding: clamp(26px, 6.4cqi, 54px) clamp(22px, 7cqi, 64px); }
+/* .film img stretches the film's own stills full-frame: the card's title is an image too, so it opts out */
+.endcard img.ec-title { position: static; inset: auto; display: block; width: clamp(170px, 44cqi, 420px); height: auto; object-fit: initial; filter: grayscale(1) brightness(1.32) contrast(1.06); }
+.ec-tag { margin: 0; display: flex; align-items: center; gap: .9em; width: fit-content; min-width: clamp(170px, 44cqi, 420px); max-width: 100%; font-family: var(--serif); font-variant: small-caps;
+  letter-spacing: .3em; font-size: clamp(10px, 1.75cqi, 15px); color: #cfc8b6; white-space: nowrap; }
+.ec-tag span { margin-right: -.3em; }
+.ec-tag::before, .ec-tag::after { content: ''; flex: 1; min-width: 10px; height: 1px; background: rgba(236, 230, 214, .6); }
+.ec-head { margin: clamp(2px, .8cqi, 8px) 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(24px, 5.2cqi, 46px); line-height: 1; letter-spacing: .03em; color: #f3eddd; text-wrap: balance; }
+.endcard .price { font-family: inherit; color: #fff; text-shadow: none; }
+.endcard .eng { color: #cfc8b6; text-shadow: none; }
+.endcard .fine { color: #a9a293; font-size: clamp(11px, 1.6cqi, 14px); }
+.endcard .gate { width: min(100%, 520px); }
+.endcard .well { background: none; box-shadow: none; padding: 0; gap: 10px; border-radius: 0; }
+.endcard .rail .divider { display: none; }
+.endcard .rail input { height: 46px; border: 1.5px solid #e6dfcd; border-radius: 2px; background: rgba(0, 0, 0, .45); color: #f3eddd; box-shadow: none; }
+.endcard .rail input::placeholder { color: #9d978a; }
+.endcard .rail input:focus-visible, .endcard .key:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.endcard .key { transform: none; border-radius: 2px; background: #ece6d6; color: #0c0b09; text-shadow: none; box-shadow: none; transition: background .12s; }
+.endcard .key:hover { background: #fff; }
+.endcard .key:active, .endcard .key.down { transform: none; box-shadow: none; background: #d6cfbd; }
+.endcard .key--ghost { background: transparent; color: #cfc8b6; box-shadow: inset 0 0 0 1px rgba(236, 230, 214, .45); }
+.endcard .key--ghost:hover { background: rgba(236, 230, 214, .1); }
+.endcard .or::before, .endcard .or::after { background: linear-gradient(90deg, transparent, rgba(236, 230, 214, .55), transparent); }
+.endcard .status { color: #cfc8b6; } .endcard .status.ok { color: #d6e4cf; } .endcard .status.err { color: #f0c2a6; }
+.endcard .plate-foot { margin-top: 2px; }
+.fx-splice { background: #f4efe2; opacity: 0; }
+.fx-dust { opacity: 0; } /* a speck of dust on one frame now and then (script) */
+.s2.carding .cap, .s2.carded .cap, .s2.carding .tap, .s2.carded .tap { display: none; }
+.s2.carded:not(.rm) .fx-grain { animation: grain .21s steps(1) infinite; }
+.s2.carded:not(.rm) .fx-flick { animation: flick .5s steps(1) infinite; }
+.s2[data-look="p2"].carded:not(.rm) .fx-scratch { animation: scratch .7s steps(1) infinite; }
+/* Dan, 2026-11-23: "it moves too much": the held card stays still (no gate weave); grain and flicker keep the film alive */
+
+/* ---- P1: beam in the dark ---- */
+.s2[data-look="p1"] .screen { border-radius: 14px; background: #0a0908; }
+.s2[data-look="p1"] .face.front { border-radius: 14px; box-shadow: 0 0 0 1px #1b1915, 0 30px 80px rgba(0, 0, 0, .6); }
+.s2[data-look="p1"] .film { border-radius: 8px; }
+.s2[data-look="p1"] .fx-vig { opacity: 1; }
+.s2[data-look="p1"].is-on .fx-grain { opacity: .22; }
+.s2[data-look="p1"] .room { background: radial-gradient(120% 90% at 50% 40%, #12100d, #060504 70%); }
+
+/* ---- P2: full-bleed reel ---- */
+.s2[data-look="p2"] .room { background: #050403; }
+.s2[data-look="p2"] .screen { background: #050403; }
+.s2[data-look="p2"].is-on .fx-grain { opacity: .38; }
+.s2[data-look="p2"].is-on .fx-scratch { opacity: 1; }
+.s2[data-look="p2"] .fx-vig { opacity: .9; }
+
+/* ---- P3: the garage wall screen ---- */
+.s2[data-look="p3"] .room { background:
+  radial-gradient(70% 60% at 18% 8%, rgba(255, 214, 150, .10), transparent 60%),
+  linear-gradient(180deg, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, .55)),
+  repeating-linear-gradient(180deg, #2a2722 0 62px, #191714 62px 66px),
+  #24211c; }
+.s2[data-look="p3"] .room::before { content: ''; position: absolute; inset: 0; opacity: .55; background:
+  repeating-linear-gradient(90deg, transparent 0 126px, #181613 126px 130px); -webkit-mask: repeating-linear-gradient(180deg, #000 0 66px, transparent 66px 132px); mask: repeating-linear-gradient(180deg, #000 0 66px, transparent 66px 132px); }
+.s2[data-look="p3"] .room::after { content: ''; position: absolute; inset: 0; opacity: .55; background:
+  repeating-linear-gradient(90deg, transparent 0 61px, #181613 61px 65px, transparent 65px 130px); -webkit-mask: repeating-linear-gradient(180deg, transparent 0 66px, #000 66px 132px); mask: repeating-linear-gradient(180deg, transparent 0 66px, #000 66px 132px); }
+.s2[data-look="p3"] .screen { background: linear-gradient(180deg, #d8d3c6, #cfc9bb 60%, #c3bdaf); box-shadow: inset 0 0 0 calc(var(--sw) * .018) #141210; }
+.s2[data-look="p3"] .film { transform: perspective(calc(var(--sw) * 3)) rotateX(-4deg) scale(.97); transform-origin: 50% 40%; box-shadow: 0 0 calc(var(--sw) * .03) rgba(255, 241, 203, .18); }
+.s2[data-look="p3"].is-on .fx-grain { opacity: .2; }
+.s2[data-look="p3"] .fx-vig { opacity: .7; }
+.roller, .batten, .projector { display: none; position: absolute; pointer-events: none; }
+.s2[data-look="p3"] .roller, .s2[data-look="p3"] .batten, .s2[data-look="p3"] .projector { display: block; }
+.roller { left: calc(var(--sx) - var(--sw) * .03); width: calc(var(--sw) * 1.06); top: calc(var(--sy) - 26px); height: 26px; border-radius: 13px;
+  background: linear-gradient(180deg, #8d8a82, #e4e0d6 22%, #9a968c 48%, #4a4741 80%, #2a2825);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, .6); }
+.roller::before, .roller::after { content: ''; position: absolute; top: -3px; width: 18px; height: 32px; border-radius: 4px; background: linear-gradient(90deg, #2d2b27, #6f6a60, #2d2b27); }
+.roller::before { left: -6px; } .roller::after { right: -6px; }
+.batten { left: calc(var(--sx) - 4px); width: calc(var(--sw) + 8px); top: calc(var(--sy) + var(--sh)); height: 10px; border-radius: 3px; background: linear-gradient(180deg, #5b574f, #2a2825); box-shadow: 0 4px 6px rgba(0, 0, 0, .5); }
+.batten::after { content: ''; position: absolute; left: 50%; top: 10px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; border: 3px solid #8d8a82; box-sizing: border-box; }
+.projector { left: 50%; bottom: -8px; width: min(300px, 46vw); translate: -50% 0; }
+.projector svg { display: block; width: 100%; height: auto; overflow: visible; }
+.reel { transform-box: fill-box; transform-origin: center; }
+.s2.playing:not(.rm) .reel { animation: reel 1.6s linear infinite; }
+@keyframes reel { to { transform: rotate(-360deg); } }
+.lens-glow { opacity: 0; transition: opacity .2s; }
+.s2.is-on .lens-glow { opacity: 1; }
+
+/* motion that runs only while the film runs */
+.s2.playing:not(.rm) .fx-grain { animation: grain .21s steps(1) infinite; }
+.s2.playing:not(.rm) .fx-flick { animation: flick .5s steps(1) infinite; }
+.s2[data-look="p2"].playing:not(.rm) .film { animation: weave .5s steps(1) infinite; }
+.s2[data-look="p2"].playing:not(.rm) .fx-scratch { animation: scratch .7s steps(1) infinite; }
+@keyframes grain { 0% { background-position: 0 0; } 20% { background-position: -60px 40px; } 40% { background-position: 80px -30px; } 60% { background-position: -20px -90px; } 80% { background-position: 110px 70px; } }
+/* a real projector's light wavers a little on every frame (24 a second); it never blinks (Dan, 2026-11-23: "it blinks
+   too much, make it more like a real film") */
+@keyframes flick { 0% { opacity: .022; } 8.3% { opacity: .045; } 16.7% { opacity: .03; } 25% { opacity: .052; } 33.3% { opacity: .026; } 41.7% { opacity: .04; }
+  50% { opacity: .034; } 58.3% { opacity: .05; } 66.7% { opacity: .024; } 75% { opacity: .043; } 83.3% { opacity: .031; } 91.7% { opacity: .047; } }
+@keyframes weave { 0% { translate: 0 0; } 25% { translate: .6px -1.4px; } 50% { translate: -.4px .8px; } 75% { translate: .3px 1.6px; } }
+@keyframes scratch { 0% { background-position: 0 0, 0 0, 0 0; opacity: 1; } 33% { background-position: 7% 0, -11% 0, 4% 0; opacity: .7; } 66% { background-position: -5% 0, 3% 0, -9% 0; opacity: 0; } }
+.s2.lampup .film { animation: lampup .75s steps(1) 1; }
+@keyframes lampup { 0% { filter: brightness(0); } 15% { filter: brightness(.7); } 25% { filter: brightness(.08); } 40% { filter: brightness(1.15); } 55% { filter: brightness(.45); } 70% { filter: brightness(1); } }
+.s2[data-look="p2"].lampup .fx-burn { animation: burn .9s cubic-bezier(.2, .7, .3, 1) 1; }
+@keyframes burn { 0% { opacity: 1; transform: scale(.25); } 45% { opacity: .9; } 100% { opacity: 0; transform: scale(3.2); } }
+
+/* ================= Section 3: understand it ================= */
+.s3 { position: relative; padding-block: clamp(56px, 10vh, 110px) 40px; background: radial-gradient(70% 50% at 50% 30%, #1a1712, var(--bg) 70%); }
+.s3-head { max-width: 1100px; margin: 0 auto; text-align: center; display: grid; gap: 10px; }
+.s3-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 3.6vw, 3.2rem); line-height: 1; letter-spacing: .02em; text-wrap: balance; }
+.s3-head p { margin: 0 auto; max-width: 52ch; color: var(--ivory-2); line-height: 1.6; }
+.faceset { position: relative; max-width: 1060px; margin: 34px auto 0; aspect-ratio: 3 / 2; width: 100%; }
+.faceset > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, .7)); }
+.fp { position: absolute; }
+.fp-knob { left: 41.276%; top: 51.074%; width: 17.1875%; aspect-ratio: 1; background: url(knob-width.webp) 54.5% 40% / 1100% 1000% no-repeat; filter: drop-shadow(2px 3px 2px rgba(8, 11, 12, .5)); }
+.fp-lamp { border-radius: 9%; background: radial-gradient(closest-side at 48% 52%, rgba(255, 232, 180, .9), rgba(255, 214, 140, .35) 45%, transparent); mix-blend-mode: screen; opacity: .12; }
+.fp-lamp.l { left: 5.34%; top: 17.58%; width: 17.19%; height: 22.36%; }
+.fp-lamp.r { left: 78%; top: 17.58%; width: 16.08%; height: 22.36%; }
+.s3.alive:not(.rm) .fp-lamp { animation: breathe 6.5s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .3; } }
+.fp-road { left: 25.98%; top: 21.58%; width: 47.92%; height: 21.39%; overflow: hidden; border-radius: 1.2% / 3%; mix-blend-mode: lighten; opacity: 0; }
+.fp-road img { position: absolute; width: 208.7%; height: 467.6%; left: -54.21%; top: -100.9%; max-width: none; transform-origin: 49.9% 27.3%; }
+.fp-lcd { left: 42.25%; top: 16.7%; width: 15.43%; height: 4.39%; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; color: var(--lcd-ink);
+  font-size: clamp(9px, 1.45vw, 15px); letter-spacing: .12em; text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); }
+/* the numbers: flat brass coins, an exact circle (a set height, so no grid row can stretch one), a dark rim and a
+   fine light ring inside; lit evenly, so they read round, not as a lit bead. On the face each one sits just before
+   its control's printed name ("1 WIDTH"), clear of every knob, switch and label: --x is where that name starts
+   (measured on face.webp: LOW FOCUS 16.93 %, MIX 32.29 %, WIDTH 46.78 %, HIGH BEAM 60.97 %; the names' centre line is
+   78.05 % down). Sizes follow the face (cqw). Under 640 px of face the printed names are ~5 px tall, so the face's
+   numbers go and the list under it carries the names alone. */
+.pin { --d: clamp(18px, 2.2cqw, 26px); position: absolute; box-sizing: border-box; width: var(--d); height: var(--d); border-radius: 50%;
+  display: grid; place-items: center; padding-top: .06em; translate: -50% -50%;
+  font-family: var(--label); font-weight: 400; font-size: calc(var(--d) * .6); line-height: 1; color: var(--key-ink);
+  background: radial-gradient(circle, #f3dc9a 0 52%, #d8b467 100%); border: 1.5px solid #5e4526;
+  box-shadow: inset 0 0 0 1px rgba(255, 246, 220, .5), 0 1px 3px rgba(0, 0, 0, .55); }
+.faceset { container: face / inline-size; }
+.faceset .pin { --d: clamp(14px, 2.2cqw, 26px); left: calc(var(--x) - .6cqw - var(--d)); top: 78.05%; translate: 0 -50%; }
+@container face (max-width: 639px) { .faceset .pin { display: none; } }
+.legend { list-style: none; margin: 26px auto 0; padding: 0; max-width: 1060px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; }
+.legend li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; }
+.legend .pin { position: static; translate: none; grid-row: span 2; }
+.legend b { font-family: var(--serif); font-weight: 400; font-variant: small-caps; letter-spacing: .14em; color: var(--brass-hi); font-size: 1.02rem; }
+.legend span:not(.pin) { color: var(--ivory-2); line-height: 1.45; font-size: .98rem; }
+.s3-plate { max-width: 760px; margin: clamp(40px, 7vh, 72px) auto 0; }
+.foot { margin: 48px auto 0; max-width: 1100px; text-align: center; color: var(--ivory-3); font-size: .82rem; letter-spacing: .06em; }
+
+/* ================= the control panel ================= */
+.cp { position: fixed; z-index: 50; left: max(12px, env(safe-area-inset-left, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  width: min(330px, calc(100vw - 24px)); box-sizing: border-box; border-radius: 12px; border: 1px solid rgba(201, 163, 92, .5);
+  background: rgba(17, 15, 12, .94); box-shadow: 0 12px 34px rgba(0, 0, 0, .6); font-family: var(--serif); color: var(--ivory); }
+.cp-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 40px; padding: 0 12px; border: 0; background: none; color: var(--brass-hi); cursor: pointer;
+  font-family: var(--label); font-weight: 400; font-size: 17px; letter-spacing: .12em; text-transform: uppercase; }
+.cp-top em { font-style: normal; color: var(--ivory-2); font-weight: 400; letter-spacing: .06em; }
+.cp-body { display: grid; gap: 10px; padding: 2px 12px 12px; max-height: min(70svh, 520px); overflow: auto; }
+.cp.closed .cp-body { display: none; }
+.cp.closed { width: auto; }
+.cp-row { display: grid; gap: 5px; }
+.cp-row > span { font-family: var(--label); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--ivory-3); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; }
+.seg button, .cp-act button { min-height: 34px; padding: 2px 6px; border-radius: 7px; border: 1px solid #3a3226; background: #1d1a15; color: var(--ivory-2); cursor: pointer; font-size: 12px; letter-spacing: .04em; line-height: 1.15; }
+.seg button b { display: block; font-family: var(--label); font-weight: 400; font-size: 17px; color: var(--ivory); letter-spacing: .08em; }
+.seg button[aria-pressed="true"] { background: linear-gradient(180deg, #f4dc9c, #d9b464); color: var(--key-ink); border-color: #8a6a39; }
+.seg button[aria-pressed="true"] b { color: var(--key-ink); }
+.cp-act { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.cp textarea { width: 100%; box-sizing: border-box; min-height: 54px; resize: vertical; border-radius: 7px; border: 1px solid #3a3226; background: #0e0c0a; color: var(--ivory); padding: 6px 8px; font-family: 'Gelasio', Georgia, serif; font-size: 14px; }
+.cp-pick { display: flex; gap: 8px; align-items: center; }
+.cp-pick button { flex: none; min-height: 34px; padding: 0 12px; border-radius: 7px; border: 1px solid #8a6a39; background: linear-gradient(180deg, #f4dc9c, #d9b464); color: var(--key-ink); font-family: var(--label); font-weight: 400; font-size: 16px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.cp-pick small { font-size: 12px; color: var(--ivory-2); line-height: 1.3; }
+
+@media (max-width: 760px) {
+  .s1 { min-height: 0; grid-template-rows: auto; }
+  .s1-film { position: relative; height: 58svh; }
+  .s1-shade { height: 58svh; background: linear-gradient(180deg, rgba(8, 7, 5, .2), transparent 40%, rgba(8, 7, 5, .95)); }
+  .s1-in { margin-top: -30svh; padding-block: 0 28px; }
+  .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .scroll-cue { display: none; }
+}
+@media (max-width: 560px) {
+  .plate { --ps: .34; }
+  .rail { flex-direction: column; }
+  .rail .divider { display: none; }
+  .key { white-space: normal; text-align: center; line-height: 1.1; }
+  .key--big { font-size: 22px; padding: 8px 20px; }
+  .legend { grid-template-columns: minmax(0, 1fr); }
+  .fine { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .key { transition: none; }
+  .glow { transition: none; }
+}
+</style>
+
+<main class="wb">
+  <!-- ============ 1. the car film, gate from the start ============ -->
+  <section class="s1" id="s1" aria-label="WIDE BEAM">
+    <video class="s1-film" id="carFilm" style="opacity:0" muted playsinline preload="auto" poster="car-poster.jpg" aria-hidden="true">
+      <source src="car.mp4" type="video/mp4">
+    </video>
+    <div class="s1-shade"></div>
+    <div class="s1-in gut">
+      <div class="lock">
+        <h1 class="lock-name"><img src="title.webp" alt="WIDE BEAM" width="1231" height="82"></h1>
+        <p class="eng lock-sub"><span>The precise, gentle widener</span></p>
+      </div>
+      <div class="plate s1-plate" data-plate="s1"></div>
+    </div>
+    <p class="scroll-cue" aria-hidden="true">Scroll for the film ↓</p>
+  </section>
+
+  <!-- ============ 2. the manual film on the projector ============ -->
+  <section class="s2" id="s2" data-look="p1" data-flip="f0" data-hw="none" aria-label="The WIDE BEAM film">
+    <div class="room" aria-hidden="true"><canvas class="beam" id="beam"></canvas><canvas class="beam dust" id="dust"></canvas></div>
+    <div class="roller" aria-hidden="true"></div>
+    <div class="stage" id="stage">
+      <div class="glow" aria-hidden="true"></div>
+      <div class="rig" id="rig">
+        <div class="panel" id="panel">
+          <div class="face front" id="front">
+            <div class="screen">
+              <div class="film" id="film">
+                <video id="manual" muted playsinline preload="auto" poster="standin-poster.jpg">
+                  <source src="standin.mp4" type="video/mp4">
+                </video>
+                <img class="still" src="standin-end.jpg" alt="">
+                <div class="endcard" data-plate="card" role="group" aria-label="Get WIDE BEAM"></div>
+                <div class="fx fx-grain"></div><div class="fx fx-scratch"></div><div class="fx fx-flick"></div><div class="fx fx-vig"></div><div class="fx fx-burn"></div><div class="fx fx-dust"></div><div class="fx fx-splice"></div>
+                <p class="cap" id="cap"></p>
+              </div>
+            </div>
+            <button class="tap" id="tap" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M17 9c1.2 1.6 1.2 4.4 0 6"/></svg>
+              <span>Tap for sound</span>
+            </button>
+            <button class="key key--big playkey" id="playkey" type="button">Play the film</button>
+            <div class="shade"></div><div class="sheen"></div>
+          </div>
+          <div class="face back" id="back" aria-hidden="true"></div>
+          <div class="edge edge-a" aria-hidden="true"><i></i></div>
+          <div class="edge edge-b" aria-hidden="true"><i></i></div>
+        </div>
+        <div class="louvers" id="louvers" aria-hidden="true"></div>
+        <div class="plate-rest" id="plateRest">
+          <div class="plate stage-plate" data-plate="s2"></div>
+        </div>
+        <i class="latch" id="latchA" aria-hidden="true"></i><i class="latch" id="latchB" aria-hidden="true"></i><i class="rod" id="rod" aria-hidden="true"></i><i class="pivot" id="pivotA" aria-hidden="true"></i><i class="pivot" id="pivotB" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="batten" aria-hidden="true"></div>
+    <div class="projector" aria-hidden="true">
+      <svg viewBox="0 0 300 150">
+        <defs>
+          <linearGradient id="pjBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b4a43"/><stop offset=".35" stop-color="#2c2b27"/><stop offset="1" stop-color="#121210"/></linearGradient>
+          <radialGradient id="pjGlow"><stop offset="0" stop-color="#fff6dc"/><stop offset=".25" stop-color="#ffe2a0" stop-opacity=".8"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient>
+          <linearGradient id="pjReel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9b978d"/><stop offset=".5" stop-color="#55524b"/><stop offset="1" stop-color="#2a2925"/></linearGradient>
+        </defs>
+        <path d="M86 66 L118 36" stroke="#3a3833" stroke-width="7" stroke-linecap="round"/>
+        <path d="M214 66 L182 36" stroke="#3a3833" stroke-width="7" stroke-linecap="round"/>
+        <g class="reel"><circle cx="112" cy="34" r="30" fill="url(#pjReel)"/><circle cx="112" cy="34" r="7" fill="#1a1917"/><path d="M112 9v14M112 45v14M87 34h14M123 34h14" stroke="#1a1917" stroke-width="5"/></g>
+        <g class="reel"><circle cx="188" cy="34" r="30" fill="url(#pjReel)"/><circle cx="188" cy="34" r="7" fill="#1a1917"/><path d="M188 9v14M188 45v14M163 34h14M199 34h14" stroke="#1a1917" stroke-width="5"/></g>
+        <rect x="58" y="62" width="184" height="96" rx="14" fill="url(#pjBody)"/>
+        <rect x="58" y="62" width="184" height="6" rx="3" fill="#77746a" opacity=".55"/>
+        <circle class="lens-glow" cx="150" cy="64" r="46" fill="url(#pjGlow)"/>
+        <rect x="132" y="56" width="36" height="12" rx="4" fill="#1b1a18"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ 3. understand it ============ -->
+  <section class="s3" id="s3" aria-labelledby="s3h">
+    <div class="s3-head gut">
+      <p class="eng">Understand it</p>
+      <h2 id="s3h">One big knob. The bass stays in the middle.</h2>
+      <p>WIDE BEAM's own face, as it opens in your session.</p>
+    </div>
+    <div class="gut">
+      <div class="faceset" id="faceset" role="img" aria-label="The WIDE BEAM plugin face: WIDTH knob in the centre, LOW FOCUS and MIX on the left, HIGH BEAM on the right.">
+        <img src="face.webp" alt="" width="3072" height="2048">
+        <div class="fp fp-road" id="road"><img src="face.webp" alt=""></div>
+        <div class="fp fp-lamp l"></div><div class="fp fp-lamp r"></div>
+        <div class="fp fp-knob" id="knob"></div>
+        <div class="fp fp-lcd" id="lcd">WIDTH 100%</div>
+        <span class="pin" style="--x:46.78%">1</span>
+        <span class="pin" style="--x:16.93%">2</span>
+        <span class="pin" style="--x:60.97%">3</span>
+        <span class="pin" style="--x:32.29%">4</span>
+      </div>
+      <ol class="legend">
+        <li><span class="pin">1</span><b>Width</b><span>Turn it up: the sides spread, the centre holds.</span></li>
+        <li><span class="pin">2</span><b>Low focus</b><span>Below this frequency, the bass stays in mono.</span></li>
+        <li><span class="pin">3</span><b>High beam</b><span>Flip it up to widen even a mono track.</span></li>
+        <li><span class="pin">4</span><b>Mix</b><span>Blend the wide sound back with the original.</span></li>
+      </ol>
+      <div class="plate s3-plate" data-plate="s3"></div>
+      <p class="foot">RevAudio · WIDE BEAM · a rough look for choosing, not the live page. Nothing on it sends an email.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ============ the control panel ============ -->
+<aside class="cp closed" id="cp" aria-label="Look controls">
+  <button class="cp-top" id="cpTop" type="button" aria-expanded="false" aria-controls="cpBody">Look controls <em id="cpNow">P1 · F1</em></button>
+  <div class="cp-body" id="cpBody">
+    <div class="cp-row"><span>Projector look</span>
+      <div class="seg" data-set="look">
+        <button type="button" data-v="p1"><b>P1</b>Beam in the dark</button>
+        <button type="button" data-v="p2"><b>P2</b>Full-bleed reel</button>
+        <button type="button" data-v="p3"><b>P3</b>Garage wall</button>
+      </div>
+    </div>
+    <div class="cp-row"><span>Phase</span>
+      <div class="seg" data-set="phase">
+        <button type="button" data-v="pre">Before launch</button>
+        <button type="button" data-v="sale">On sale</button>
+      </div>
+    </div>
+    <div class="cp-act">
+      <button type="button" id="skip">Skip to end</button>
+      <button type="button" id="replay">Replay film</button>
+    </div>
+    <div class="cp-row"><span>Note for the team</span>
+      <textarea id="note" rows="2" placeholder="What you like, what to change"></textarea>
+    </div>
+    <div class="cp-pick">
+      <button type="button" id="pickBtn">Save my pick</button>
+      <small id="pickStatus">No pick saved yet.</small>
+    </div>
+  </div>
+</aside>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const rmq = matchMedia('(prefers-reduced-motion: reduce)');
+  const RM = () => rmq.matches;
+
+  const state = { look: 'p1', flip: 'f0', phase: 'pre', hw: 'none' };
+  const s1 = $('#s1'), s2 = $('#s2'), s3 = $('#s3');
+  const stage = $('#stage'), rig = $('#rig'), panel = $('#panel'), front = $('#front'), back = $('#back');
+  const film = $('#film'), manual = $('#manual'), louvers = $('#louvers'), plateRest = $('#plateRest');
+  const tap = $('#tap'), playkey = $('#playkey');
+
+  /* ---------------- plates ---------------- */
+  const ICON = '<svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l6 4-6 4z" fill="currentColor"/></svg>';
+  function railHTML(id, keyLabel) {
+    return `<form class="gate" novalidate data-gate>
+      <div class="well rail">
+        <input id="${id}" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" aria-label="Your email" required>
+        <span class="divider" aria-hidden="true"></span>
+        <button class="key" type="submit">${keyLabel}</button></div>
+      <p class="status" role="status" aria-live="polite"></p></form>`;
+  }
+  function cardHTML(phase) {
+    const again = `<div class="plate-foot"><button class="key key--ghost key--small" type="button" data-again><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.4 1.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Watch again</button></div>`;
+    const top = `<img class="ec-title" src="title.webp" alt="WIDE BEAM" width="1231" height="82"><p class="ec-tag"><span>The precise, gentle widener</span></p>`;
+    if (phase === 'pre') return `<div class="plate-body ec-body">${top}
+        <p class="ec-head">Get it the day it launches · <span class="price">$9</span></p>
+        ${railHTML('card-email', 'Email me at launch ' + ICON)}
+        <p class="fine">Free 30-day trial on launch day. One email, unsubscribe anytime.</p>${again}</div>`;
+    return `<div class="plate-body ec-body">${top}
+        <div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
+        <div class="or"><span class="eng" style="font-size:.95rem">or try it free for 30 days</span></div>
+        ${railHTML('card-email', 'Send my trial ' + ICON)}
+        <p class="fine">Full version, no credit card. Mac VST3 · AU · Windows VST3.</p>${again}</div>`;
+  }
+  function plateHTML(where, phase) {
+    if (where === 'card') return cardHTML(phase);
+    const id = where + '-email';
+    const again = where === 's2' ? `<div class="plate-foot"><button class="key key--ghost key--small" type="button" data-again><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.4 1.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Watch again</button></div>` : '';
+    if (where === 's1') {
+      if (phase === 'pre') return `<div class="plate-body">
+          <p class="stamp head" style="font-size:clamp(1.5rem,2.4vw,2rem)">Get it the day it launches</p>
+          ${railHTML(id, 'Email me at launch ' + ICON)}
+          <p class="eng" style="font-size:.95rem"><span class="price">$9</span> at launch · free 30-day trial</p>
+          <p class="fine">One email on launch day. You join our list · unsubscribe anytime.</p></div>`;
+      return `<div class="plate-body">
+          <div class="buyrow"><div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
+          <p class="eng">or try it free<br>for 30 days</p></div>
+          ${railHTML(id, 'Send my trial ' + ICON)}
+          <p class="fine">Full version, no credit card. One email with the download link.</p></div>`;
+    }
+    if (phase === 'pre') return `<div class="plate-body">
+        <p class="eng" style="font-size:1rem">WIDE BEAM · stereo width control</p>
+        <p class="stamp head">Get it the day it launches · <span class="price">$9</span></p>
+        ${railHTML(id, 'Email me at launch ' + ICON)}
+        <p class="fine">Free 30-day trial on launch day. One email, unsubscribe anytime.</p>${again}</div>`;
+    return `<div class="plate-body">
+        <p class="eng" style="font-size:1rem">WIDE BEAM · stereo width control</p>
+        <div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
+        <div class="or"><span class="eng" style="font-size:.95rem">or try it free for 30 days</span></div>
+        ${railHTML(id, 'Send my trial ' + ICON)}
+        <p class="fine">Full version, no credit card. Mac VST3 · AU · Windows VST3.</p>${again}</div>`;
+  }
+  function renderPlates() {
+    for (const el of $$('[data-plate]')) el.innerHTML = plateHTML(el.dataset.plate, state.phase);
+  }
+  document.addEventListener('submit', (e) => {
+    const f = e.target.closest('[data-gate]'); if (!f) return;
+    e.preventDefault();
+    const input = f.querySelector('input'), st = f.querySelector('.status');
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value.trim());
+    input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    st.className = 'status ' + (ok ? 'ok' : 'err');
+    st.textContent = ok ? (state.phase === 'pre' ? 'Saved for launch day. (This rough look sends nothing.)' : 'Trial on its way. (This rough look sends nothing.)')
+                        : 'That address looks incomplete. Check the @ and the part after it.';
+  });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-buy]');
+    if (b) { const st = b.closest('.plate-body').querySelector('.status'); if (st) { st.className = 'status ok'; st.textContent = 'Checkout opens here on the live page.'; } }
+    if (e.target.closest('[data-again]')) watchAgain();
+  });
+
+  /* ---------------- Section 1: the car film at 1.5x ---------------- */
+  const car = $('#carFilm');
+  const carRate = () => { car.playbackRate = 1.5; car.defaultPlaybackRate = 1.5; };
+  car.addEventListener('loadedmetadata', carRate); car.addEventListener('play', carRate); carRate();
+  if (RM()) car.poster = 'car-end.jpg';
+  // The open: the film waits, black, on its first frame until the screen has painted and the words are coming in
+  // (FADE_AFTER ms), then it starts playing as it fades up, so the fade is always seen and the car's first second
+  // is never spent in the dark. No `autoplay` in the markup: a fast cache would start it unseen. Reduced motion: the
+  // still end frame fades up. Autoplay refused (Low Power Mode): the frame fades up anyway, at the latest 2.5 s on.
+  const FADE_AFTER = 420;
+  let carPainted = false, carStarted = false;
+  const carShow = () => car.classList.add('is-in');
+  const carStart = () => {
+    if (!carPainted || carStarted) return;
+    if (RM()) { carShow(); return; }
+    if (car.readyState < 3) return;                       // not enough film yet: 'canplay' calls again
+    carStarted = true;
+    const p = car.play(); if (p) p.then(carShow, carShow); else carShow();
+  };
+  car.addEventListener('canplay', carStart);
+  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => {
+    carPainted = true; carStart(); setTimeout(carShow, 2500);
+  }, FADE_AFTER)));
+
+  /* ---------------- Section 2: layout per look ---------------- */
+  function layout() {
+    const vw = s2.clientWidth, vh = s2.clientHeight, phone = vw < 640;
+    let W, H, top;
+    if (state.look === 'p1') { W = phone ? vw - 32 : Math.min(vw * 0.8, vh * 0.72 * 16 / 9); }
+    else if (state.look === 'p2') { W = phone ? vw : Math.min(vw, vh * 16 / 9); }
+    else { W = phone ? vw - 40 : Math.min(vw * 0.64, vh * 0.6 * 16 / 9); }
+    W = Math.round(W);
+    let H0 = Math.round(W * 9 / 16);
+    // the Buy plate is the back of the same panel: the panel is never shorter than the plate needs
+    s2.style.setProperty('--sw', W + 'px');
+    const pps = Math.max(0.3, Math.min(0.55, W / 2400));
+    s2.style.setProperty('--pps', pps);
+    const pr = plateRest.querySelector('.plate');
+    const prevDisplay = plateRest.style.display;
+    plateRest.style.display = 'block'; plateRest.style.visibility = 'hidden';
+    pr.style.position = 'relative'; pr.style.inset = 'auto'; pr.style.width = W + 'px';
+    // grow the gate with the panel: up to 1.45x, never past what the 16:9 panel holds
+    s2.style.setProperty('--pz', 1);
+    const bodyEl = pr.querySelector('.plate-body'); // empty when a saved pick re-lays the page before the plates render
+    const body0 = bodyEl ? bodyEl.offsetHeight : 0, chrome0 = pr.offsetHeight - body0;
+    const pz = body0 ? Math.max(1, Math.min(1.45, W / 720, (H0 - chrome0 - 8) * 0.9 / body0)) : 1;
+    s2.style.setProperty('--pz', pz.toFixed(3));
+    const need = pr.offsetHeight + 8;
+    pr.style.position = ''; pr.style.inset = ''; pr.style.width = '';
+    plateRest.style.display = prevDisplay; plateRest.style.visibility = '';
+    H = state.flip === 'f0' ? H0 : Math.max(H0, need);
+    // F0: the card lives inside the film frame, so the frame grows to hold it (the film then letterboxes in it)
+    const fInset = state.look === 'p3' ? W * 0.05 : state.look === 'p1' ? Math.max(6, W * 0.008) : 0;
+    let cardNeed = 0;
+    if (state.flip === 'f0') {
+      const ec = $('.endcard', film), prevCss = ec.style.cssText;
+      ec.style.cssText = `display:grid;position:absolute;visibility:hidden;inset:auto;left:0;top:0;width:${Math.round(W - fInset * 2)}px;height:auto`;
+      cardNeed = Math.ceil(ec.scrollHeight); ec.style.cssText = prevCss;
+      H = Math.max(H, cardNeed + Math.ceil(fInset * 2));
+    }
+    if (state.look === 'p2' && phone) H = Math.max(H, Math.min(vh * 0.8, 600));
+    const left = Math.round((vw - W) / 2);
+    if (state.look === 'p3') top = Math.round(Math.max(40, (vh - H) / 2 - (phone ? 30 : 46)));
+    else top = Math.round((vh - H) / 2);
+    s2.style.setProperty('--sh', H + 'px'); s2.style.setProperty('--sx', left + 'px'); s2.style.setProperty('--sy', top + 'px');
+    s2.style.setProperty('--d', Math.round(Math.max(8, W * 0.012)) + 'px');
+    s2.style.setProperty('--slw', (W / (vw < 640 ? 7 : 10)).toFixed(2) + 'px'); // F3: one rod clip per slat
+    // the film: the largest 16:9 box on the screen (P3 leaves the fabric border)
+    const inset = state.look === 'p3' ? W * 0.05 : state.look === 'p1' ? Math.max(6, W * 0.008) : 0;
+    let fw = W - inset * 2, fh = fw * 9 / 16;
+    if (state.flip === 'f0' && cardNeed > fh) fh = cardNeed;
+    else if (fh > H - inset * 2) { fh = H - inset * 2; fw = fh * 16 / 9; }
+    s2.style.setProperty('--fw', Math.round(fw) + 'px'); s2.style.setProperty('--fh', Math.round(fh) + 'px');
+    geo = { vw, vh, W, H, left, top, fw, fh };
+    placeLatches();
+    drawBeam(1);
+  }
+  let geo = null;
+
+  /* the latches: a pivot on the panel's edge, the bar lying along the edge when shut; open = swung 90 deg off the panel */
+  const latchA = $('#latchA'), latchB = $('#latchB'), rod = $('#rod');
+  function latchPose() {
+    const { W, H } = geo, lw = Math.round(Math.max(30, Math.min(60, W * 0.05))), lh = Math.round(lw * 0.3);
+    s2.style.setProperty('--lw', lw + 'px'); s2.style.setProperty('--lh', lh + 'px');
+    const e = state.look === 'p2' ? lh : 0; // P2's panel meets the screen edge: set the latches just inside it so they stay in frame
+    const P = state.flip === 'f2' ? [[e, H / 2 + lw / 2, -90], [W - e, H / 2 - lw / 2, 90]]   // F2 turns on the vertical axis: held at the left and right edges
+                                  : [[W / 2 - lw / 2, e, 0], [W / 2 + lw / 2, H - e, 180]];    // F1 turns on the horizontal axis: held at the top and bottom edges
+    return P.map(([x, y, b]) => ({ x, y, b, lh, lw }));
+  }
+  const pivotA = $('#pivotA'), pivotB = $('#pivotB');
+  function placePivots() {
+    if (!geo) return;
+    const { W, H } = geo, ph = Math.round(Math.max(14, Math.min(26, W * 0.026)));
+    s2.style.setProperty('--ph', ph + 'px');
+    const e = state.look === 'p2' ? ph : 0; // P2's panel meets the screen edge: keep the bolts in frame
+    const P = state.flip === 'f2' ? [[W / 2, e], [W / 2, H - e]] : [[e, H / 2], [W - e, H / 2]];
+    P.forEach(([x, y], i) => { const el = [pivotA, pivotB][i]; el.style.left = x + 'px'; el.style.top = y + 'px'; });
+  }
+  function placeLatches() {
+    if (!geo) return;
+    placePivots();
+    latchPose().forEach((p, i) => { const el = [latchA, latchB][i]; el.style.left = (p.x - p.lh / 2) + 'px'; el.style.top = (p.y - p.lh / 2) + 'px'; el.style.transform = `rotate(${p.b}deg)`; });
+  }
+
+  /* ---------------- the beam (P1 from behind the viewer, P3 from the projector) + dust ---------------- */
+  const cv = $('#beam'), cx = cv.getContext('2d'), cvd = $('#dust'), dx = cvd.getContext('2d');
+  let beamLevel = 0, dust = [], dustRAF = 0;
+  function hull(pts) { // monotone chain
+    pts = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lo = [], up = [];
+    for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+    for (const p of pts.reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+    return lo.slice(0, -1).concat(up.slice(0, -1));
+  }
+  function beamGeo() {
+    if (!geo) return null;
+    const { vw, vh, W, H, left, top, fw, fh } = geo;
+    const fx = left + (W - fw) / 2, fy = top + (H - fh) / 2;
+    const q = [[fx, fy], [fx + fw, fy], [fx + fw, fy + fh], [fx, fy + fh]];
+    // P1: the lens is behind the viewer, so the shafts enter over our heads, widest at the top edge, and close in on the screen
+    if (state.look === 'p1') { const k = Math.max(60, vw * 0.2); return { from: [[fx - k, -20], [fx + fw + k, -20]], q, a: 0.11 }; }
+    if (state.look === 'p3') { const pj = $('.projector').getBoundingClientRect(), sr = s2.getBoundingClientRect();
+      const lx = pj.left - sr.left + pj.width / 2, ly = pj.top - sr.top + pj.height * 0.43; return { from: [[lx - 6, ly], [lx + 6, ly]], q, a: 0.12 }; }
+    return null;
+  }
+  const lerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+  function drawBeam(level) {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    const w = s2.clientWidth, h = s2.clientHeight;
+    for (const c of [cv, cvd]) if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, w, h);
+    dx.setTransform(dpr, 0, 0, dpr, 0, 0); dx.clearRect(0, 0, w, h);
+    const g = beamGeo(); if (!g || beamLevel <= 0) return;
+    const L = beamLevel * (level ?? 1);
+    const poly = hull([...g.from, ...g.q]);
+    const path = (c) => { c.beginPath(); poly.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); };
+    const s0 = lerp(g.from[0], g.from[1], 0.5), sc = lerp(g.q[0], g.q[2], 0.5);
+    const lg = cx.createLinearGradient(s0[0], s0[1], sc[0], sc[1]);
+    lg.addColorStop(0, `rgba(255,242,210,${g.a * 1.7 * L})`); lg.addColorStop(0.6, `rgba(255,236,196,${g.a * L})`); lg.addColorStop(1, `rgba(255,228,180,${g.a * 0.55 * L})`);
+    cx.save(); path(cx); cx.fillStyle = lg; cx.fill();
+    // shafts: thin brighter planes from the lens side to the picture, the way haze catches a projector beam
+    cx.clip();
+    const top0 = g.from[0], top1 = g.from[1];
+    for (let i = 0; i < 9; i++) {
+      const t = (i + 0.5) / 9 + Math.sin(i * 7.3) * 0.03;
+      const a0 = lerp(top0, top1, Math.max(0, t - 0.02)), a1 = lerp(top0, top1, Math.min(1, t + 0.02));
+      const b0 = lerp(g.q[3], g.q[2], Math.max(0, t - 0.015)), b1 = lerp(g.q[0], g.q[1], Math.min(1, t + 0.015));
+      cx.beginPath(); cx.moveTo(a0[0], a0[1]); cx.lineTo(a1[0], a1[1]); cx.lineTo(b1[0], b1[1]); cx.lineTo(b0[0], b0[1]); cx.closePath();
+      cx.fillStyle = `rgba(255,244,218,${(0.018 + 0.02 * ((i * 37) % 5) / 5) * L})`; cx.fill();
+    }
+    cx.restore();
+    dx.save(); path(dx); dx.clip();
+    for (const d of dust) { const al = d.a * L * (0.55 + 0.45 * Math.sin(d.p)); dx.fillStyle = `rgba(255,244,220,${al})`; dx.beginPath(); dx.arc(d.x * w, d.y * h, d.r, 0, 6.283); dx.fill(); }
+    dx.restore();
+  }
+  function seedDust() { dust = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random() * 0.9, r: 0.4 + Math.random() * 1.4, a: 0.25 + Math.random() * 0.5, vx: (Math.random() - 0.5) * 0.00012, vy: (Math.random() - 0.4) * 0.00008, p: Math.random() * 6 })); }
+  seedDust();
+  let lastT = 0;
+  function dustLoop(t) {
+    dustRAF = 0;
+    if (!s2.classList.contains('is-on') || !inView2) return;
+    const dt = Math.min(50, t - (lastT || t)); lastT = t;
+    if (!RM()) for (const d of dust) { d.x += d.vx * dt; d.y += d.vy * dt; d.p += dt * 0.004; if (d.x < 0) d.x += 1; if (d.x > 1) d.x -= 1; if (d.y < 0) d.y += 0.9; if (d.y > 0.9) d.y -= 0.9; }
+    const flick = RM() || !s2.classList.contains('playing') ? 1 : 0.9 + Math.random() * 0.14;
+    drawBeam(flick);
+    if (!RM()) dustRAF = requestAnimationFrame(dustLoop);
+  }
+  function kickBeam() { if (!dustRAF) dustRAF = requestAnimationFrame(dustLoop); }
+
+  /* ---------------- the projector turns on, the film runs ---------------- */
+  let inView2 = false, started = false, ended = false, pendingSkip = false;
+  function projectorOn() {
+    if (s2.classList.contains('is-on')) return;
+    s2.classList.add('is-on');
+    if (RM()) { beamLevel = 1; drawBeam(1); s2.classList.add('rm-wait'); return; }
+    // the lamp strikes: a few flickers, then steady
+    const seq = [[0, 0.6], [90, 0.1], [170, 0.9], [260, 0.35], [360, 1]];
+    for (const [ms, lv] of seq) setTimeout(() => { beamLevel = lv; drawBeam(1); }, ms);
+    s2.classList.remove('lampup'); void s2.offsetWidth; s2.classList.add('lampup');
+    setTimeout(() => s2.classList.remove('lampup'), 950);
+    setTimeout(kickBeam, 380);
+    setTimeout(() => startFilm(), 250);
+  }
+  function startFilm() {
+    if (pendingSkip) { doSkip(); return; }
+    if (ended) return;
+    started = true;
+    const p = manual.play(); if (p) p.catch(() => {});
+  }
+  // Skip to end: runs only once the film is on screen, so the turn never starts mid-scroll
+  function doSkip() {
+    if (!pendingSkip) return;
+    if (manual.readyState < 1) { manual.addEventListener('loadedmetadata', doSkip, { once: true }); return; }
+    pendingSkip = false; started = true; ended = false; s2.classList.remove('rm-wait');
+    seekEnd(); const p = manual.play(); if (p) p.catch(() => {});
+  }
+  // a look change or a replay strikes the lamp again (burn-in, lamp-up), as long as the film face is showing
+  function restrike() {
+    if (RM() || onPlate || turning) return;
+    s2.classList.remove('is-on'); beamLevel = 0; drawBeam(1);
+    if (inView2) projectorOn();
+  }
+  const io2 = new IntersectionObserver((es) => {
+    for (const e of es) {
+      inView2 = e.isIntersecting && e.intersectionRatio >= 0.6;
+      if (inView2) {
+        projectorOn(); kickBeam();
+        if (pendingSkip && s2.classList.contains('is-on') && !s2.classList.contains('lampup')) doSkip();
+        else if (started && !ended && manual.paused && !RM()) { const p = manual.play(); if (p) p.catch(() => {}); }
+      } else if (!e.isIntersecting || e.intersectionRatio < 0.3) {
+        if (!manual.paused) manual.pause();
+        voice.pause();
+      }
+    }
+  }, { threshold: [0, 0.3, 0.6, 1] });
+  io2.observe(s2);
+  playkey.addEventListener('click', () => { s2.classList.remove('rm-wait'); started = true; const p = manual.play(); if (p) p.catch(() => {}); });
+
+  manual.addEventListener('play', () => { s2.classList.add('playing'); syncVoice(); });
+  manual.addEventListener('pause', () => { s2.classList.remove('playing'); voice.pause(); });
+  manual.addEventListener('seeking', () => { if (soundOn) voice.currentTime = Math.min(manual.currentTime, voice.duration || 99); });
+  manual.addEventListener('ended', () => { s2.classList.remove('playing'); voice.pause(); ended = true; film.classList.add('show-still'); setTimeout(() => runFlip(false), RM() ? 0 : 120); });
+
+  /* ---------------- sound: muted until a tap ---------------- */
+  const voice = new Audio(); voice.preload = 'auto'; voice.src = 'standin-voice.mp4';
+  let soundOn = false;
+  function syncVoice() {
+    if (!soundOn || manual.paused || ended) return;
+    if (manual.currentTime >= (voice.duration || 12.2)) return;
+    voice.currentTime = manual.currentTime; const p = voice.play(); if (p) p.catch(() => {});
+  }
+  /* captions, on the film's own clock; the same tick keeps the voice within 0.2 s of the picture (WebKit lagged 0.6 s) */
+  const CUES = [[0.15, 2.08, 'Why does your mix sound so narrow?'], [2.15, 5.3, 'Same sound in both speakers?<br>It sits dead center.'],
+    [5.44, 7.76, 'Width is the difference<br>between left and right.'], [7.8, 11.6, 'The copy-and-delay trick fakes it,<br>and falls apart in mono.']];
+  const cap = $('#cap'); let capIdx = -2, capRAF = 0;
+  function capTick() {
+    capRAF = 0;
+    const t = manual.currentTime, i = ended ? -1 : CUES.findIndex((c) => t >= c[0] && t < c[1]);
+    if (i !== capIdx) { capIdx = i; if (i >= 0) { cap.innerHTML = CUES[i][2]; cap.classList.add('on'); } else cap.classList.remove('on'); }
+    if (soundOn && !manual.paused && !voice.paused && voice.duration && t < voice.duration - 0.15 && Math.abs(voice.currentTime - t) > 0.2) voice.currentTime = t;
+    if (!manual.paused && !capRAF) capRAF = requestAnimationFrame(capTick);
+  }
+  for (const ev of ['play', 'seeked', 'ended', 'loadeddata']) manual.addEventListener(ev, () => { if (!capRAF) capTick(); });
+  tap.addEventListener('click', () => {
+    soundOn = !soundOn;
+    tap.setAttribute('aria-pressed', String(soundOn));
+    tap.querySelector('span').textContent = soundOn ? 'Sound on' : 'Tap for sound';
+    if (soundOn) { if (!started && RM()) { s2.classList.remove('rm-wait'); started = true; manual.play().catch(() => {}); } syncVoice(); }
+    else voice.pause();
+  });
+
+  /* ---------------- the flip: one curve, sampled, so every part moves on the same clock ---------------- */
+  // 0-70 ms the latches snap open (the rig jolts); 70-200 the panel, let go, kicks back 9° and sags 7 px on its pivot;
+  // 200-260 held; 260-720 it falls through 189° accelerating like a weight; at 720 it hits the stop and the rig shakes;
+  // it bounces back off the stop twice (~8°, then ~2°, readable at 3 Hz, never past 180°) and is still by 1053;
+  // 1100-1200 the latches drop shut on it with a small click.
+  const D = 1240, IMPACT = 720, BOUNCE_END = IMPACT + 333;
+  function curve(t) {
+    if (t < 70) return { a: 0, y: 0 };
+    if (t < 200) { const u = (t - 70) / 130, e = 1 - Math.pow(1 - u, 3); return { a: -9 * e, y: 7 * e }; }
+    if (t < 260) return { a: -9, y: 7 };
+    if (t < IMPACT) { const u = (t - 260) / 460; return { a: -9 + 189 * Math.pow(u, 2.2), y: 7 * (1 - u) }; }
+    if (t >= BOUNCE_END) return { a: 180, y: 0 };
+    const s = (t - IMPACT) / 1000;
+    return { a: 180 - 15 * Math.exp(-7.6 * s) * Math.abs(Math.sin(2 * Math.PI * 3 * s)), y: 0 };
+  }
+  function latchAngle(t) { // degrees open
+    if (t < 70) { const u = t / 70; return 98 * (1 - Math.pow(1 - u, 3)); }
+    if (t < 130) return 98 - 8 * ((t - 70) / 60);
+    if (t < 1100) return 90;
+    if (t < 1160) { const u = (t - 1100) / 60; return 90 * (1 - u * u); }   // falls shut, accelerating
+    if (t < 1200) return 7 * Math.sin(Math.PI * (t - 1160) / 40);           // and hops off its seat once
+    return 0;
+  }
+  // the rig: a jolt as the latches let go, the big hit at the stop, a click as they drop shut
+  function shakeAt(t, impact = IMPACT, clicks = [[70, 1.2], [1160, 0.9]]) {
+    let x = 0, y = 0;
+    const s = (t - impact) / 1000;
+    if (s >= 0 && s < 0.25) { const e = Math.exp(-18 * s); x += 0.9 * e * Math.sin(2 * Math.PI * 13 * s + 1); y += 2.6 * e * Math.sin(2 * Math.PI * 16 * s); }
+    for (const [t0, amp] of clicks) { const c = (t - t0) / 1000; if (c >= 0 && c < 0.08) y += amp * Math.exp(-40 * c) * Math.sin(2 * Math.PI * 22 * c); }
+    return [x, y];
+  }
+  // while it bounces off the stop, the face tips out of the light: a shade that reads the small angle
+  const bounceShade = (dev, t) => (t > IMPACT ? 1.1 * Math.sin(Math.abs(dev) * Math.PI / 180) : 0);
+  const gauss = (x, m, w) => Math.exp(-(((x - m) / w) ** 2));
+  function sample(fn, dur = D) { const k = []; const N = Math.round(dur / 18); for (let i = 0; i <= N; i++) { const t = dur * i / N; k.push(Object.assign({ offset: i / N }, fn(t))); } return k; }
+  let anims = [], turning = false, onPlate = false, flipToken = 0;
+  function clearAnims() { for (const a of anims) { try { a.cancel(); } catch (e) {} } anims = []; }
+  function anim(el, frames, opts) { const a = el.animate(frames, Object.assign({ duration: D, fill: 'both', easing: 'linear' }, opts || {})); anims.push(a); return a; }
+  function cleanPlateClone(node) {
+    const c = node.cloneNode(true);
+    c.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    c.querySelectorAll('label[for]').forEach((n) => n.removeAttribute('for'));
+    c.setAttribute('inert', ''); c.setAttribute('aria-hidden', 'true');
+    return c;
+  }
+  function frontStillClone() {
+    const c = front.cloneNode(true); c.removeAttribute('id');
+    c.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    c.querySelectorAll('video, .tap, .playkey, .sheen, .shade, .cap').forEach((n) => n.remove());
+    const f = c.querySelector('.film'); if (f) f.classList.add('show-still');
+    c.classList.remove('front'); c.setAttribute('inert', '');
+    return c;
+  }
+  function settleCard() {
+    clearAnims(); turning = false; onPlate = true;
+    s2.classList.remove('carding'); s2.classList.add('carded');
+  }
+  function settlePlate() {
+    if (state.flip === 'f0') { settleCard(); return; }
+    clearAnims(); turning = false; onPlate = true;
+    panel.classList.remove('turning'); panel.style.transform = ''; rig.style.transform = '';
+    s2.classList.remove('louvering', 'crossing'); louvers.innerHTML = '';
+    s2.classList.add('on-plate');
+  }
+  function settleFront() {
+    clearAnims(); turning = false; onPlate = false;
+    panel.classList.remove('turning'); panel.style.transform = ''; rig.style.transform = '';
+    s2.classList.remove('louvering', 'on-plate', 'crossing', 'carding', 'carded'); louvers.innerHTML = '';
+    back.innerHTML = '';
+    for (const el of $$('.sheen, .shade, .edge i', panel)) el.style.opacity = '';
+  }
+  // reverse = flip back from the plate to the film
+  function runFlip(reverse, opts) {
+    opts = opts || {};
+    clearAnims(); turning = true;
+    back.innerHTML = ''; back.appendChild(cleanPlateClone(plateRest.querySelector('.plate')));
+    film.classList.add('show-still');
+    if (RM() && !opts.scrub) { if (reverse) settleFront(); else settlePlate(); if (opts.after) opts.after(); return; }
+    s2.classList.remove('on-plate');
+    const ang = (t) => { const c = curve(t); return reverse ? { a: 180 - c.a, y: c.y } : c; };
+    const axis = state.flip === 'f1' ? 'X' : 'Y', sign = state.flip === 'f1' ? -1 : 1;
+    const rigAt = (dur, impact, clicks) => sample((t) => { const [sx, sy] = shakeAt(t, impact, clicks); return { transform: `translate(${sx.toFixed(2)}px, ${sy.toFixed(2)}px)` }; }, dur);
+    let done;
+    if (state.flip === 'f0') {
+      // F0: the film cuts to its own title card (see the F0 CSS). Forward: the last frame shivers, slips one frame up
+      // in the gate with the frame line rolling through, a splice flashes, the card shivers and its exposure settles.
+      // Back (Watch again): the card slips up and away, the film's first frame rolls in, then it plays.
+      const ec = $('.endcard', film), still = $('.still', film), splice = $('.fx-splice', film), scr = $('.fx-scratch', film);
+      const step3 = (t, a, b) => (t < a ? 0 : t >= b ? 1 : Math.min(1, Math.floor((t - a) / ((b - a) / 3)) / 3 + 1 / 3)); // a frame-by-frame slip in 3 steps
+      s2.classList.remove('carded'); s2.classList.add('carding');
+      if (reverse) { film.classList.remove('show-still'); manual.pause(); manual.currentTime = 0; }
+      const outEl = reverse ? ec : still, inEl = reverse ? manual : ec;
+      const D0 = reverse ? 720 : 900, A = reverse ? 70 : 200, B = A + 130;          // the slip runs A..B
+      const shiver = (t) => (t < A - 110 || t >= A ? 0 : t < A - 55 ? -.8 : .5);        // a small shiver before it slips
+      anim(outEl, sample((t) => ({ transform: `translateY(${(shiver(t) - 100 * step3(t, A, B)).toFixed(2)}%)` }), D0), { duration: D0 });
+      const settle = (t) => (t < B ? 0 : t < B + 50 ? .7 : t < B + 100 ? -.3 : 0);
+      const expo = (t) => (t >= B && t < B + 42 ? .93 : 1);                              // one denser frame at the splice, as a new shot has
+      done = anim(inEl, sample((t) => ({ transform: `translateY(${(t < B ? 105 - 105 * step3(t, A, B) : settle(t)).toFixed(2)}%)`, filter: `brightness(${expo(t)})` }), D0), { duration: D0 });
+      anim(splice, sample((t) => ({ opacity: t >= B - 42 && t < B ? .12 : 0 }), D0), { duration: D0 });                 // the splice: one faint frame
+      anim(scr, sample((t) => ({ opacity: t >= A - 42 && t < B + 84 ? (Math.floor(t / 42) % 2 ? .8 : .4) : 0, backgroundPosition: `${(Math.floor(t / 45) * 37) % 100}% 0, ${(Math.floor(t / 45) * 61) % 100}% 0, ${(Math.floor(t / 45) * 23) % 100}% 0` }), D0), { duration: D0 });
+    } else if (state.flip === 'f3') {
+      s2.classList.add('louvering');
+      const N = geo.vw < 640 ? 7 : 10, sw = geo.W / N, STAG = 40;
+      const lastDelay = (N - 1) * STAG, TOTAL = D + lastDelay;
+      // the tie rod: slides off its catch as the first slat goes, slides home after the last one is still
+      const k = Math.max(10, geo.W * 0.022);
+      const rodFrac = (t) => (t < 1000 ? latchAngle(t) : latchAngle(t - lastDelay)) / 90;
+      anim(rod, sample((t) => ({ transform: `translateX(${(k * rodFrac(t)).toFixed(2)}px)` }), TOTAL), { duration: TOTAL });
+      louvers.innerHTML = '';
+      const fClone = frontStillClone(), pClone = cleanPlateClone(plateRest.querySelector('.plate'));
+      for (let i = 0; i < N; i++) {
+        const slat = document.createElement('div'); slat.className = 'slat';
+        slat.style.left = (i * sw) + 'px'; slat.style.width = (sw + 0.6) + 'px';
+        const fr = document.createElement('div'); fr.className = 'face'; const bk = document.createElement('div'); bk.className = 'face back';
+        const fc = document.createElement('div'); fc.className = 'clip'; fc.style.left = (-i * sw) + 'px'; fc.appendChild(fClone.cloneNode(true));
+        const bc = document.createElement('div'); bc.className = 'clip'; bc.style.left = (-i * sw) + 'px';
+        const pc = pClone.cloneNode(true); pc.style.position = 'absolute'; pc.style.inset = '0'; bc.appendChild(pc);
+        fr.appendChild(fc); bk.appendChild(bc);
+        const fsh = document.createElement('div'); fsh.className = 'shade'; const fsn = document.createElement('div'); fsn.className = 'sheen';
+        const bsh = document.createElement('div'); bsh.className = 'shade'; const bsn = document.createElement('div'); bsn.className = 'sheen';
+        fr.append(fsh, fsn); bk.append(bsh, bsn);
+        slat.append(fr, bk); louvers.appendChild(slat);
+        const delay = i * STAG;
+        anim(slat, sample((t) => ({ transform: `rotateY(${ang(t).a.toFixed(2)}deg)` })), { delay });
+        const lightF = sample((t) => { const a = ang(t).a; return { opacity: Math.max(0, Math.min(.75, .75 * (1 - Math.cos(a * Math.PI / 180)) / 2 * (a < 90 ? 1 : 0) + (a < 90 ? bounceShade(a, t) : 0))) }; });
+        const glintF = sample((t) => ({ opacity: 0.7 * gauss(ang(t).a, 55, 22) }));
+        const lightB = sample((t) => { const a = ang(t).a; return { opacity: a > 90 ? Math.min(.75, Math.max(0, .75 * (1 + Math.cos(a * Math.PI / 180)) / 2) + bounceShade(180 - a, t)) : .75 }; });
+        const glintB = sample((t) => ({ opacity: 0.7 * gauss(ang(t).a, 125, 22) }));
+        anim(fsh, lightF, { delay }); anim(fsn, glintF, { delay }); anim(bsh, lightB, { delay }); anim(bsn, glintB, { delay });
+        // WebKit ignores backface-visibility on faces with blended or composited children: swap the faces at 90 deg too
+        anim(fr, sample((t) => ({ visibility: ang(t).a < 90 ? 'visible' : 'hidden' })), { delay });
+        anim(bk, sample((t) => ({ visibility: ang(t).a < 90 ? 'hidden' : 'visible' })), { delay });
+      }
+      done = anim(rig, rigAt(TOTAL, IMPACT + lastDelay, [[70, 1.2], [1160 + lastDelay, 0.9]]), { duration: TOTAL });
+    } else {
+      panel.classList.add('turning');
+      for (const [i, p] of latchPose().entries()) anim([latchA, latchB][i], sample((t) => ({ transform: `rotate(${(p.b - latchAngle(t)).toFixed(2)}deg)` })));
+      anim(panel, sample((t) => { const c = ang(t); return { transform: `translateY(${c.y.toFixed(2)}px) rotate${axis}(${(sign * c.a).toFixed(2)}deg)` }; }));
+      const fsh = $('.shade', front), fsn = $('.sheen', front);
+      anim(fsh, sample((t) => { const a = ang(t).a; return { opacity: a < 90 ? Math.min(.7, Math.max(0, .7 * (1 - Math.cos(a * Math.PI / 180))) + bounceShade(a, t)) : .7 }; }));
+      anim(fsn, sample((t) => ({ opacity: 0.75 * gauss(ang(t).a, 55, 22) })));
+      const bsh = document.createElement('div'); bsh.className = 'shade'; const bsn = document.createElement('div'); bsn.className = 'sheen';
+      back.append(bsh, bsn);
+      anim(bsh, sample((t) => { const a = ang(t).a; return { opacity: a > 90 ? Math.min(.7, Math.max(0, .7 * (1 + Math.cos(a * Math.PI / 180))) + bounceShade(180 - a, t)) : .7 }; }));
+      anim(bsn, sample((t) => ({ opacity: 0.75 * gauss(ang(t).a, 125, 22) })));
+      for (const e of $$('.edge i', panel)) anim(e, sample((t) => ({ opacity: 0.9 * gauss(ang(t).a, 90, 30) })));
+      anim(front, sample((t) => ({ visibility: ang(t).a < 90 ? 'visible' : 'hidden' })));
+      anim(back, sample((t) => ({ visibility: ang(t).a < 90 ? 'hidden' : 'visible' })));
+      done = anim(rig, rigAt(D));
+    }
+    if (opts.scrub) { for (const a of anims) a.pause(); return; }
+    done.onfinish = () => { if (reverse) settleFront(); else settlePlate(); if (opts.after) opts.after(); };
+    // build and paint the turn at its first pose, then start the clock: the expensive first frame (clones, 3D layers)
+    // lands while nothing moves, instead of eating the latches' first 70 ms (WebKit took up to 180 ms here)
+    for (const a of anims) a.pause();
+    const tok = ++flipToken;
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (tok === flipToken && turning) for (const a of anims) a.play(); }));
+  }
+  function scrubAt(ms, reverse) {
+    if (!anims.length || !turning) runFlip(!!reverse, { scrub: true });
+    for (const a of anims) { a.pause(); a.currentTime = ms; }
+  }
+
+  // dust: now and then one frame (42 ms) carries a speck or two, on the film and on the card alike, as a real print
+  // does; light specks, a pixel or two, at random places. Not with reduced motion, not in a hidden tab.
+  (function filmDust() {
+    setTimeout(() => {
+      const on = (s2.classList.contains('carded') || s2.classList.contains('playing')) && !RM() && !document.hidden;
+      if (on) {
+        const d = $('.fx-dust', film), n = 1 + (Math.random() < .35 ? 1 : 0);
+        d.style.background = Array.from({ length: n }, () => {
+          const x = (6 + Math.random() * 88).toFixed(1), y = (6 + Math.random() * 88).toFixed(1), r = (0.7 + Math.random() * 1.1).toFixed(2);
+          return `radial-gradient(circle at ${x}% ${y}%, rgba(238, 232, 216, .8) 0 ${r}px, transparent ${(+r + .7).toFixed(2)}px)`;
+        }).join(', ');
+        d.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 42 });
+      }
+      filmDust();
+    }, 350 + Math.random() * 1400);
+  })();
+  function seekEnd() { if (manual.duration) manual.currentTime = Math.max(0, manual.duration - 1); }
+  function resetFilm(play) {
+    settleFront(); ended = false; film.classList.remove('show-still');
+    manual.currentTime = 0;
+    if (play) { started = true; const p = manual.play(); if (p) p.catch(() => {}); }
+  }
+  function watchAgain() {
+    if (!onPlate) return;
+    ended = false;
+    runFlip(true, { after: () => { film.classList.remove('show-still'); manual.currentTime = 0; started = true; const p = manual.play(); if (p) p.catch(() => {}); } });
+  }
+
+  /* ---------------- controls ---------------- */
+  function setLook(v) { state.look = v; s2.dataset.look = v; layout(); kickBeam(); updateSeg(); restrike(); }
+  function setFlip(v) {
+    if (turning) settlePlate(); // never swap the axis under a running turn
+    state.flip = v; s2.dataset.flip = v; updateSeg(); placeLatches();
+    if (onPlate) { settleFront(); ended = true; film.classList.add('show-still'); runFlip(false); } // show the new turn right away
+  }
+  function setPhase(v) { state.phase = v; renderPlates(); layout(); updateSeg(); }
+  function setHw(v) { state.hw = v; s2.dataset.hw = v; updateSeg(); placeLatches(); }
+  function updateSeg() {
+    for (const seg of $$('.seg')) for (const b of $$('button', seg)) b.setAttribute('aria-pressed', String(state[seg.dataset.set] === b.dataset.v));
+    $('#cpNow').textContent = state.look.toUpperCase();
+  }
+  for (const seg of $$('.seg')) seg.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    ({ look: setLook, flip: setFlip, phase: setPhase, hw: setHw })[seg.dataset.set](b.dataset.v);
+  });
+  $('#cpTop').addEventListener('click', () => { const c = $('#cp').classList.toggle('closed'); $('#cpTop').setAttribute('aria-expanded', String(!c)); });
+  $('#skip').addEventListener('click', () => {
+    s2.scrollIntoView({ behavior: RM() ? 'auto' : 'smooth' });
+    if (onPlate || turning) resetFilm(false);
+    s2.classList.remove('rm-wait');
+    manual.pause(); pendingSkip = true;
+    if (inView2 && s2.classList.contains('is-on') && !s2.classList.contains('lampup')) doSkip();
+  });
+  $('#replay').addEventListener('click', () => {
+    s2.scrollIntoView({ behavior: RM() ? 'auto' : 'smooth' });
+    s2.classList.remove('rm-wait'); pendingSkip = false;
+    resetFilm(false); started = true;
+    if (RM()) { const p = manual.play(); if (p) p.catch(() => {}); return; }
+    if (inView2) restrike(); else { s2.classList.remove('is-on'); beamLevel = 0; drawBeam(1); } // the scroll-in strikes it
+  });
+
+  /* ---------------- My pick: shared db when the page has it, else this browser ---------------- */
+  const LS = 'wb-projector-1122';
+  let pick = null, db = null, saveTimer = 0, saving = false, dirty = false;
+  const note = $('#note'), pickStatus = $('#pickStatus');
+  function showPick(where) {
+    if (!pick || !pick.look) { pickStatus.textContent = 'No pick saved yet.'; return; }
+    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()} · ` + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
+  }
+  function readLocal() { try { const v = JSON.parse(localStorage.getItem(LS) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; } }
+  function writeLocal(v) { try { localStorage.setItem(LS, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function applyPick(v) {
+    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', hw: v.hw || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (/^(pivot|none|catch)$/.test(pick.hw) && pick.hw !== state.hw) setHw(pick.hw);
+    if (document.activeElement !== note) note.value = pick.note;
+    if (/^p[123]$/.test(pick.look) && pick.look !== state.look) setLook(pick.look);
+    // the flip is gone (Dan, 2026-11-23: "don't flip it ... play like the film"): a saved flip is kept in the record, not applied
+  }
+  async function flush() {
+    if (saving) { dirty = true; return; }
+    saving = true;
+    const v = { look: pick.look, flip: pick.flip, hw: pick.hw || '', note: pick.note, updatedAt: new Date().toISOString() };
+    let where = 'local';
+    if (db) { try { await db.doc('pick/dan').set(v); where = 'db'; } catch (e) { where = 'local'; } }
+    writeLocal(v); showPick(where);
+    saving = false;
+    if (dirty) { dirty = false; flush(); }
+  }
+  function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
+  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, hw: state.hw, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
+  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', hw: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
+  applyPick(readLocal()); showPick('local');
+  (async () => {
+    try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
+    if (!db) return;
+    try { const snap = await db.doc('pick/dan').get(); if (snap && snap.exists) { const d = typeof snap.data === 'function' ? snap.data() : snap.data; applyPick(d); showPick('db'); } } catch (e) {}
+  })();
+
+  /* ---------------- Section 3: the WIDTH knob eases 100 -> 170 once, the road widens with it ---------------- */
+  const knob = $('#knob'), lcd = $('#lcd'), road = $('#road'), roadImg = $('#road img');
+  function setWidth(v) {
+    const f = Math.round(v / 2), c = f % 11, r = Math.floor(f / 11);
+    knob.style.backgroundPosition = `${(c / 10) * 100}% ${(r / 9) * 100}%`;
+    lcd.textContent = 'WIDTH ' + Math.round(v) + '%';
+    const k = Math.max(0, (v - 100) / 70);
+    road.style.opacity = (0.55 * k).toFixed(3); roadImg.style.transform = `scaleX(${(1 + 0.32 * k).toFixed(4)})`;
+  }
+  setWidth(100);
+  let turned = false;
+  new IntersectionObserver((es) => {
+    for (const e of es) if (e.isIntersecting) {
+      s3.classList.add('alive');
+      if (turned) return; turned = true;
+      if (RM()) { setWidth(170); return; }
+      const t0 = performance.now() + 500, dur = 1700;
+      const step = (t) => { const u = Math.min(1, Math.max(0, (t - t0) / dur)); const e2 = u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; setWidth(100 + 70 * e2); if (u < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }
+  }, { threshold: 0.5 }).observe($('#faceset'));
+
+  /* ---------------- boot ---------------- */
+  function syncRM() { s2.classList.toggle('rm', RM()); s3.classList.toggle('rm', RM()); }
+  rmq.addEventListener ? rmq.addEventListener('change', syncRM) : rmq.addListener(syncRM);
+  syncRM();
+  renderPlates(); updateSeg(); layout();
+  addEventListener('resize', () => { layout(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  // decode the end still now, so the turn never starts on a blank frame
+  const stillImg = $('.still', film); if (stillImg && stillImg.decode) stillImg.decode().catch(() => {});
+
+  // test hooks (the crane door's #cranep idea): scrub a turn without real time
+  window.__wb = { voice, flipAt: scrubAt, runFlip, settlePlate, settleFront, setLook, setFlip, setPhase, state, seekEnd, layout, setWidth,
+    get onPlate() { return onPlate; }, get turning() { return turning; }, get clock() { return anims.length ? anims[anims.length - 1].currentTime : null; } };
+})();
+</script>
