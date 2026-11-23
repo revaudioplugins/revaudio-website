@@ -79,6 +79,19 @@
     var ho = document.getElementById('ho'), frame = document.getElementById('hoFrame'), skip = document.getElementById('hoSkip');
     var wall = null, ready = false, booted = false, state = '', paused = false, pauseTimer = 0, raf = 0;
     var walkPx = innerHeight * 3.7, lockY = 0, lastY = 0, down = false, landTimer = 0, waited = 0, focusAt = -1e4, leftAt = 0, leftY = 0;
+    // How the walk feels under the wheel (Dan 2026-11-22: "I scroll really fast. I want it to be like a limit to how
+    // fast I'm scrolling"; and at the TV, when the scroll keeps coming: "it locks him up a little bit, like just a
+    // bit, so he can stay on the main screen"). The one place for these numbers; wheel() reads them on every event, so
+    // a tuning bench can change them on the open page. Only the wheel in the walk: keys, touch, links and the rest of
+    // the site scroll as they did.
+    var FEEL = window.__hoFeel = {
+      topSpeed: 1200, // px a second by the clock: the fastest a wheel moves the page through the walk, down or up (0 = no limit)
+      holdOver: 1000, // the hold at the TV is for a wheel that asked for more than this, px a second, on its way in: a gentle scroll goes through the TV as it always did (0 = every wheel is held)
+      holdMs: 1200,   // the hold, counted from the lock: a push that starts inside it is swallowed, its glide too, so a wheel that keeps coming for a second after the TV is in place still ends on it (0 = no hold)
+      quietMs: 180,   // it lets go once the wheel has been quiet this long with the TV in place; the next scroll goes on down
+      glideMs: 1900   // a wheel that is only fading (a trackpad's glide) stays held this much longer than holdMs at most (its last crawl, under 4 px an event, twice as much; 0 = no longer than holdMs)
+    };
+    var held = false, lockAt = 0, lastAt = 0, prevAt = 0, far = true, vFast = 0, vSlow = 0, pushed = 0, holdTimer = 0, hist = [], runAt = 0, fastAt = -1e9, back = 0;
     var px = function (name) { return parseFloat(getComputedStyle(H).getPropertyValue(name)) || 0; };
     var navTotal = function () { return Math.round((px('--site-nav-h') || 41) + px('--sale-h')); };
     function done() { try { sessionStorage.setItem('ra-ho-done', '1'); } catch (e) {} }
@@ -105,6 +118,7 @@
         return;
       }
       wall.style.translate = '';
+      if (held && !lockAt) { lockAt = performance.now(); settle(); } // (the hold's clock starts with the TV in place)
       done(); note('walked');
       requestAnimationFrame(follow);
       // the real TV has faded in over the room's: the room hides and stops drawing
@@ -160,7 +174,7 @@
       if (!H.classList.contains('ho-on')) return;
       done(); note(skipped === true ? 'skipped' : 'fallback');
       H.classList.remove('ho-on', 'ho-loading', 'ho-locked', 'ho-past');
-      clearTimeout(slow); clearInterval(give); clearTimeout(landTimer);
+      clearTimeout(slow); clearInterval(give); clearTimeout(landTimer); letGo('off');
       removeEventListener('scroll', queue);
       try { frame.src = 'about:blank'; } catch (e) {}
       ho.remove();
@@ -173,6 +187,103 @@
       if (!raf) raf = requestAnimationFrame(onScroll);
       var y = scrollY; if (y !== lastY) { down = y > lastY; lastY = y; }
       clearTimeout(landTimer); landTimer = setTimeout(land, 160);
+      var L = Math.ceil(lockY);
+      if (y >= L - 0.5 || state === 'locked') far = false; else if (y < L - 40) far = true; // (see wheel(): what counts as a new arrival)
+    }
+    // The wheel in the walk: the speed limit and the hold at the TV (the numbers and Dan's words: FEEL, above).
+    // Lenis moves the page a tenth of the way to where the wheel has pushed its target, 60 times a second by the clock
+    // (its lerp), so the page's speed is 6 x how far ahead the target is: holding the target no more than topSpeed / 6
+    // ahead of the page is the limit, the same at 60 and 120 Hz. A wheel event that stays inside it goes on to Lenis
+    // untouched. One that does not is taken here (never left to the browser: an event Lenis turns down scrolls the
+    // page natively) and the same Lenis call is made with the nearer target; what the limit cut is dropped, not saved
+    // up, so the page stops when the fingers do.
+    // The hold: going down, for a wheel that came in fast (holdOver), the target stops on the landing line (the y of
+    // land() and jump()), so the page eases onto the TV with nothing carried past it, and from there the wheel is
+    // swallowed. A wheel event carries no "finger lifted": a trackpad's glide is more wheel events, fading for a
+    // second or two. So it lets go by time, never by how far the wheel pushed: once the wheel has been quiet for
+    // quietMs with the TV in place; or, from holdMs after the lock, on a wheel that is being pushed (a mouse wheel's
+    // steady notches, a new flick), while one that only fades (the glide, and the glide of a flick that began inside
+    // holdMs) stays held to its end, glideMs more at most. A wheel up lets go at once, and the page turns with it.
+    function eat(e) { e.preventDefault(); e.stopImmediatePropagation(); }
+    // (html.ho-held while it holds, and window.__hoHold = why the last hold let go and how long it held from the
+    // lock: the bench and the checks read both)
+    function letGo(why, at) {
+      clearTimeout(holdTimer); if (!held) return;
+      held = false; H.classList.remove('ho-held');
+      window.__hoHold = { why: why, ms: lockAt ? Math.round((at || performance.now()) - lockAt) : 0 };
+    }
+    // the quiet release, on a clock: with no more wheel there is no event to let go on. 80 ms late, so a wheel event
+    // still on its way to the page (they arrive some ms after their own time) is not taken for a quiet wheel
+    function settle() {
+      clearTimeout(holdTimer);
+      if (!held || !lockAt) return;
+      var end = Math.max(lastAt, lockAt) + (window.__hoFeel || FEEL).quietMs, due = end + 80 - performance.now();
+      if (due <= 0) letGo('quiet', end); else holdTimer = setTimeout(settle, due);
+    }
+    function wheel(e) {
+      // the loading screen holds the page still: the wheel never reaches the site's Lenis while it shows
+      if (H.classList.contains('ho-loading')) { eat(e); return; }
+      var l = lenis(), f = window.__hoFeel || FEEL;
+      // as Lenis itself: not a pinch (ctrl), not a sideways swipe, not inside a panel that scrolls by itself (the cart)
+      if (!l || !ready || !H.classList.contains('ho-on') || e.ctrlKey || l.isStopped || l.isLocked) return;
+      var dy = e.deltaY * (e.deltaMode === 1 ? 100 / 6 : e.deltaMode === 2 ? innerHeight : 1) * (l.options.wheelMultiplier || 1);
+      if (!dy || (e.target && e.target.closest && e.target.closest('[data-lenis-prevent], [data-lenis-prevent-wheel], [data-lenis-prevent-vertical]'))) return;
+      // (the event's own time: at the lock the page is busy, and an event handled late is not a quiet wheel)
+      var now = performance.now(), t = e.timeStamp > 0 && e.timeStamp <= now && now - e.timeStamp < 5000 ? e.timeStamp : now;
+      var L = Math.ceil(lockY), a = l.animatedScroll, lead = f.topSpeed > 0 ? f.topSpeed / (60 * l.options.lerp || 6) : 1e9;
+      // is this wheel being pushed, or only fading? Two readings, and an event counts as pushed only when neither
+      // falls: its speed (px per ms) over the last 40 ms against the last 160 ms, and its own size against the largest
+      // event of the last 200 ms (the last 4 events at least; that long, because a glide in whole pixels fades in
+      // steps: 9, 9, 9, 8). The speed alone is fooled when events arrive in a bunch after a pause (Safari's engine),
+      // the size alone when a busy page gets several events as one (Chrome). pushed = two such events in a row.
+      var dt = t - prevAt, i, top = 0, asked = dy; prevAt = t;
+      if (dy < 0) { vFast = vSlow = pushed = 0; hist = []; fastAt = -1e9; }
+      else {
+        // (4 ms at least: two events can carry the same time, and the second would count for nothing)
+        var d = Math.max(dt, 4), v = dy / d; vFast += (v - vFast) * (1 - Math.exp(-d / 40)); vSlow += (v - vSlow) * (1 - Math.exp(-d / 160));
+        // (and what it asked for over 0.2 s of this unbroken run, for holdOver: remembered for 1.5 s, so a glide
+        // that is dying as it reaches the TV is still the fast scroll it came from)
+        if (dt > 120) { runAt = t; fastAt = -1e9; }
+        while (hist.length > 4 && t - hist[0][0] > 200) hist.shift();
+        for (i = 0; i < hist.length; i++) { if (hist[i][1] > top) top = hist[i][1]; if (hist[i][0] >= runAt && t - hist[i][0] <= 200) asked += hist[i][1]; }
+        hist.push([t, dy]);
+        pushed = dy >= 4 && vFast >= 0.9 * vSlow && dy >= 0.9 * top ? pushed + 1 : 0;
+        if (asked * 5 >= f.holdOver) fastAt = t;
+      }
+      if (held && Math.abs(l.targetScroll - L) > 2) letGo('moved'); // (a link's glide, a key or a resize took the page elsewhere)
+      if (held && dy > 0) {
+        var on = lockAt ? t - lockAt : -1, why = '';
+        if (lockAt && t - Math.max(lastAt, lockAt) >= f.quietMs) why = 'quiet';
+        else if (lockAt && on >= f.holdMs) why = pushed > 1 ? 'pushed' : on >= f.holdMs + f.glideMs * (dy >= 4 ? 1 : 2) ? 'long' : '';
+        if (why) letGo(why); // (and on, below)
+        else { eat(e); lastAt = t; back = 0; return; }
+      }
+      // a pixel or two the other way while the page is still easing onto the TV is a finger landing on the trackpad,
+      // not a scroll up: the page goes on to the TV (turned on that pixel, it would stop short of it). 4 px is a scroll up
+      if (held && !lockAt && (back += dy) > -4) { eat(e); return; }
+      // a wheel up while the page is still easing onto the TV: it turns from where the page is, not from the line it
+      // was heading for (from there one notch up would still carry it down onto the TV)
+      var turn = held && a < l.targetScroll;
+      if (held) letGo('up');
+      var want = (turn ? a : l.targetScroll) + dy, to = want;
+      if (dy > 0) {
+        // on the TV or below it: the page's own scroll (locked: a zoomed browser rounds where the page rests, and a
+        // script can leave it a pixel short of the line; that is on the TV, not a wheel still walking)
+        if (a >= L - 0.5 || state === 'locked') return;
+        to = Math.min(want, a + lead);
+        // a new arrival, not a wheel that backed off a few px and came back (a finger landing on a trackpad often
+        // starts with a pixel or two the other way: the flick after it must not be swallowed)
+        if (f.holdMs > 0 && far && to >= L && t - fastAt < 1500) {
+          to = L; held = true; far = false; lastAt = t; back = 0; lockAt = state === 'locked' ? now : 0;
+          H.classList.add('ho-held'); settle();
+        }
+      } else {
+        if (want >= L) return; // stays below the TV
+        to = Math.max(want, Math.min(a, L) - lead); // (from below the TV too: it comes into the walk at the limit)
+      }
+      if (to === want && !turn) return; // inside the limit: Lenis takes it, untouched
+      eat(e);
+      l.scrollTo(to, { programmatic: false, lerp: l.options.lerp, duration: l.options.duration, easing: l.options.easing });
     }
     // keyboard and screen readers reach the TV as on today's page (it is there, unseen, all along): focus inside it
     // lands the page on the lock, where it shows. Not over a glide (the nav's Plugins link is on its way there)
@@ -202,8 +313,7 @@
       }
     });
     addEventListener('scroll', queue, { passive: true });
-    // the loading screen holds the page still: the wheel never reaches the site's Lenis while it shows
-    addEventListener('wheel', function (e) { if (H.classList.contains('ho-loading')) { e.preventDefault(); e.stopImmediatePropagation(); } }, { capture: true, passive: false });
+    addEventListener('wheel', wheel, { capture: true, passive: false });
     // the room never started (a script failed to load), or its loading screen gave up on a stall: today's home page
     frame.addEventListener('load', function () {
       try { if (frame.contentWindow.location.href !== 'about:srcdoc') return; } catch (e) {} // (the frame's first, empty page)
