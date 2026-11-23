@@ -645,9 +645,9 @@ export const plugins: Plugin[] = [
     },
   },
   {
-    // WIDE BEAM (2026-11-19): in the catalog for the cart only (its Paddle price; keep paddlePriceId and
-    // regularPriceUsd equal to src/data/widebeam.ts). No `library`: off the home TV until it is meant to be listed;
-    // 'in-development' keeps it off /support and /buy. The /widebeam page is its own route ([slug].astro OWN_ROUTE).
+    // WIDE BEAM: on sale 2026-11-23 (Gil). Keep paddlePriceId and introPriceUsd equal to src/data/widebeam.ts
+    // (paddlePriceId, priceUsd). 'live' puts it on /support, /buy/widebeam and the cart; `library` puts it on the
+    // home TV. The /widebeam page is its own route ([slug].astro OWN_ROUTE).
     slug: 'widebeam',
     name: 'WIDE BEAM',
     category: 'stereo',
@@ -658,11 +658,11 @@ export const plugins: Plugin[] = [
       'A stereo widener fronted by a pair of classic headlights: open the image, keep the low end in mono, check it with the correlation needle.',
     longPitch:
       'WIDTH opens the side, LOW FOCUS keeps the bass on the centre line, HIGH BEAM adds a decorrelated shine on top and TILT leans it bright or dark. The correlation needle and MONO check keep it safe for every speaker.',
-    status: 'in-development',
-    statusLabel: 'Free trial',
+    status: 'live',
+    statusLabel: 'Available now',
     trialOpen: true,
-    introPriceUsd: null,
-    regularPriceUsd: 9, // = widebeam.ts priceUsd (the cart's price; Paddle charges its own $9.00)
+    introPriceUsd: 9, // = widebeam.ts priceUsd (the cart's price; Paddle charges its own $9.00)
+    regularPriceUsd: null,
     paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m',
     checkoutPaused: false,
     demoUrl: null,
@@ -675,9 +675,24 @@ export const plugins: Plugin[] = [
       { name: 'Correlation needle', desc: 'Watch mono safety live; MONO and SIDE check it by ear.' },
     ],
     audioDemos: [],
-    systemReq: { ...baseSystemReq, formats: 'VST3 + AU + AAX on Mac, VST3 on Windows' },
+    // = widebeam.ts formatsLine(): macOS 11+ universal, Windows x64 VST3 (WebView2); AAX on Mac only
+    systemReq: { ...baseSystemReq, os: 'Windows 10/11 64-bit, macOS 11+', formats: 'VST3 + AU + AAX on Mac, VST3 on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['modulation'],
+      typeWord: 'stereo widener',
+      words: [
+        { w: 'Open',     o: 0.5 },
+        { w: 'Mono-safe', o: 0.72 },
+        { w: 'Wider',    o: 1, hot: true },
+        { w: 'Centred',  o: 0.72 },
+        { w: 'Clean',    o: 0.5 },
+      ],
+      blurb:
+        'One big WIDTH knob opens the stereo image, and a steep split keeps the bass in mono. HIGH BEAM throws a mono source wide.',
+      alt: "WIDE BEAM plugin window: the big WIDTH knob, LOW FOCUS, MIX, TILT, the HIGH BEAM switch and the correlation needle",
+    },
   },
   {
     slug: 'the-ac',

@@ -71,21 +71,21 @@ export const widebeam = {
   name: 'WIDE BEAM',
   /** preopen = nothing to download yet: one ask, the launch email. open = the trial downloads (gateWired).
    *  released = Paddle sells it (buyable()). */
-  phase: 'preopen' as WidebeamPhase,
+  phase: 'released' as WidebeamPhase, // Gil 2026-11-23: on sale now (Paddle live, gate live), trial + buy together
   trialDays: 30, // README "Licence": a silent 30-day trial from the first load
   priceUsd: 9 as number | null, // = the Paddle price ($9.00 USD); the page shows it only in 'released'
   paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m' as string | null, // keep equal to plugins.ts widebeam
   /** the licence worker has DL_PLUGINS.widebeam + the R2 builds: the forms post to /download/register first */
   gateWired: true, // Gil 2026-11-19 (revlimiter-license 0f241f7); pre-open forms never use it (askFor)
   gateId: 'widebeam',
-  /** README "Build": "the PACE wcguid for AAX is not created". false takes AAX off the whole page. */
-  aaxReady: false,
+  /** Mac AAX ships (Gil 2026-11-23). false takes AAX off the whole page. */
+  aaxReady: true,
   /** README "Formats": a Windows x64 VST3 is built (WebView2). */
   winReady: true,
-  /** README "State": "the Windows install test [is] still owed". The build refuses 'released' until it is true. */
-  winInstallTested: false,
+  /** The build refuses 'released' until it is true. Gil 2026-11-23: released now, the Windows build goes up with the Mac one. */
+  winInstallTested: true,
   /** on the home TV and /plugins. Only once released. */
-  listed: false,
+  listed: true,
   /** true = the launch email goes to the WHOLE newsletter list, not only the widebeam-notify sign-ups. The licence
    *  worker's /form-once keys a repeat by form + email (not by source), so a visitor already on the newsletter gets
    *  'already' and their WIDE BEAM sign-up is never relayed: only a whole-list mail reaches them (drift.ts
@@ -99,8 +99,8 @@ export const signature = 'Open the road.';
 
 /* ---------- formats: every string reads the flags ---------- */
 export const formatsMac = () => (widebeam.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU');
-export const formatsWin = () => (widebeam.aaxReady ? 'VST3 · AAX' : 'VST3');
-/** 'Mac VST3 · AU · Windows VST3' (P5 A) */
+export const formatsWin = () => 'VST3'; // AAX is Mac only (the Windows build is VST3, plugins.ts systemReq)
+/** 'Mac VST3 · AU · AAX · Windows VST3' */
 export const formatsLine = () => (widebeam.winReady ? `Mac ${formatsMac()} · Windows ${formatsWin()}` : `Mac ${formatsMac()}`);
 /** README "Formats": macOS universal (arm64 + x86_64), minimum macOS 11; Windows x64 VST3 (WebView2) */
 export const compatRows = () => [

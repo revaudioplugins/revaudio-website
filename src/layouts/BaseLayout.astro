@@ -19,6 +19,7 @@ import SaleTransition from '../components/SaleTransition.astro';
 import SaleIntro from '../components/SaleIntro.astro';
 import { salePhases, saleSoonFrom } from '../data/sale';
 import { site } from '../data/site';
+import { buyable as widebeamBuyable } from '../data/widebeam';
 
 // Privacy-friendly analytics: only in production, only once a beacon token is set.
 const analyticsOn = import.meta.env.PROD && !!site.cfBeaconToken;
@@ -29,6 +30,8 @@ const saleClock = salePhases.map((p) => [p.id, Date.parse(p.start), Date.parse(p
 // the week before: the "Black Friday in…" countdown on every page (html[data-sale-soon])
 const saleSoon = [Date.parse(saleSoonFrom), Date.parse(salePhases[0].start)];
 const salePreviewOk = import.meta.env.DEV;
+// /widebeam keeps the sale strip off only while WIDE BEAM can't be bought (src/data/widebeam.ts buyable())
+const wbNoSale = !widebeamBuyable();
 
 interface Props {
   title: string;
@@ -109,7 +112,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
         the strip (SaleStrip) and --sale-h are in place on the first frame, no
         layout jump. Then the arrival half of a page-change scene (SaleTransition):
         only honoured if fresh and for the phase still on. */}
-    <script is:inline define:vars={{ saleClock, saleSoon, salePreviewOk }}>
+    <script is:inline define:vars={{ saleClock, saleSoon, salePreviewOk, wbNoSale }}>
       try {
         var sH = document.documentElement, sNow = Date.now(), sPick = null;
         for (var i = 0; i < saleClock.length; i++)
@@ -123,8 +126,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
           var sP = sessionStorage.getItem('sale-preview');
           if (sP) { sPick = sP === 'soon' ? null : sP; sSoon = sP === 'soon'; sH.dataset.salePreview = '1'; }
         }
-        // /widebeam can't be bought yet (src/data/widebeam.ts, P1 A): no sale strip there, no --sale-h
-        if (/^\/widebeam(\/|$)/.test(location.pathname)) sPick = null;
+        // /widebeam while WIDE BEAM can't be bought (src/data/widebeam.ts buyable()): no sale strip there, no --sale-h
+        if (wbNoSale && /^\/widebeam(\/|$)/.test(location.pathname)) sPick = null;
         if (sPick) sH.dataset.sale = sPick;
         else if (sSoon) sH.dataset.saleSoon = '1';
         var sA = sessionStorage.getItem('ss-arrive');
@@ -151,9 +154,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    {/* /widebeam can't be bought yet (P1 A): no strip in its markup at all, so the strip's own clock can't put
+    {/* /widebeam while WIDE BEAM can't be bought: no strip in its markup at all, so the strip's own clock can't put
         html[data-sale] back on a live sale date (the head script above clears it there) */}
-    {!/^\/widebeam(\/|$)/.test(Astro.url.pathname) && <SaleStrip />}
+    {!(wbNoSale && /^\/widebeam(\/|$)/.test(Astro.url.pathname)) && <SaleStrip />}
     {/* the smoke: two drifting haze plates + veil, fixed behind the page (src/lib/haze.ts) */}
     <div class="haze" data-haze aria-hidden="true">
       <div class="haze-plate h1" data-haze-1></div>

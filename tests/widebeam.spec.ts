@@ -60,9 +60,11 @@ test.describe('/widebeam honesty', () => {
     }
   });
 
-  test('the page asks search engines to skip it until launch', async ({ page }) => {
+  test('search engines skip the page until it is listed, and index it after', async ({ page }) => {
     await open(page, '/widebeam', 300);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    const robots = page.locator('meta[name="robots"]');
+    if (widebeam.listed) expect(await robots.getAttribute('content').catch(() => null) ?? '').not.toMatch(/noindex/);
+    else await expect(robots).toHaveAttribute('content', /noindex/);
   });
 });
 
@@ -143,12 +145,12 @@ test.describe('/widebeam behaviour', () => {
   });
 });
 
-// /widebeam can't be bought yet (src/data/widebeam.ts): on the REAL Black Friday / Cyber Monday dates it carries no sale strip and no
-// html[data-sale] (BaseLayout clears the phase there and leaves <SaleStrip/> out of the markup). The ?sale=bf preview cannot prove this: it is a
+// While WIDE BEAM can't be bought (src/data/widebeam.ts buyable()), on the REAL Black Friday / Cyber Monday dates /widebeam carries no sale
+// strip and no html[data-sale] (BaseLayout clears the phase there and leaves <SaleStrip/> out of the markup); once buyable it carries both. The ?sale=bf preview cannot prove this: it is a
 // dev-only switch and never runs the date path. A control page in the same clock must show the phase, or the clock never took.
 test.describe('/widebeam on the sale dates', () => {
   for (const ph of salePhases) {
-    test(`no sale strip on /widebeam during ${ph.name}`, async ({ page }) => {
+    test(`the sale strip on /widebeam during ${ph.name} follows buyable()`, async ({ page }) => {
       await page.route(WORKER, stub);
       await page.clock.setFixedTime(new Date((Date.parse(ph.start) + Date.parse(ph.end)) / 2));
       const read = () => page.evaluate(() => ({
@@ -159,8 +161,8 @@ test.describe('/widebeam on the sale dates', () => {
       expect((await read()).sale, `the clock took: the home page is in ${ph.name}`).toBe(ph.id);
       await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3000);
       const wb = await read();
-      expect(wb.sale, 'html[data-sale] on /widebeam').toBeNull();
-      expect(wb.shown, 'a sale strip shown on /widebeam').toBe(0);
+      expect(wb.sale, 'html[data-sale] on /widebeam').toBe(buyable() ? ph.id : null);
+      expect(wb.shown > 0, 'a sale strip shown on /widebeam').toBe(buyable());
     });
   }
 });
