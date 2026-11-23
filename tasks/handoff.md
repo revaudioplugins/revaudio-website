@@ -149,7 +149,12 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       shown before launch (reverses P1 A's "Price at launch").
     - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
       in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
-      (fast-forward to `a58715c`); `qa/widebeam-page-1121` still waits for Dan's push line.
+      (fast-forward to `a58715c`).
+    - QA for Gil, PUSHED 2026-11-23 on Dan's word ("send to gil for qa lets push the branch to gil"):
+      `qa/widebeam-page-1121` = `05dab5e` (was `7b3e9ba`, a fast-forward) = this branch at `9660b65` + `origin/main`
+      `22bdd2e` (the temp home hero, the BF strip on every page; only `tasks/handoff.md` clashed, both sides kept).
+      `npm run build` green (34 pages); `/widebeam/` and `/` load with no page errors in Chrome + WebKit 1312. Gil's
+      `feat/widebeam-page` (`3c91404`) and `main` untouched. This entry's line is newer than the qa branch's copy.
   - **State 2026-11-22 ~13:30, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
     `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
     stereo road are cut (files kept; bring back = per section its line + import in widebeam.astro and its @import in
