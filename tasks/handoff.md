@@ -8,7 +8,7 @@ applied to the phone ... show it to me, test it ... test the speed of the websit
 phone in the end."
 
 **State (2026-11-24).** `feat/phone-dive` at the commit after `afdc9a3`, NOT pushed (origin is at `2254b30`). Commits:
-`ff364d5` (merge of `origin/feat/garage-home` @ `8fe71aa`: 4 room.html conflicts, see its message), `afdc9a3` (the port).
+`ff364d5` (merge of `origin/feat/garage-home` @ `8fe71aa`: 4 room.html conflicts, see its message), `afdc9a3` (the port), then the hold made safe (a hold that fails lets go; `?feel=0`, `?debug`).
 Not on main, not live. Main itself is not merged in (Gil's temporary hero, the BF strip): that waits for the home-page step.
 - **Done:** VHS on the dive (`room.html` `?dive&live`; the look follows the dive through `R.lookP`, sharp at the lock); the
   live room as on the laptop (moving grain, the lights alive, dust, the governor); every light on from the first frame
@@ -28,6 +28,13 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
     Download 4.0 MB in all (before 4.2), nothing after the room is up.
   - Frame time, uncapped on the Mac's GPU: 1.7-1.8 ms (before 2.1-2.3). Simulator Safari: 60 fps cap held, both.
   - The laptop room with this merge: `lights/check.mjs` 1141x636 @2 PASS (2.16 / p99 9 / worst area 6.2).
+  - A hold that fails (`?nolock`: a browser whose momentum goes on through the held overflow): let go after 25 ms, the
+    camera lands at once, never a page sliding away mid-dive; the feel then stays off on that browser. A new fling 1.3 s
+    after a hold goes on down. No hold lasts more than 2.5 s. `?feel=0` = the dive as before (camera peak 8.7 screens/s).
+  - At the lock, the 3D screen (`?p=1&nolive`) vs the site's picture over it: Chromium 1.06 / 0.99, WebKit 0.92 / 0.78
+    (390x844 / 402x714; before 0.97 / 0.88 and 0.86 / 0.68), worst block 4-6 of 255 in all. Simulator Safari: 0.73 / 4.6.
+  - The governor, forced with the CPU slowed 12x: one step at 34.7 ms a frame, no gain (39.2 ms: the CPU, not the pixels),
+    taken back, done: as designed.
 - **Not checked:** a real phone (iOS momentum and the hold under a real thumb, Safari's bars, the frame rate on a phone's
   GPU). Synthetic mouse drags on the Simulator were not used: it runs full screen on another Space, so they would land on
   Dan's open windows. The governor never fired here (fast Mac).

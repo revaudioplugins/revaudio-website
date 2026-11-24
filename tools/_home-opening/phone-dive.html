@@ -248,7 +248,7 @@ if (Q.has('auto')) { // ?auto (or ?auto=14: seconds one way): the page scrolls i
   const run = (now) => { const t = Math.max(0, now - t0) % (2 * T + 4000), u = t < T ? t / T : t < T + 2000 ? 1 : t < 2 * T + 2000 ? 1 - (t - T - 2000) / T : 0; scrollTo(0, (0.6 * u + 0.4 * u * u * (3 - 2 * u)) * walkPx()); requestAnimationFrame(run); };
   requestAnimationFrame(run);
 }
-if (Q.has('debug')) { $('dbg').hidden = false; setInterval(() => { $('dbg').textContent = `page scroll ${Math.round(scrollY)} of ${Math.round(walkPx())}\nframe scroll ${Math.round(w.scrollY)}\ndive ${Math.round(shown * 100)} %  camera ${camera.position.y.toFixed(2)} m\nscreen ${innerWidth} x ${innerHeight}`; }, 200); }
+if (Q.has('debug')) { $('dbg').hidden = false; setInterval(() => { $('dbg').textContent = `page scroll ${Math.round(scrollY)} of ${Math.round(walkPx())}\nframe scroll ${Math.round(w.scrollY)}\ndive ${Math.round(shown * 100)} %  camera ${camera.position.y.toFixed(2)} m\nscreen ${innerWidth} x ${innerHeight}\nhold ${held ? 'ON ' + Math.round(performance.now() - held) + ' ms' : 'off'} · holds ${holds} · last: ${lastHold || '-'}\nscroll ${(vel / innerHeight).toFixed(1)} screens/s · top ${(vPeak / innerHeight).toFixed(1)}${FEEL.on ? '' : ' · feel off'}`; }, 150); }
 readScroll(); draw(REC ? 0 : target);
 // A thumb's scroll is already smooth (the browser eases its momentum), so on touch the picture follows it almost directly; a mouse wheel comes in steps and gets more easing.
 // THE WALK'S FEEL, from the laptop (HomeOpening.astro FEEL, Dan's numbers of 2026-11-23: "I scroll really fast. I want it to be like a limit", and at the
@@ -259,43 +259,49 @@ readScroll(); draw(REC ? 0 : target);
 //   one only FEEL.holdMs after the catch. A move back up lets go at once. Nothing else of the page's scroll changes.
 // - so the landing stays exact: the picture never slides away with the dive still on its way (measured before: up to 35 frames and a fifth of the dive).
 //   Where the hold can't take (the page already past the lock), the camera follows with no trailing, as before.
-// The laptop's numbers in screens: 2,400 px/s and 3,100 px/s over its 612-734 px windows. ?top= ?holdOver= ?holdMs= try others on a phone (no bench there).
-const FEEL = { top: 3.6, holdOver: 4.6, holdMs: 900 };
+// - if a browser's momentum goes on through the held overflow, the page past the lock lets the hold go at once (and the camera follows with no trailing,
+//   as before), and no hold lasts more than FEEL.maxMs.
+// The laptop's numbers in screens: 2,400 px/s and 3,100 px/s over its 612-734 px windows. ?top= ?holdOver= ?holdMs= try others on a phone (no bench
+// there); ?feel=0 = none of it (the dive as before, to compare); ?debug shows the hold and the scroll's speed.
+const FEEL = { top: 3.6, holdOver: 4.6, holdMs: 900, maxMs: 2500, on: Q.get('feel') !== '0' };
 for (const k of Object.keys(FEEL)) if (Q.has(k) && isFinite(+Q.get(k)) && +Q.get(k) > 0) FEEL[k] = +Q.get(k);
 const HTML = document.documentElement, scr = () => innerHeight; // (a screen: the window's height, as the laptop's px/s were)
 let vel = 0, vPeak = 0, lastY = scrollY, lastYAt = performance.now(), held = 0, heldFast = false, touchY = null, inputAt = -1e9;
 const byHand = (now) => touchY != null || now - inputAt < 3000; // a thumb on the glass, its momentum (up to ~3 s), or a wheel: never a link's or a script's jump (the laptop's hold is the wheel's alone)
-const release = () => { if (!held) return; held = 0; HTML.style.overflow = ''; };
+let holds = 0, lastHold = ''; // (for ?debug and the checks)
+const release = (why) => { if (!held) return; lastHold = `${why} after ${Math.round(performance.now() - held)} ms`; held = 0; HTML.style.overflow = ''; };
 addEventListener('scroll', () => {
   const now = performance.now(), y = scrollY, dy = y - lastY, dms = Math.max(8, now - lastYAt);
   if (now - lastYAt > 150) vPeak = 0; // (a new scroll: its own top speed)
   vel = 0.5 * vel + 0.5 * (dy / dms * 1000); vPeak = Math.max(vPeak, vel); lastY = y; lastYAt = now; // px a second, two events averaged; the top speed of this scroll (as the laptop's: how fast it came in, not how fast it is at the line)
-  if (held || REC || reduced || dy <= 0 || !byHand(now)) return;
-  if (y >= diveLen && y - dy < diveLen + 1) { // this scroll crossed the lock, going down
+  if (held && y > diveLen + 24) { release('slid past'); FEEL.on = false; return; } // the held overflow did not stop this browser's momentum: let it go (the camera lands at once, never a page sliding away mid-dive) and, on this browser, the dive as before from now on
+  if (held || !FEEL.on || REC || reduced || dy <= 0 || !byHand(now)) return;
+  if (y >= diveLen && y - dy < diveLen - 1) { // this scroll crossed the lock from above, going down (one that starts on the lock, after a hold, goes on down)
     const fast = vPeak > FEEL.holdOver * scr();
-    if (fast || shown < 0.9995) { held = now; heldFast = fast; HTML.style.overflow = 'hidden'; scrollTo(0, diveLen); readScroll(); }
+    if (fast || shown < 0.9995) { held = now; heldFast = fast; holds++; if (!Q.has('nolock')) HTML.style.overflow = 'hidden'; scrollTo(0, diveLen); readScroll(); } // (?nolock: a check's switch, a browser where the overflow does not stop momentum)
   }
 }, { passive: true });
 addEventListener('touchstart', (ev) => { touchY = ev.touches[0]?.clientY ?? null; vPeak = 0; }, { passive: true });
 addEventListener('touchend', (ev) => { if (!ev.touches.length) { touchY = null; inputAt = performance.now(); } }, { passive: true });
-addEventListener('touchmove', (ev) => { const y = ev.touches[0]?.clientY; if (held && touchY != null && y > touchY + 6) release(); }, { passive: true }); // a thumb pulling the page back up
-addEventListener('wheel', (ev) => { inputAt = performance.now() - 2500; if (held && ev.deltaY < 0) release(); }, { passive: true }); // (a wheel's own scroll ends within 0.5 s)
+addEventListener('touchmove', (ev) => { const y = ev.touches[0]?.clientY; if (held && touchY != null && y > touchY + 6) release('back up'); }, { passive: true }); // a thumb pulling the page back up
+addEventListener('wheel', (ev) => { inputAt = performance.now() - 2500; if (held && ev.deltaY < 0) release('back up'); }, { passive: true }); // (a wheel's own scroll ends within 0.5 s)
 const TAU = matchMedia('(pointer: coarse)').matches ? 0.045 : 0.11; let lastT = 0;
 function raf(now) {
   const dt = clamp((now - lastT) / 1000, 0.004, 0.1); lastT = now;
   if (!REC) {
     let next = reduced || shown < 0 ? target : shown + (target - shown) * (1 - Math.exp(-dt / TAU));
-    if (!reduced && shown >= 0 && (held || scrollY <= diveLen + 1)) { const cap = FEEL.top * scr() * dt / diveLen; next = clamp(next, shown - cap, shown + cap); } // the speed limit, while the picture is pinned
+    if (FEEL.on && !reduced && shown >= 0 && (held || scrollY <= diveLen + 1)) { const cap = FEEL.top * scr() * dt / diveLen; next = clamp(next, shown - cap, shown + cap); } // the speed limit, while the picture is pinned
     else if (next < target) next = Math.max(next, target - (1 - target) * 0.5); // past the lock: no trailing
     draw(Math.abs(next - target) < 0.0004 ? target : next, dt);
-    if (held && shown >= 0.9995 && (!heldFast || now - held >= FEEL.holdMs)) release(); // landed (and, after a fast one, the short hold): the page is free
+    if (held && shown >= 0.9995 && (!heldFast || now - held >= FEEL.holdMs)) release('landed'); // landed (and, after a fast one, the short hold): the page is free
+    else if (held && now - held >= FEEL.maxMs) release('too long'); // (a hold never outlasts this, whatever happened)
   }
   requestAnimationFrame(raf);
 }
 requestAnimationFrame(raf);
 // a recording places the camera itself, and the fans by the clock it gives (seconds)
 clearTimeout(giveUp);
-window.__dive = { DIVE, FEEL, get held() { return held; }, get p() { return shown; }, get t() { return target; }, get end() { return diveLen; }, look: (n) => { setLook(n); w.__room.arrange(); shown = -1; }, set: (p, sec) => { draw(clamp(p)); if (sec != null) for (const a of [...(R.modelAnims || [])]) if (a.o.name === 'fan_rotor') a.o.rotation.y = sec * 2; if (sec != null && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = sec * 2 + 0.6; }, ready: true };
+window.__dive = { DIVE, FEEL, get held() { return held; }, get holds() { return holds; }, get lastHold() { return lastHold; }, get p() { return shown; }, get t() { return target; }, get end() { return diveLen; }, look: (n) => { setLook(n); w.__room.arrange(); shown = -1; }, set: (p, sec) => { draw(clamp(p)); if (sec != null) for (const a of [...(R.modelAnims || [])]) if (a.o.name === 'fan_rotor') a.o.rotation.y = sec * 2; if (sec != null && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = sec * 2 + 0.6; }, ready: true };
 // the live room takes over from the first picture once it has drawn a few frames of its own, its fan where the picture has it
 if (!REC && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = 1.4; // (the picture was taken with set(0, 0.4): 0.4 s x 2 rad/s + 0.6)
 await new Promise((res) => { let n = 0; const tick = () => (++n > 12 ? res() : w.requestAnimationFrame(tick)); w.requestAnimationFrame(tick); });
