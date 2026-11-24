@@ -7,6 +7,40 @@ Dan 2026-11-24: "all the things we did to the laptop already, like the VHS, and 
 applied to the phone ... show it to me, test it ... test the speed of the website in the phone, and then we'll test it on my
 phone in the end."
 
+**State (2026-11-24).** `feat/phone-dive` at the commit after `afdc9a3`, NOT pushed (origin is at `2254b30`). Commits:
+`ff364d5` (merge of `origin/feat/garage-home` @ `8fe71aa`: 4 room.html conflicts, see its message), `afdc9a3` (the port).
+Not on main, not live. Main itself is not merged in (Gil's temporary hero, the BF strip): that waits for the home-page step.
+- **Done:** VHS on the dive (`room.html` `?dive&live`; the look follows the dive through `R.lookP`, sharp at the lock); the
+  live room as on the laptop (moving grain, the lights alive, dust, the governor); every light on from the first frame
+  (the live room used to take over the lit first picture dark and warm up ~1.5 s, also before); the first picture
+  re-rendered in VHS; the walk's feel for a thumb (`FEEL` in `phone-dive.html`: the camera at most 3.6 screens/s, a scroll
+  by hand that reaches the phone's screen with the camera still on its way, or faster than 4.6 screens/s, is held on the
+  lock until the camera lands, a fast one 0.9 s; a move back up lets go at once). `?look=` is now the room's look as on
+  the home page; the phone's own look moved to `?body=`.
+- **Checks** (Chromium on the Mac's GPU, phone emulation; Simulator Safari through safaridriver; before = `2254b30`):
+  - Flings by CDP (touch, with momentum): hard fling: camera peak 3.6 screens/s (before 8.6), ends on the lock (before
+    230 px past), held 0.9 s. Gentle: unchanged. Up from the site: no hold.
+  - First picture vs the live room on it (fans held, 390x844 @2, blurred mean / worst 32 px block): Chromium 0.65 / 20.8
+    (before 0.87 / 21.8), WebKit 0.69 / 21.4 (before 1.06 / 22.5).
+  - Cold first visits (simserve gzip + CDP line, 402x714 @3): the typical phone (Ookla mobile global median 112.85 Mbit/s,
+    October 2026, speedtest.net/global-index): first picture 0.10 s, live room 2.38-2.56 s (before 2.41-2.66). 25 Mbit/s:
+    0.20 s / 4.0-4.2 s (before 4.2-4.7). 10 Mbit/s (stress): 0.30 s / 6.7 s (same). CPU slowed 4x: 4.8 s (same).
+    Download 4.0 MB in all (before 4.2), nothing after the room is up.
+  - Frame time, uncapped on the Mac's GPU: 1.7-1.8 ms (before 2.1-2.3). Simulator Safari: 60 fps cap held, both.
+  - The laptop room with this merge: `lights/check.mjs` 1141x636 @2 PASS (2.16 / p99 9 / worst area 6.2).
+- **Not checked:** a real phone (iOS momentum and the hold under a real thumb, Safari's bars, the frame rate on a phone's
+  GPU). Synthetic mouse drags on the Simulator were not used: it runs full screen on another Space, so they would land on
+  Dan's open windows. The governor never fired here (fast Mac).
+- **Found, left alone:** the phone downloads two laptop pictures from room.html's markup (`tv-1141x636.webp` 339 KB,
+  `below-1141.webp` 125 KB; the src attributes in the HTML); cutting them touches the laptop's markup. On main, a
+  `?home=garage` pin on a phone loads the LAPTOP room (`forced` skips the eligibility check in HomeOpening.astro).
+- **Next, Dan's to decide:** the phone garage on the home page for phones (HomeOpening.astro: a phone branch, the room in
+  `?dive&live` as the frame's srcdoc, the real phone TV photographed in the browser as on the laptop, the hand-over onto
+  it, pins only first). Main merged in first. Then a push of this branch on his word.
+- **Run:** a no-store server on the worktree root, `/tools/_home-opening/phone-dive.html` (on 2026-11-24: port 4691).
+  Dan's phone on the Wi-Fi: he runs `python3 -m http.server 4690 --bind 0.0.0.0 --directory <this worktree>` (auto mode
+  refuses an assistant binding 0.0.0.0), then `http://<the Mac's Wi-Fi address>:4690/tools/_home-opening/phone-dive.html`.
+
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`) — on main up to `2851c19` (live, pins only); the last 5 commits PUSHED to `origin/feat/garage-home` 2026-11-23, NOT on main
 
 Claim: OPEN 2026-11-18, still open 2026-11-23 (waiting on Dan's go-live word). Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
