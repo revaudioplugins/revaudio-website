@@ -8,6 +8,7 @@ import gas2Img from '../assets/plugins/gas2-hero.jpg';
 import rrImg from '../assets/plugins/radioroulette-hero-cut.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import revfxImg from '../assets/plugins/revfx-hero.png';
+import widebeamImg from '../assets/plugins/widebeam-hero.png';
 import { site } from '../data/site';
 import { plugins, fmtPrice } from '../data/plugins';
 import { tvName } from '../data/library';
@@ -25,6 +26,7 @@ const CHANNEL: Record<string, [number, number]> = {
   gas: [46, 62],
   gas2: [14, 58],
   revfx: [305, 72],
+  widebeam: [205, 60],
 };
 const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; cut?: boolean }> = {
   revlimiter: { img: rlImg },
@@ -33,6 +35,7 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; cut?: bo
   gas: { img: gasImg, portrait: true },
   gas2: { img: gas2Img, portrait: true },
   revfx: { img: revfxImg },
+  widebeam: { img: widebeamImg },
 };
 
 const picks = REVIEW_PLUGINS.map((slug) => {
@@ -528,9 +531,12 @@ const clientConfig = {
       letter-spacing: 0.02em;
       color: var(--fg);
     }
-    /* six screens: one row on a laptop (900 px and up, below), 3 x 2 on a tablet, 2 x 3 on a phone (max-width: 640px) */
-    .cubes { --gap: clamp(0.6rem, 1.8vw, 0.9rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+    /* rows of --cols screens: 4 on a laptop (900 px and up, below), 3 on a tablet, 2 on a phone (max-width: 640px);
+       a short last row sits centred (seven = 4 + 3, 3 + 3 + 1, 2 + 2 + 2 + 1) */
+    .cubes { --gap: clamp(0.6rem, 1.8vw, 0.9rem); --cols: 3; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
     .cube {
+      flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+      min-width: 0;
       --gs: min(100%, calc(var(--s) * 1% + 20%));
       --ink: hsl(var(--h) min(100%, calc(var(--s) * 1% + 25%)) 66%);
       --ink-hot: hsl(var(--h) min(100%, calc(var(--s) * 1% + 30%)) 74%);
@@ -606,10 +612,9 @@ const clientConfig = {
       -webkit-text-stroke: 1.1px var(--fg-dim);
       transition: color 140ms ease, -webkit-text-stroke-color 140ms ease, filter 140ms ease;
     }
-    /* one row of six: the cubes are ~100 px, so the names step down a size to keep REVLIMITER inside its padding */
+    /* four across: the cubes are ~160 px, so the names keep their full size */
     @media (min-width: 900px) {
-      .cubes { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-      .cube-name { font-size: clamp(0.95rem, 1.4vw, 1.1rem); }
+      .cubes { --cols: 4; }
     }
 
     /* tuned in: hover (a mouse) or the pick */
@@ -815,9 +820,7 @@ const clientConfig = {
     .rv-done-link { display: inline-block; margin-top: 1.5rem; color: var(--brass); font-size: 0.9rem; }
 
     @media (max-width: 640px) {
-      .cubes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      /* an odd last cube sits centred under the pairs, one column wide */
-      .cube:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - var(--gap)) / 2); }
+      .cubes { --cols: 2; }
       .rate { flex-direction: column; align-items: stretch; }
       .rate-read { order: -1; }
       .rate-bar { flex: none; height: 5rem; gap: 0.25rem; }

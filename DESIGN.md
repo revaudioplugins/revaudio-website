@@ -97,6 +97,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   hue / saturation numbers) fades up on hover, a one-shot glitch as it tunes in (picture jump + tear, glass
   flicker, the hum bar rolls), the picked one stays lit with its name filled. Radio Roulette's picture =
   `radioroulette-hero-cut.png`, cut along its chrome (fitted superellipse corners; Yoni: "crop it precisely").
+  Rows of 4 from 900 px, 3 on a tablet, 2 on a phone; a short last row sits centred (seven since WIDE BEAM
+  joined 2026-11-24 = 4 + 3), so the cubes stay ~160 px and the names keep their full size (one row of seven
+  would be ~85 px cubes).
 - Plugin TV (`WordWall.astro`, `#plugins`; branch feat/home-library, built 2026-10-18; the user: switching
   between the plugins lives in the TV, only there, only on home). One broken CRT set on the garage wall
   (Dan 2026-10-14: "every plugin on the TV, only the screen changes, like changing channels"). The
