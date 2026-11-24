@@ -23,6 +23,8 @@ const PAGES = {
   __wwkeys: fileURLToPath(new URL('./wwkeys.html', import.meta.url)),
   /* /__wwlayout (Dan 2026-11-22): the TV's layout, today beside three where the words hold still and only the plugin changes */
   __wwlayout: fileURLToPath(new URL('./wwlayout.html', import.meta.url)),
+  /* /__wwcart (Dan 2026-11-24): the TV's Add to cart + Product page keys, today beside five on-brand options */
+  __wwcart: fileURLToPath(new URL('./wwcart.html', import.meta.url)),
 };
 
 export default function wwbench() {
@@ -38,7 +40,7 @@ export default function wwbench() {
                 name: 'wwbench-server',
                 configureServer(server) {
                   server.middlewares.use(async (req, res, next) => {
-                    const m = /^\/(__wwbench|__wwkeys|__wwlayout)\/?$/.exec((req.url || '').split('?')[0]);
+                    const m = /^\/(__wwbench|__wwkeys|__wwlayout|__wwcart)\/?$/.exec((req.url || '').split('?')[0]);
                     if (!m) return next();
                     res.setHeader('Content-Type', 'text/html; charset=utf-8');
                     try {

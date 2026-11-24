@@ -1,7 +1,7 @@
 ## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
 
 Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
-`/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), this entry.
+`/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), `tools/wwbench/wwcart.html` (new, dev only), this entry.
 - Dan: on the live TV, from plugin to plugin "the gap is really big", and "the words will stay in the same place and
   just the plugin will change". Asked: brainstorm + bench; composition, placements, fonts, not a full redesign.
 - Measured on revaudio.net (Chromium): across the 6 plugins the lit name moves up to 356 px (1312x734) / 223 px
@@ -20,6 +20,12 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   five, live and after a reload. Checked in Chromium: a move and a resize land on all six, survive a reload with
   another plugin lit. Next: Dan's EXPORT, then "apply bench" (each `#wwb-...` selector becomes its generic
   `.ww-panel .ww-...` rule, folded into B's block).
+- 2026-11-24: Dan: Add to cart and Product page should be "special and not just like a regular button", five options
+  from the brand. Bench `/__wwcart` (dev only, `tools/wwbench/wwcart.html`): today + 1 Fastext (teletext page keys),
+  2 VHS screen (▶ / REC dot), 3 Dashboard (turn-signal arrow + an odometer that rolls 0 -> 1 in the cart; Claude's pick),
+  4 Label tape (embossed tape on the glass), 5 Parts tag (manila tag + index card, masking tape). Each a <style> in a
+  frame of the real page (B); a cart switch shows "In your cart" the way Cart.astro does (class + label, no real cart).
+  Checked in Chromium at 1312x734: every option at rest, hovered, in the cart, and on a free plugin (Product page only).
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 

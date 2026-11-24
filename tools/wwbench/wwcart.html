@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>TV Bench · Cart keys</title>
+<!-- TV cart-keys bench (Dan 2026-11-24, on layout B: "take special care for the add to cart part, and the product page
+     part ... make them special and not just like a regular button. Give me like 5 options, from our brand identity and
+     design system"). Six same-origin iframes of the REAL dev homepage (layout B): today's two keys, then options 1-5,
+     each one a <style> dropped into its frame (nothing in the page's code changes). The view is the keys at true size
+     (KEYS) or the whole TV (TV). The plugin buttons light the same plugin everywhere; the cart switch shows every
+     frame's Add to cart as "In your cart" the way Cart.astro does it (class + label, no real cart). Hover and click
+     the keys: the frames are the real page. Pick in chat. -->
+<style>
+  :root { --bg: #0e0b09; --panel: #18120f; --line: #33261e; --ink: #f1e8df; --dim: #ab9b8c; --acc: #e0a35a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.35 -apple-system, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 8px 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 3; background: var(--bg); }
+  header h1 { margin: 0 6px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+  button { background: #241a15; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--acc); }
+  .seg { display: inline-flex; flex-wrap: wrap; }
+  .seg button { border-radius: 0; margin-left: -1px; padding: 6px 10px; }
+  .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .seg button.on { background: var(--acc); border-color: var(--acc); color: #221004; font-weight: 700; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .spacer { flex: 1; }
+  main { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 22px 18px; padding: 16px; }
+  .card { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .card[hidden] { display: none; }
+  .head { display: flex; align-items: center; gap: 10px; }
+  .badge { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: var(--acc); color: #221004; font-weight: 800; }
+  .card[data-o='today'] .badge { background: #2e231d; color: var(--ink); }
+  .head h2 { margin: 0; font-size: 15px; letter-spacing: .04em; }
+  .head .mine { color: var(--acc); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--acc); border-radius: 5px; padding: 3px 6px; }
+  .head .zoom { margin-left: auto; padding: 4px 10px; font-size: 12px; }
+  .line { margin: 0; color: var(--dim); font-size: 13px; max-width: 80ch; min-height: calc(3 * 1.35em); }
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #050303; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #050303; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TV bench · Cart keys</h1>
+  <span class="lbl">Plugin</span>
+  <span class="seg" id="chan" title="Light the same plugin in every TV (the free ones have no Add to cart)"></span>
+  <span class="lbl">Cart</span>
+  <span class="seg" id="cart" title="Show Add to cart as it looks once the plugin is in the cart">
+    <button type="button" data-c="out">Not in cart</button><button type="button" data-c="in">In your cart</button>
+  </span>
+  <span class="lbl">View</span>
+  <span class="seg" id="view"><button type="button" data-v="keys" title="The keys at their real size">Keys</button><button type="button" data-v="tv" title="The whole TV, scaled">Whole TV</button></span>
+  <span class="lbl">Screen</span>
+  <span class="seg" id="size"><button data-s="1312x734" title="Chrome at 100 % on Dan's laptop">Chrome</button><button data-s="1141x636" title="Safari at 115 % on Dan's laptop">Safari</button></span>
+  <span class="spacer"></span>
+  <span class="lbl">Hover and click the keys. Then tell Claude 1-5.</span>
+</header>
+<main id="cards"></main>
+<script>
+(() => {
+  const KEY = 'wwcart:v1';
+  const WALL = '[data-wordwall]';
+  // every option is scoped to the lit plugin's two small keys on the screen wall; the frame's <html> gets id="wwcart"
+  // so these rules outrank the component's scoped ones; html.hc (high contrast) keeps the plain keys
+  const P = "#wwcart:not(.hc) .ww[data-ww-bg='screen'] .ww-panel .ww-buy";
+  const K = `${P} :is(.ww-more, .ww-cart)`;
+  // what every option takes away from today's phosphor outline: the frame, the glow, the fill
+  const BASE = `
+${K} {
+  min-height: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; text-shadow: none; filter: none;
+  transform: none; overflow: visible; isolation: auto; position: relative; display: inline-flex; align-items: center;
+  text-transform: uppercase; text-decoration: none; cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 160ms ease, transform 160ms ease;
+}
+${K}:is(:hover, :active, .is-pressed) { transform: none; background-color: transparent; box-shadow: none; } /* today's hover fill off; an option's own layers stay */
+${K}:focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 5px; }
+`;
+  const NOMOTION = (css) => `@media (prefers-reduced-motion: reduce) { ${css} }`;
+
+  const OPTS = [
+    { id: 'today', badge: '·', name: 'Today', line: 'A phosphor outline, the same for both: the keys read as plain buttons next to the lit Try key.', css: '' },
+
+    { id: 'fastext', badge: '1', name: 'Fastext', line: 'The TV\'s own page keys. Old sets had a coloured row along the bottom of the teletext page, one colour per key on the remote. Each key is a dark band with a teletext block glyph in its colour: brass for Product page, oxide for Add to cart. Hover fills the band with the colour, like the page key lighting up.', css: BASE + `
+${K} {
+  --fx: var(--brass-bright);
+  gap: .55rem; padding: .44rem .85rem .36rem .55rem;
+  background-color: hsl(var(--ww-ch-h) 35% 5% / .82);
+  box-shadow: inset 0 0 0 1px hsl(var(--ww-ch-h) 30% 30% / .35);
+  color: var(--fx); font-family: var(--font-display); font-size: 1.22rem; line-height: .9; letter-spacing: .07em;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--fx) 45%, transparent);
+}
+${P} .ww-cart { --fx: var(--oxide-text); }
+/* the teletext mosaic glyph: a 2 x 3 block character, five cells lit */
+${K}::before {
+  content: ''; flex: none; width: .66rem; height: 1rem;
+  background:
+    linear-gradient(var(--fx) 0 0) 0 0 / 46% 30%, linear-gradient(var(--fx) 0 0) 100% 0 / 46% 30%,
+    linear-gradient(var(--fx) 0 0) 0 50% / 46% 30%,
+    linear-gradient(var(--fx) 0 0) 0 100% / 46% 30%, linear-gradient(var(--fx) 0 0) 100% 100% / 46% 30%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--fx) 60%, transparent));
+}
+${P} .ww-cart::before {
+  background:
+    linear-gradient(var(--fx) 0 0) 0 0 / 46% 30%,
+    linear-gradient(var(--fx) 0 0) 0 50% / 46% 30%, linear-gradient(var(--fx) 0 0) 100% 50% / 46% 30%,
+    linear-gradient(var(--fx) 0 0) 0 100% / 46% 30%, linear-gradient(var(--fx) 0 0) 100% 100% / 46% 30%;
+  background-repeat: no-repeat;
+}
+${P} .ww-more [aria-hidden] { display: none; }
+${K}:hover, ${P} .ww-cart.is-in-cart {
+  background-color: var(--fx); color: hsl(var(--ww-ch-h) 40% 7%); text-shadow: none;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--fx) 55%, transparent);
+}
+${K}:hover::before, ${P} .ww-cart.is-in-cart::before { --fx: hsl(var(--ww-ch-h) 40% 7%); filter: none; }
+${K}:is(:active, .is-pressed) { filter: brightness(.8); transition-duration: 60ms; }
+` },
+
+    { id: 'vhs', badge: '2', name: 'VHS screen', line: 'Like the garage walk-through, which is in VHS: the keys are the VCR\'s on-screen text. ▶ for Product page, a REC dot for Add to cart. Big letters with a hard black shadow, no box. Hover gives a dark menu bar, a slight colour split, and the REC dot blinks. Once added, the dot stays lit.', css: BASE + `
+${K} {
+  gap: .5rem; padding: .28rem .5rem .2rem .4rem;
+  color: hsl(var(--ww-ch-h) 22% 93%);
+  font-family: var(--font-display); font-size: 1.45rem; line-height: .9; letter-spacing: .06em;
+  text-shadow: 2px 2px 0 rgb(0 0 0 / .85), 0 0 12px var(--ww-glow-soft);
+}
+${P} .ww-more [aria-hidden] { display: none; }
+${K}::before { content: ''; flex: none; filter: drop-shadow(2px 2px 0 rgb(0 0 0 / .85)); }
+${P} .ww-more::before { width: .55em; height: .66em; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+${P} .ww-cart::before { width: .52em; height: .52em; border-radius: 50%; background: hsl(14 30% 34%); }
+${K}:hover {
+  background-color: hsl(var(--ww-ch-h) 45% 6% / .75);
+  text-shadow: -1.5px 0 0 rgb(255 80 60 / .55), 1.5px 0 0 rgb(90 200 255 / .5), 2px 2px 0 rgb(0 0 0 / .85);
+  animation: wwc-track 900ms steps(1, end) infinite;
+}
+${P} .ww-cart:hover::before { background: var(--oxide-text); animation: wwc-rec 1s steps(1, end) infinite; }
+${P} .ww-cart.is-in-cart::before { background: var(--oxide-text); box-shadow: 0 0 10px var(--oxide-text); }
+${K}:is(:active, .is-pressed) { filter: brightness(1.3); transition-duration: 60ms; }
+@keyframes wwc-track { 0%, 70% { translate: 0 0; } 72% { translate: 1px 0; } 76% { translate: -1px 0; } 80%, 100% { translate: 0 0; } }
+@keyframes wwc-rec { 0%, 55% { opacity: 1; } 56%, 100% { opacity: .15; } }
+${NOMOTION(`${K}:hover, ${P} .ww-cart:hover::before { animation: none; }`)}
+` },
+
+    { id: 'dash', badge: '3', name: 'Dashboard', line: 'Car dashboard parts. Product page gets a turn-signal arrow: dark at rest, blinking green on hover, like signalling a turn. Add to cart gets an odometer window: the drum shows 0, starts to roll on hover, and rolls to 1 once the plugin is in the cart.', css: BASE + `
+${K} {
+  gap: .6rem; padding: .3rem .25rem .22rem 0;
+  color: var(--ww-ink); font-family: var(--font-display); font-size: 1.32rem; line-height: .9; letter-spacing: .06em;
+  text-shadow: 0 0 8px var(--ww-glow);
+}
+${P} .ww-more [aria-hidden] { display: none; }
+/* the blinker: the dash's arrow lens, unlit until the pointer is on it */
+${P} .ww-more::before {
+  content: ''; flex: none; width: 1.5rem; height: 1.05rem;
+  clip-path: polygon(0 34%, 50% 34%, 50% 0, 100% 50%, 50% 100%, 50% 66%, 0 66%);
+  background: linear-gradient(180deg, #44604d, #26382c);
+}
+${P} .ww-more:hover::before { animation: wwc-blink 700ms steps(1, end) infinite; }
+${P} .ww-more:hover { color: var(--ww-ink-hot); }
+@keyframes wwc-blink {
+  0%, 49% { background: linear-gradient(180deg, #9cf2b4, #3fc46c 55%, #23864a); filter: drop-shadow(0 0 7px rgb(80 230 130 / .85)); }
+  50%, 100% { background: linear-gradient(180deg, #44604d, #26382c); filter: none; }
+}
+/* the odometer: a recessed window in a chrome bezel, a drum with 0 over 1 */
+${P} .ww-cart { padding-left: 0; }
+${P} .ww-cart::before {
+  content: ''; flex: none; width: 1.2rem; height: 1.6rem; border-radius: 2px;
+  background: linear-gradient(180deg, #050403, #1d1916 30%, #262019 50%, #1d1916 70%, #050403);
+  box-shadow: 0 0 0 2px #8f8a80, 0 0 0 3px #2a2723, 0 2px 6px rgb(0 0 0 / .6);
+}
+${P} .ww-cart::after {
+  content: '0\\A 1'; white-space: pre; position: absolute; left: 0; top: calc(50% - .8rem + .04rem);
+  width: 1.2rem; height: 3.2rem; line-height: 1.6rem; text-align: center;
+  font-family: var(--font-mono); font-size: 1.02rem; font-weight: 600; color: #efe9df; letter-spacing: 0; text-shadow: 0 1px 0 #000;
+  clip-path: inset(0 0 50% 0); transition: transform 520ms cubic-bezier(.3, 1.35, .5, 1), clip-path 520ms cubic-bezier(.3, 1.35, .5, 1);
+}
+${P} .ww-cart:hover::after { transform: translateY(-.3rem); clip-path: inset(9.4% 0 40.6% 0); }
+${P} .ww-cart.is-in-cart::after { transform: translateY(-1.6rem); clip-path: inset(50% 0 0 0); }
+${P} .ww-cart:hover { color: var(--ww-ink-hot); }
+${P} .ww-cart.is-in-cart { color: var(--ww-ink-hot); }
+${K}:is(:active, .is-pressed) { filter: brightness(1.25); transition-duration: 60ms; }
+${NOMOTION(`${P} .ww-more:hover::before { animation: none; background: #3fc46c; } ${P} .ww-cart::after { transition: none; }`)}
+` },
+
+    { id: 'dymo', badge: '4', name: 'Label tape', line: 'Embossed label-maker tape, the kind every garage has, stuck on the glass a little crooked: black tape for Product page, oxide tape for Add to cart, raised letters. Hover lifts the strip off the glass; a press flattens it.', css: BASE + `
+${K} {
+  --tape: #171513; --tilt: -1.4deg;
+  padding: .46rem .8rem .4rem; gap: .45rem;
+  font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 1.02rem; line-height: 1; letter-spacing: .17em;
+  color: #f1ece3;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / .2), rgb(255 255 255 / .05) 34%, rgb(0 0 0 / 0) 58%, rgb(0 0 0 / .28)),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / .04) 0 1px, transparent 1px 3px),
+    var(--tape);
+  text-shadow: 0 -1px 0 rgb(0 0 0 / .6), 0 1px 0 rgb(255 255 255 / .25);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .14), inset 0 -1px 0 rgb(0 0 0 / .4), 0 3px 4px rgb(0 0 0 / .55);
+  transform: rotate(var(--tilt));
+}
+${P} .ww-cart { --tape: #9b3b1d; --tilt: 1deg; }
+${P} .ww-more [aria-hidden] { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 1em; vertical-align: 0; }
+${K}:hover {
+  transform: rotate(calc(var(--tilt) * .4)) translateY(-2px);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / .26), rgb(255 255 255 / .07) 34%, rgb(0 0 0 / 0) 58%, rgb(0 0 0 / .24)),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / .04) 0 1px, transparent 1px 3px),
+    var(--tape);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), inset 0 -1px 0 rgb(0 0 0 / .4), 0 8px 12px rgb(0 0 0 / .55);
+}
+${K}:is(:active, .is-pressed) { transform: rotate(var(--tilt)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .1), inset 0 -1px 0 rgb(0 0 0 / .4), 0 1px 2px rgb(0 0 0 / .6); transition-duration: 60ms; }
+${P} .ww-cart.is-in-cart { --tape: #2c5b3f; }
+` },
+
+    { id: 'tag', badge: '5', name: 'Parts tag', line: 'The parts counter (the cart drawer is the parts counter): Add to cart is a manila parts tag with a brass eyelet, typed on; Product page is an index card with a folded corner. Both are taped to the glass with a strip of masking tape. Hover lifts the paper; once added, the tag is stamped In your cart.', css: BASE + `
+${K} {
+  gap: .4rem; color: #2e2216;
+  font-family: 'Special Elite', 'Courier New', monospace; font-size: 1.02rem; line-height: 1; letter-spacing: .04em;
+  filter: drop-shadow(0 3px 3px rgb(0 0 0 / .55));
+}
+${P} .ww-more [aria-hidden] { font-family: 'Special Elite', monospace; font-size: 1em; vertical-align: 0; }
+/* the index card: ruled, its top-right corner folded over */
+${P} .ww-more {
+  padding: .62rem .9rem .5rem .8rem; transform: rotate(-1.6deg);
+  background:
+    linear-gradient(225deg, transparent .55rem, #b8af9c .55rem 0.8rem, transparent 0.8rem) top right / 1.6rem 1.6rem no-repeat,
+    linear-gradient(225deg, transparent .55rem, #ebe4d4 .55rem),
+    linear-gradient(transparent calc(100% - 1px), rgb(140 160 190 / .35) 0) 0 .36rem / 100% .62rem;
+  background-color: transparent;
+}
+/* the parts tag: manila, a punched end with a brass eyelet */
+${P} .ww-cart {
+  padding: .6rem .95rem .5rem 1.7rem; transform: rotate(2.2deg);
+  background:
+    radial-gradient(circle at .78rem 50%, transparent .2rem, #8c6f3a .21rem, #e8c878 .28rem, #8c6f3a .36rem, transparent .37rem),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath d='M9 0H100V40H9L0 31V9Z' fill='%23d6bf8f'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
+/* the masking tape holding each one to the glass */
+${K}::after {
+  content: ''; position: absolute; top: -.42rem; left: 50%; width: 2.4rem; height: .78rem; translate: -50% 0; rotate: -4deg;
+  background: linear-gradient(180deg, rgb(236 226 196 / .78), rgb(214 202 168 / .72));
+  box-shadow: 0 1px 1px rgb(0 0 0 / .2);
+}
+${P} .ww-cart::after { left: 62%; rotate: 5deg; }
+${K}:hover { transform: rotate(0deg) translateY(-2px); filter: drop-shadow(0 8px 8px rgb(0 0 0 / .55)); }
+${K}:is(:active, .is-pressed) { transform: rotate(0deg); filter: drop-shadow(0 1px 1px rgb(0 0 0 / .6)); transition-duration: 60ms; }
+${P} .ww-cart.is-in-cart { color: #7a2a12; text-shadow: 0 0 .5px #7a2a12; }
+` },
+  ];
+
+  const st = Object.assign({ slug: 'revlimiter', size: '1312x734', zoom: '', view: 'keys', cart: 'out' },
+    (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })());
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  try { if (!localStorage.getItem('ra-cookie-consent')) localStorage.setItem('ra-cookie-consent', 'declined'); } catch (e) {}
+
+  const box = document.getElementById('cards');
+  box.innerHTML = OPTS.map((o) => `
+    <section class="card" data-o="${o.id}">
+      <div class="head"><span class="badge">${o.badge}</span><h2>${o.name}</h2><span class="mine" hidden>Claude's pick</span><button class="zoom" type="button">Zoom</button></div>
+      <p class="line">${o.line}</p>
+      <div class="vp"><iframe title="Homepage TV, ${o.name}"></iframe></div>
+    </section>`).join('');
+  const cards = OPTS.map((o) => ({ o, el: box.querySelector(`[data-o="${o.id}"]`) }));
+  cards.forEach((c) => { c.frame = c.el.querySelector('iframe'); });
+  const PICK = 'dash';
+  box.querySelector(`[data-o="${PICK}"] .mine`).hidden = false;
+
+  const dims = () => st.size.split('x').map(Number);
+  // the keys view: the lit plugin's words column at true size (from the frame itself, so every option is framed alike)
+  function crop(c) {
+    const d = c.doc, info = d && d.querySelector('.ww-panel.is-active .ww-info');
+    if (!info) return null;
+    const r = info.getBoundingClientRect();
+    return { x: Math.max(0, Math.round(r.left - 26)), y: Math.max(0, Math.round(r.top - 22)), h: Math.round(r.height + 44) };
+  }
+  function layout() {
+    const [W, H] = dims();
+    const one = !!st.zoom;
+    cards.forEach((c) => (c.el.hidden = one && c.o.id !== st.zoom));
+    box.style.setProperty('--cols', one ? 1 : 2);
+    requestAnimationFrame(() => cards.forEach((c) => {
+      if (c.el.hidden) return;
+      const vp = c.el.querySelector('.vp');
+      const cr = st.view === 'keys' && crop(c);
+      if (cr) {
+        vp.style.height = `${cr.h}px`;
+        Object.assign(c.frame.style, { width: `${W}px`, height: `${H}px`, transform: `translate(${-cr.x}px, ${-cr.y}px)` });
+      } else {
+        const k = Math.min(1, vp.clientWidth / W);
+        vp.style.height = `${Math.round(H * k)}px`;
+        Object.assign(c.frame.style, { width: `${W}px`, height: `${H}px`, transform: `scale(${k})` });
+      }
+      c.el.querySelector('.zoom').textContent = one ? 'Back to all six' : 'Zoom';
+    }));
+  }
+
+  function send(c, detail) {
+    const win = c.frame.contentWindow, wallEl = win && win.document.querySelector(WALL);
+    if (wallEl) wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail }));
+  }
+  // the cart switch: what Cart.astro does to a key once its plugin is in the cart (class + label), nothing stored
+  function cartState(c) {
+    const d = c.doc; if (!d) return;
+    d.querySelectorAll('.ww-panel .ww-cart').forEach((b) => {
+      if (!b.hasAttribute('data-bench-idle')) b.setAttribute('data-bench-idle', b.textContent.trim());
+      const on = st.cart === 'in';
+      b.classList.toggle('is-in-cart', on);
+      b.textContent = on ? 'In your cart' : b.getAttribute('data-bench-idle');
+    });
+  }
+  function wire(c) {
+    const doc = c.frame.contentDocument;
+    c.doc = doc;
+    doc.documentElement.id = 'wwcart';
+    const s = doc.createElement('style');
+    s.id = 'wwcart-style';
+    s.textContent = '#cookie-banner, dialog.wd-modal, dialog.exit-gas, dialog.sub-modal, #support-chat, .cart-fab { display: none !important; }\n' + c.o.css;
+    doc.head.appendChild(s);
+    if (!document.querySelector('#chan button')) buildChannels(doc);
+    send(c, { slug: st.slug });
+    cartState(c);
+    setTimeout(layout, 1300);
+  }
+  function waitFor(c, tries = 0) {
+    const doc = c.frame.contentDocument;
+    const wallEl = doc && doc.location.href !== 'about:blank' && doc.querySelector(WALL);
+    if (wallEl && wallEl.dataset.wwLib === 'on' && doc !== c.old) return wire(c);
+    if (tries < 200) setTimeout(() => waitFor(c, tries + 1), 150);
+  }
+  function load() {
+    cards.forEach((c) => {
+      c.old = c.frame.contentDocument;
+      c.doc = null;
+      c.frame.src = '/' + (st.slug ? `?plugin=${encodeURIComponent(st.slug)}` : '');
+      waitFor(c);
+    });
+    layout();
+  }
+
+  function buildChannels(doc) {
+    const rows = [...doc.querySelectorAll('[data-ww-pick]')];
+    const slugs = rows.map((a) => a.getAttribute('href').replace(/^\//, ''));
+    const names = rows.map((a) => a.querySelector('.ww-name').textContent.trim());
+    const paid = new Set([...doc.querySelectorAll('.ww-panel')].filter((p) => p.querySelector('.ww-cart')).map((p) => p.dataset.wwPanel));
+    document.getElementById('chan').innerHTML = slugs.map((s, i) => `<button type="button" data-slug="${s}" title="${paid.has(s) ? 'Has Add to cart' : 'Free: Product page only'}">${names[i] || s}${paid.has(s) ? ' $' : ''}</button>`).join('');
+    document.querySelectorAll('#chan button').forEach((b) => (b.onclick = () => {
+      st.slug = b.dataset.slug; save(); paint();
+      cards.forEach((c) => send(c, { slug: st.slug }));
+      setTimeout(layout, 1300);
+    }));
+    paint();
+  }
+
+  function paint() {
+    document.querySelectorAll('#chan button').forEach((b) => b.classList.toggle('on', b.dataset.slug === st.slug));
+    document.querySelectorAll('#size button').forEach((b) => b.classList.toggle('on', b.dataset.s === st.size));
+    document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
+    document.querySelectorAll('#cart button').forEach((b) => b.classList.toggle('on', b.dataset.c === st.cart));
+  }
+  document.querySelectorAll('#size button').forEach((b) => (b.onclick = () => { st.size = b.dataset.s; save(); paint(); load(); }));
+  document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); paint(); layout(); }));
+  document.querySelectorAll('#cart button').forEach((b) => (b.onclick = () => { st.cart = b.dataset.c; save(); paint(); cards.forEach(cartState); }));
+  cards.forEach((c) => (c.el.querySelector('.zoom').onclick = () => { st.zoom = st.zoom ? '' : c.o.id; save(); layout(); }));
+  addEventListener('resize', layout);
+  paint();
+  load();
+})();
+</script>
+</body>
+</html>
