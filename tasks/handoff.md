@@ -26,6 +26,13 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   4 Label tape (embossed tape on the glass), 5 Parts tag (manila tag + index card, masking tape). Each a <style> in a
   frame of the real page (B); a cart switch shows "In your cart" the way Cart.astro does (class + label, no real cart).
   Checked in Chromium at 1312x734: every option at rest, hovered, in the cart, and on a free plugin (Product page only).
+- 2026-11-24, round 2: Dan liked 5 Parts tag and 1 Fastext, "polish both". `/__wwcart` now shows: the tag as worn
+  paper (SVG grain, a rough edge cut by a displacement map, stains, a crease, the GAS 2 postcards' tape.webp inlined)
+  that sways on hover and, pressed, falls off the glass with paper physics (a copy in a layer over the page; the real
+  key re-sticks, Add to cart as "In your cart"; the bench holds the Product page link); Fastext with pixel icons, a
+  cart and three Product page icons (1a page, 1b magnifier, 1c tiny plugin, Claude's pick). Checked in Chromium: the
+  fall, the re-stick, the held link, no layer left behind. To bake: the fall needs the clone-in-a-layer code in the
+  TV's script and Product page navigating after the fall (a modified click still opens at once).
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
