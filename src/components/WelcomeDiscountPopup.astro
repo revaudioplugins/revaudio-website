@@ -99,8 +99,10 @@ const excluded = path === '/thank-you' || path === '/review' || path === '/drift
 
     const scrollProgress = () => {
       const doc = document.documentElement;
-      const scrollable = doc.scrollHeight - doc.clientHeight;
-      return scrollable > 0 ? doc.scrollTop / scrollable : 0;
+      // the long garage on the home page (HomeOpening.astro): 35 % of the page below the walk, as on today's page
+      const base = html.classList.contains('ho-on') ? (window as any).__hoLockY || 0 : 0;
+      const scrollable = doc.scrollHeight - doc.clientHeight - base;
+      return scrollable > 0 ? (doc.scrollTop - base) / scrollable : 0;
     };
 
     // Fire only once the scroll has SETTLED past the threshold, never
@@ -119,6 +121,7 @@ const excluded = path === '/thank-you' || path === '/review' || path === '/drift
       settle = window.setTimeout(() => {
         if (fired || suppressed()) return;
         if (document.querySelector('dialog[open]')) return; // never stack dialogs
+        if (html.classList.contains('ho-on') && !html.classList.contains('ho-locked')) return; // never mid-walk
         if (scrollProgress() < SCROLL_THRESHOLD) return;
         fired = true;
         window.removeEventListener('scroll', onScroll);

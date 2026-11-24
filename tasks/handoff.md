@@ -1,3 +1,69 @@
+## 2026-11-24 — The PHONE garage gets the laptop's work: VHS, the speed fixes, the seams, the walk's feel (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/phone-dive` (worktree `.claude/worktrees/phone-dive`), `origin/feat/garage-home` merged in; NOT pushed, NOT on main
+
+Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `tools/_home-opening/phone-dive.html`, `tools/_home-opening/room.html`
+(the `?dive` lines and the look's hook only), `tools/_home-opening/assets/dive/`, this entry. The laptop garage's claim
+(`feat/garage-home`, below) stays that session's: this branch builds on it and changes nothing of the laptop walk.
+Dan 2026-11-24: "all the things we did to the laptop already, like the VHS, and the laptop scroll, and everything should be
+applied to the phone ... show it to me, test it ... test the speed of the website in the phone, and then we'll test it on my
+phone in the end."
+
+## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`) — on main up to `2851c19` (live, pins only); the last 5 commits PUSHED to `origin/feat/garage-home` 2026-11-23, NOT on main
+
+Claim: OPEN 2026-11-18, still open 2026-11-23 (waiting on Dan's go-live word). Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
+(customData.home), `src/components/WelcomeDiscountPopup.astro` (waits for the TV), `tools/_home-opening/room.html` (embed
+mode), `tools/_home-opening/lights/lights-on.js` (the stall give-up), `tools/_home-opening/assets/{tv,nav,below}-*`,
+`tools/_home-opening/assets/lights/*`, `tools/_home-opening/tvcap.mjs`, `tools/garagepage/integration.mjs`, this entry.
+Dan 2026-11-18: "let's close the 3D garage site", then picked "try for Nov 19 anyway" (the plan's date: the room as the
+home page for half the laptop visitors) and the two fixes "no more stuck" + "the TV updated".
+- The room runs as the srcdoc of a fixed frame behind the home page (the site's X-Frame-Options: DENY and CSP frame-src
+  refuse a framed URL of ours; checked against a local server sending the live headers). Details: the component's head.
+- State and what is open: "Session end 2026-11-23" below.
+
+### Session end 2026-11-23 — `3D Garage – סגירת האתר` — the walk's speed limit and hold at the TV, Dan's numbers; branch pushed
+
+**State.** `feat/garage-home` = `origin/feat/garage-home` at `78ea1f0`. Dan said "push" for a backup on GitHub, not a merge. The worktree is clean.
+Main has the garage up to `2851c19` (live; `SHARE = 0`, so only a `?home=garage` pin shows it). 5 commits are not on main:
+- `701989b`: the room's TV is the page's own TV, photographed in the visitor's browser, so the hand-off matches live.
+- `97466ab`: the home TV in laptop windows 1101-1439 px. The menu fits on one row and the plugin's window gets the height
+  (Dan's option B, after "the html is too tiny").
+- `da592ad`: the walk gets a speed limit, and a short hold when a fast scroll reaches the TV. Dan 2026-11-22:
+  "I scroll really fast. I want it to be like a limit", and at the TV "it locks him up a little bit ... so he can stay on
+  the main screen".
+- `0de9488`: Dan's numbers, tuned by feel on a bench: topSpeed 2400, holdMs 900, quietMs 470, glideMs 1400.
+- `78ea1f0`: holdOver 3100 -> 1800, so a steady mouse wheel is held too (Dan: "do as you recomend").
+- **The numbers:** one block, `FEEL` / `window.__hoFeel` in `HomeOpening.astro`, read on every wheel event. The tuning bench was a
+  scratch page outside the repo and is now gone; rebuild it with the `tuning-bench` skill for another round.
+- **Checks on the final numbers:**
+  - Setup: Chrome at the real 2x scale 1312x612 with trusted wheel events; WebKit 1141x636.
+  - The walk peaks at 2257-2309 px/s (limit 2400).
+  - Hard flicks that stop end 0 px on the TV.
+  - A mouse wheel at 1,500-2,000 px/s that spins 0.4 s past the moment the TV comes into view ends 0 px (with 3,100: +635 and +941).
+  - A new push 1.3 s after the TV goes on down, by design.
+  - A wheel up lets go at once. A gentle scroll is unchanged.
+  - TV hand-off gate PASS: 1.03 / 1.03 / WebKit 1.27. Lights check PASS at 1141 (2.11, p99 8).
+  - The code itself: 3 rounds, a builder and 2 checkers, 7 sizes in both engines. Details are in the commit messages.
+
+**Unverified.**
+- Dan walked the final build in his Chrome: "looks alright".
+- Not run: real Safari at 115 %, Firefox, a Windows mouse (line-mode deltas are handled in code only), the walk on BF / CM days.
+- Known, not fixed (from before this branch): with the live TV photo blocked, the saved TV picture at 1141x636 fails the
+  block gate (worst block 34 %, limit 20; the same on the build before). Re-shoot the saved pictures with `tvcap.mjs` in
+  Chrome at the real 2x scale (`--force-device-scale-factor=2`).
+
+**For the next session to decide.**
+1. **Going live.** Main has moved 7 commits: Gil's temporary hero on the home TV (`feat/temp-hero`, merged `22bdd2e`) and
+   the BF strip on every page.
+   - A read-only `git merge-tree` of `origin/main` into the branch (2026-11-23) shows no conflicts.
+   - But the garage hands off onto the home TV, and Gil's entry lists "`?home=garage` together with it" as not tested.
+   - To act: merge `origin/main` into the branch (Dan has picked merge over rebase before). Then re-run the hand-off gate,
+     the lights check and the walk with `?home=garage`. Merge to main only on Dan's word: it is a live deploy.
+   - `97466ab` changes the home TV for every laptop visitor; the garage stays pins-only while `SHARE = 0`.
+2. **The garage for a share of laptop visitors** (SHARE, stage 2): held at 0 until Dan looks again.
+
+**Cleanup.** On Dan's Mac, the scratch worktrees `opt-wt`, `vintage-wt` and `soft-wt` lost their `.git` link files and
+show "prunable" in `git worktree list`. opt-wt's change is committed here. Check that vintage-wt and soft-wt hold
+nothing needed, then run `git worktree prune`.
+
 ## 2026-11-15 — The PHONE opening of the long garage: the dive from above the fan onto a phone on the parts bench, a PROTOTYPE (Claude Code `Garage 3D phone page [a7b884]`, Dan's Mac) — on branch `feat/phone-dive` (from `feat/home-opening` `2380642`), worktree `.claude/worktrees/phone-dive`, pushed by Dan 2026-11-16 to `origin/feat/phone-dive` AND `origin/feat/home-opening` (both `e46eb9f`), NOT on main
 
 Claim: CLOSED 2026-11-16 at session end (opened 2026-11-15) `Garage 3D phone page [a7b884]`; the next phone session takes it over (Dan's Mac). Files: `tools/_home-opening/phone-dive.html` (new), `tools/_home-opening/assets/dive/` (new), `tools/_home-opening/assets/pbr/phone/` (new, from `look/home-phone`), the `?dive`-gated lines in `tools/_home-opening/room.html` (see THE PHONE CUT below) and this entry. It does NOT hold the room's content or the room claim above (round 6's NEXT list is untouched and still the next room session's).

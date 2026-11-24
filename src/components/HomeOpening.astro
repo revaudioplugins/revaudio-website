@@ -1,0 +1,414 @@
+---
+// The long garage on the home page (Dan 2026-11-18: live on Nov 19 to half the laptop visitors, an A/B test of
+// whether it sells). The room is the unlisted /garage-9f3c/ page (tools/_home-opening/room.html, copied by
+// tools/garagepage) in embed mode, in a fixed frame behind the page; this page's own scroll walks it down the aisle.
+// The frame gets the room as srcdoc, not as a URL: the site sends X-Frame-Options: DENY and a CSP frame-src without
+// 'self' (Cloudflare), which refuse any framed page of ours; a srcdoc document is not fetched, so neither applies.
+// It inherits this page's origin and CSP (the same policy the room already runs under on its own URL).
+// At the end of the walk the room's TV face covers the screen under the nav, exactly where the real TV (WordWall)
+// sits, and the real TV fades in over it; past that point the frame is hidden and paused.
+// The picture on the room's TV is this page's own TV, photographed here in the visitor's browser while the room loads
+// (the script's "the room's picture of the TV", 2026-11-21), so the two are the same picture at any window size; the
+// room's saved photos of the TV (tools/_home-opening/tvcap.mjs, three screen sizes) show until it is taken, or if it fails.
+//
+// Who sees it: laptops and desktops (1000 px wide, a mouse or trackpad, WebGL 2), no reduced motion, no data saver,
+// no bot. Half of them, drawn once and kept (localStorage ra-home); phones keep today's home page (Dan 2026-11-08).
+// Once a session: a visitor who walked to the TV (or skipped) gets the TV straight away on the next home visit.
+// ra-home-seen = the side this visitor was drawn into ('garage' | 'tv'), whatever happened next; ra-home-outcome = how
+// the garage went ('started' | 'walked' to the TV | 'skipped' | 'fallback'). The cart sends both to Paddle
+// (customData.home, customData.home_out), so the test reads both ways: by the draw, and by what was really seen.
+// ?home=garage / ?home=tv pins a variant on this browser (testing; its own key, ra-home-pin: a pin never touches the
+// draw or the two keys above, and the cart sends nothing for a pinned browser); ?home=off forgets it all.
+// SHARE = the garage's share of the visitors drawn. 0 = off for everyone but a ?home=garage pin, visitors already drawn
+// 'garage' included (a soft launch, or the switch if the room misbehaves live); nobody is drawn while it is 0.
+// Taking it off the site altogether = revert the HomeOpening import and tag in src/pages/index.astro.
+// Safety: the room says 'ready' (or 'error') by postMessage; no 'ready' in 45 s of the tab being looked at, an error
+// first, or the Skip button (after 6 s of loading) puts the normal home page back.
+---
+
+<div class="ho" id="ho">
+  <iframe class="ho-frame" id="hoFrame" title="The RevAudio garage" tabindex="-1" aria-hidden="true"></iframe>
+  <button class="ho-skip" id="hoSkip" type="button">Skip to the plugins <span aria-hidden="true">↓</span></button>
+</div>
+
+<script is:inline>
+  (function () {
+    var SHARE = 0; // soft launch (Dan 2026-11-18, "two stages"): only a ?home=garage pin, until the room runs smoothly and he looks again
+    var H = document.documentElement, KEY = 'ra-home', SEEN = 'ra-home-seen', PIN = 'ra-home-pin', DONE = 'ra-ho-done';
+    var ls = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; };
+    var ss = function (k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch (e) {} return null; };
+    var q = null; try { q = new URLSearchParams(location.search).get('home'); } catch (e) {}
+    if (q === 'garage' || q === 'tv') ls(PIN, q);
+    if (q === 'off') { ls(PIN, null); ls(KEY, null); ls(SEEN, null); ls('ra-home-outcome', null); }
+    var pin = q === 'garage' || q === 'tv' ? q : ls(PIN); // (a pin works even where site data is blocked)
+    if (pin !== 'garage' && pin !== 'tv') pin = null;
+    var forced = q === 'garage';
+    if (!pin && !(SHARE > 0)) return; // SHARE 0: pins only, whatever was drawn before
+    var v = pin || ls(KEY);
+    var ok = false;
+    try {
+      ok = matchMedia('(min-width: 1000px) and (hover: hover) and (pointer: fine)').matches
+        && !matchMedia('(prefers-reduced-motion: reduce)').matches
+        && !H.classList.contains('hc') // (high contrast, set in BaseLayout's head: as the site's other scenes)
+        && !(navigator.connection && navigator.connection.saveData)
+        && !navigator.webdriver
+        && !/bot|crawl|spider|slurp|lighthouse|headless|preview|facebookexternalhit/i.test(navigator.userAgent);
+      // the WebGL 2 check costs 10 to 40 ms: only where the room could open now (not for 'tv', not once it was walked)
+      if (ok && !forced && v !== 'tv' && !(v === 'garage' && ss(DONE))) {
+        var gl = document.createElement('canvas').getContext('webgl2');
+        ok = !!gl;
+        var lose = gl && gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+      }
+    } catch (e) { ok = false; }
+    if (!ok && !forced) return; // phones, bots, no WebGL 2: today's home page, not in the test
+    if (!pin) {
+      if (v !== 'garage' && v !== 'tv') { v = Math.random() < SHARE ? 'garage' : 'tv'; ls(KEY, v); }
+      ls(SEEN, v);
+    }
+    if (v !== 'garage') return;
+    if (ss(DONE) && !forced) return; // walked it once this session: the TV straight away
+    H.classList.add('ho-on', 'ho-loading');
+    history.scrollRestoration = 'manual';
+  })();
+</script>
+
+<script is:inline>
+  (function () {
+    var H = document.documentElement;
+    if (!H.classList.contains('ho-on')) return;
+    var ho = document.getElementById('ho'), frame = document.getElementById('hoFrame'), skip = document.getElementById('hoSkip');
+    var wall = null, ready = false, booted = false, state = '', paused = false, pauseTimer = 0, raf = 0;
+    var walkPx = innerHeight * 3.7, lockY = 0, lastY = 0, down = false, landTimer = 0, waited = 0, focusAt = -1e4, leftAt = 0, leftY = 0;
+    // How the walk feels under the wheel (Dan 2026-11-22: "I scroll really fast. I want it to be like a limit to how
+    // fast I'm scrolling"; and at the TV, when the scroll keeps coming: "it locks him up a little bit, like just a
+    // bit, so he can stay on the main screen"). The one place for these numbers; wheel() reads them on every event, so
+    // a tuning bench can change them on the open page. Only the wheel in the walk: keys, touch, links and the rest of
+    // the site scroll as they did.
+    var FEEL = window.__hoFeel = {
+      topSpeed: 2400, // px a second by the clock: the fastest a wheel moves the page through the walk, down or up (0 = no limit)
+      holdOver: 1800, // the hold at the TV is for a wheel that asked for more than this, px a second, on its way in: a gentle scroll goes through the TV as it always did (0 = every wheel is held)
+      holdMs: 900,    // the hold, counted from the lock: a push that starts inside it is swallowed, its glide too, so a wheel that keeps coming for a second after the TV is in place still ends on it (0 = no hold)
+      quietMs: 470,   // it lets go once the wheel has been quiet this long with the TV in place; the next scroll goes on down
+      glideMs: 1400   // a wheel that is only fading (a trackpad's glide) stays held this much longer than holdMs at most (its last crawl, under 4 px an event, twice as much; 0 = no longer than holdMs)
+    };
+    var held = false, lockAt = 0, lastAt = 0, prevAt = 0, far = true, vFast = 0, vSlow = 0, pushed = 0, holdTimer = 0, hist = [], runAt = 0, fastAt = -1e9, back = 0;
+    var px = function (name) { return parseFloat(getComputedStyle(H).getPropertyValue(name)) || 0; };
+    var navTotal = function () { return Math.round((px('--site-nav-h') || 41) + px('--sale-h')); };
+    function done() { try { sessionStorage.setItem('ra-ho-done', '1'); } catch (e) {} }
+    // how the garage went for this visitor, for the test's readout (the cart sends it); never for a tester's pin
+    function note(o) { try { if (!localStorage.getItem('ra-home-pin')) localStorage.setItem('ra-home-outcome', o); } catch (e) {} }
+    // the site's scroller (Lenis; the module script below hands it over once it has loaded) and a jump it can't undo
+    function lenis() { return window.__hoLenis ? window.__hoLenis() : null; }
+    function jump(y) {
+      var l = lenis(); if (l) l.scrollTo(y, { immediate: true, force: true });
+      if (Math.abs(scrollY - y) > 1) scrollTo(0, y);
+    }
+    function room() { try { return frame.contentWindow && frame.contentWindow.__garage; } catch (e) { return null; } }
+    function pause(b) { if (paused === b) return; paused = b; var r = room(); if (r) r.pause(b); }
+    function setState(s) {
+      if (s === state) return;
+      var was = state;
+      state = s;
+      H.classList.toggle('ho-locked', s === 'locked');
+      clearTimeout(pauseTimer);
+      if (s === 'walk') {
+        H.classList.remove('ho-past'); pause(false);
+        if (wall && wall.contains(document.activeElement)) document.activeElement.blur(); // (focus doesn't stay in the TV, unseen again)
+        if (was === 'locked') { leftAt = performance.now(); leftY = scrollY; hold(); }
+        return;
+      }
+      wall.style.translate = '';
+      if (held && !lockAt) { lockAt = performance.now(); settle(); } // (the hold's clock starts with the TV in place)
+      done(); note('walked');
+      requestAnimationFrame(follow);
+      // the real TV has faded in over the room's: the room hides and stops drawing
+      pauseTimer = setTimeout(function () { H.classList.add('ho-past'); pause(true); }, 600);
+    }
+    function measure() {
+      ho.style.setProperty('--ho-walk', walkPx + 'px');
+      wall = wall || document.querySelector('.garage-wall');
+      if (wall) { wall.style.translate = ''; lockY = wall.getBoundingClientRect().top + scrollY - navTotal(); } // (its place in the page, without hold()'s shift)
+      window.__hoLockY = lockY; // (the welcome popup measures its 35 % from here: the home page below the walk)
+    }
+    function onScroll() {
+      raf = 0;
+      var y = scrollY, p = Math.max(0, Math.min(1, 1 - (lockY - y) / walkPx));
+      // (the browser brings a control it just focused into view by itself, Safari to the middle of the screen: for one
+      // in the TV that can be short of the lock)
+      if (p < 0.999 && performance.now() - focusAt < 400 && toTv()) return;
+      if (!ready) return;
+      var r = room(); if (r) r.to(p);
+      setState(p >= 0.999 ? 'locked' : 'walk');
+      place();
+    }
+    // past the lock the room goes up with the page, so its TV stays under the real one while that fades in (a wheel
+    // carries on through the lock: a still room showed two TVs apart); and it shows only behind the TV, never over the
+    // sections under it
+    function place() {
+      var y = scrollY, past = state === 'locked' ? Math.max(0, y - lockY) : 0;
+      var cut = state === 'locked' ? Math.max(0, Math.round(innerHeight - (lockY - y + past + navTotal() + wall.offsetHeight))) : 0;
+      frame.style.transform = past ? 'translateY(' + -past + 'px)' : '';
+      frame.style.clipPath = cut ? 'inset(0 0 ' + cut + 'px 0)' : '';
+    }
+    // (every frame while the two cross-fade: Safari's scroll event comes a frame or two after the page moved)
+    function follow() { if (state === 'locked' && !H.classList.contains('ho-past')) { place(); requestAnimationFrame(follow); } }
+    // back up into the walk, its mirror: for the 0.2 s the real TV takes to fade out it stays where it was on the screen,
+    // over the room's TV, while the page goes on down under the wheel (the room's TV does move as the walk backs off:
+    // a pixel or two on a slow scroll, about 15 px by the end of the fade on a hard wheel)
+    function hold() {
+      var on = state === 'walk' && performance.now() - leftAt < 220;
+      wall.style.translate = on ? '0 ' + (scrollY - leftY).toFixed(1) + 'px' : '';
+      if (on) requestAnimationFrame(hold);
+    }
+    // the end of the walk is the room's picture of the TV, which does nothing: a walk that stops in its last tenth
+    // glides on to the lock (the TV's own landing, WordWall.astro, leaves the walk to this one; like it, never against
+    // the visitor: only when the last move was down)
+    function land() {
+      var l = lenis();
+      if (l && l.isScrolling === 'smooth') { landTimer = setTimeout(land, 160); return; } // still gliding: ask again
+      if (!ready || state !== 'walk' || !down || lockY - scrollY > 0.1 * walkPx || document.querySelector('dialog[open]')) return;
+      var y = Math.ceil(lockY);
+      if (l) l.scrollTo(y, { duration: 0.55, easing: function (t) { return 1 - Math.pow(1 - t, 4); } }); else scrollTo(0, y);
+    }
+    function fallback(skipped) { // today's home page, now
+      if (!H.classList.contains('ho-on')) return;
+      done(); note(skipped === true ? 'skipped' : 'fallback');
+      H.classList.remove('ho-on', 'ho-loading', 'ho-locked', 'ho-past');
+      clearTimeout(slow); clearInterval(give); clearTimeout(landTimer); letGo('off');
+      removeEventListener('scroll', queue);
+      try { frame.src = 'about:blank'; } catch (e) {}
+      ho.remove();
+      scrollTo(0, 0);
+      history.scrollRestoration = 'auto'; // (today's page from here on: Back to it finds its place again)
+      // the Skip button went with the room: the focus it held goes to the TV it promised
+      var tag = skipped === true && document.querySelector('.garage-wall .ww-tag'); if (tag) tag.focus({ preventScroll: true });
+    }
+    function queue() {
+      if (!raf) raf = requestAnimationFrame(onScroll);
+      var y = scrollY; if (y !== lastY) { down = y > lastY; lastY = y; }
+      clearTimeout(landTimer); landTimer = setTimeout(land, 160);
+      var L = Math.ceil(lockY);
+      if (y >= L - 0.5 || state === 'locked') far = false; else if (y < L - 40) far = true; // (see wheel(): what counts as a new arrival)
+    }
+    // The wheel in the walk: the speed limit and the hold at the TV (the numbers and Dan's words: FEEL, above).
+    // Lenis moves the page a tenth of the way to where the wheel has pushed its target, 60 times a second by the clock
+    // (its lerp), so the page's speed is 6 x how far ahead the target is: holding the target no more than topSpeed / 6
+    // ahead of the page is the limit, the same at 60 and 120 Hz. A wheel event that stays inside it goes on to Lenis
+    // untouched. One that does not is taken here (never left to the browser: an event Lenis turns down scrolls the
+    // page natively) and the same Lenis call is made with the nearer target; what the limit cut is dropped, not saved
+    // up, so the page stops when the fingers do.
+    // The hold: going down, for a wheel that came in fast (holdOver), the target stops on the landing line (the y of
+    // land() and jump()), so the page eases onto the TV with nothing carried past it, and from there the wheel is
+    // swallowed. A wheel event carries no "finger lifted": a trackpad's glide is more wheel events, fading for a
+    // second or two. So it lets go by time, never by how far the wheel pushed: once the wheel has been quiet for
+    // quietMs with the TV in place; or, from holdMs after the lock, on a wheel that is being pushed (a mouse wheel's
+    // steady notches, a new flick), while one that only fades (the glide, and the glide of a flick that began inside
+    // holdMs) stays held to its end, glideMs more at most. A wheel up lets go at once, and the page turns with it.
+    function eat(e) { e.preventDefault(); e.stopImmediatePropagation(); }
+    // (html.ho-held while it holds, and window.__hoHold = why the last hold let go and how long it held from the
+    // lock: the bench and the checks read both)
+    function letGo(why, at) {
+      clearTimeout(holdTimer); if (!held) return;
+      held = false; H.classList.remove('ho-held');
+      window.__hoHold = { why: why, ms: lockAt ? Math.round((at || performance.now()) - lockAt) : 0 };
+    }
+    // the quiet release, on a clock: with no more wheel there is no event to let go on. 80 ms late, so a wheel event
+    // still on its way to the page (they arrive some ms after their own time) is not taken for a quiet wheel
+    function settle() {
+      clearTimeout(holdTimer);
+      if (!held || !lockAt) return;
+      var end = Math.max(lastAt, lockAt) + (window.__hoFeel || FEEL).quietMs, due = end + 80 - performance.now();
+      if (due <= 0) letGo('quiet', end); else holdTimer = setTimeout(settle, due);
+    }
+    function wheel(e) {
+      // the loading screen holds the page still: the wheel never reaches the site's Lenis while it shows
+      if (H.classList.contains('ho-loading')) { eat(e); return; }
+      var l = lenis(), f = window.__hoFeel || FEEL;
+      // as Lenis itself: not a pinch (ctrl), not a sideways swipe, not inside a panel that scrolls by itself (the cart)
+      if (!l || !ready || !H.classList.contains('ho-on') || e.ctrlKey || l.isStopped || l.isLocked) return;
+      var dy = e.deltaY * (e.deltaMode === 1 ? 100 / 6 : e.deltaMode === 2 ? innerHeight : 1) * (l.options.wheelMultiplier || 1);
+      if (!dy || (e.target && e.target.closest && e.target.closest('[data-lenis-prevent], [data-lenis-prevent-wheel], [data-lenis-prevent-vertical]'))) return;
+      // (the event's own time: at the lock the page is busy, and an event handled late is not a quiet wheel)
+      var now = performance.now(), t = e.timeStamp > 0 && e.timeStamp <= now && now - e.timeStamp < 5000 ? e.timeStamp : now;
+      var L = Math.ceil(lockY), a = l.animatedScroll, lead = f.topSpeed > 0 ? f.topSpeed / (60 * l.options.lerp || 6) : 1e9;
+      // is this wheel being pushed, or only fading? Two readings, and an event counts as pushed only when neither
+      // falls: its speed (px per ms) over the last 40 ms against the last 160 ms, and its own size against the largest
+      // event of the last 200 ms (the last 4 events at least; that long, because a glide in whole pixels fades in
+      // steps: 9, 9, 9, 8). The speed alone is fooled when events arrive in a bunch after a pause (Safari's engine),
+      // the size alone when a busy page gets several events as one (Chrome). pushed = two such events in a row.
+      var dt = t - prevAt, i, top = 0, asked = dy; prevAt = t;
+      if (dy < 0) { vFast = vSlow = pushed = 0; hist = []; fastAt = -1e9; }
+      else {
+        // (4 ms at least: two events can carry the same time, and the second would count for nothing)
+        var d = Math.max(dt, 4), v = dy / d; vFast += (v - vFast) * (1 - Math.exp(-d / 40)); vSlow += (v - vSlow) * (1 - Math.exp(-d / 160));
+        // (and what it asked for over 0.2 s of this unbroken run, for holdOver: remembered for 1.5 s, so a glide
+        // that is dying as it reaches the TV is still the fast scroll it came from)
+        if (dt > 120) { runAt = t; fastAt = -1e9; }
+        while (hist.length > 4 && t - hist[0][0] > 200) hist.shift();
+        for (i = 0; i < hist.length; i++) { if (hist[i][1] > top) top = hist[i][1]; if (hist[i][0] >= runAt && t - hist[i][0] <= 200) asked += hist[i][1]; }
+        hist.push([t, dy]);
+        pushed = dy >= 4 && vFast >= 0.9 * vSlow && dy >= 0.9 * top ? pushed + 1 : 0;
+        if (asked * 5 >= f.holdOver) fastAt = t;
+      }
+      if (held && Math.abs(l.targetScroll - L) > 2) letGo('moved'); // (a link's glide, a key or a resize took the page elsewhere)
+      if (held && dy > 0) {
+        var on = lockAt ? t - lockAt : -1, why = '';
+        if (lockAt && t - Math.max(lastAt, lockAt) >= f.quietMs) why = 'quiet';
+        else if (lockAt && on >= f.holdMs) why = pushed > 1 ? 'pushed' : on >= f.holdMs + f.glideMs * (dy >= 4 ? 1 : 2) ? 'long' : '';
+        if (why) letGo(why); // (and on, below)
+        else { eat(e); lastAt = t; back = 0; return; }
+      }
+      // a pixel or two the other way while the page is still easing onto the TV is a finger landing on the trackpad,
+      // not a scroll up: the page goes on to the TV (turned on that pixel, it would stop short of it). 4 px is a scroll up
+      if (held && !lockAt && (back += dy) > -4) { eat(e); return; }
+      // a wheel up while the page is still easing onto the TV: it turns from where the page is, not from the line it
+      // was heading for (from there one notch up would still carry it down onto the TV)
+      var turn = held && a < l.targetScroll;
+      if (held) letGo('up');
+      var want = (turn ? a : l.targetScroll) + dy, to = want;
+      if (dy > 0) {
+        // on the TV or below it: the page's own scroll (locked: a zoomed browser rounds where the page rests, and a
+        // script can leave it a pixel short of the line; that is on the TV, not a wheel still walking)
+        if (a >= L - 0.5 || state === 'locked') return;
+        to = Math.min(want, a + lead);
+        // a new arrival, not a wheel that backed off a few px and came back (a finger landing on a trackpad often
+        // starts with a pixel or two the other way: the flick after it must not be swallowed)
+        if (f.holdMs > 0 && far && to >= L && t - fastAt < 1500) {
+          to = L; held = true; far = false; lastAt = t; back = 0; lockAt = state === 'locked' ? now : 0;
+          H.classList.add('ho-held'); settle();
+        }
+      } else {
+        if (want >= L) return; // stays below the TV
+        to = Math.max(want, Math.min(a, L) - lead); // (from below the TV too: it comes into the walk at the limit)
+      }
+      if (to === want && !turn) return; // inside the limit: Lenis takes it, untouched
+      eat(e);
+      l.scrollTo(to, { programmatic: false, lerp: l.options.lerp, duration: l.options.duration, easing: l.options.easing });
+    }
+    // keyboard and screen readers reach the TV as on today's page (it is there, unseen, all along): focus inside it
+    // lands the page on the lock, where it shows. Not over a glide (the nav's Plugins link is on its way there)
+    function toTv() {
+      var l = lenis();
+      if ((l && l.isScrolling === 'smooth') || !H.classList.contains('ho-on') || !wall || !wall.contains(document.activeElement) || lockY - scrollY <= 0.001 * walkPx) return false;
+      jump(Math.ceil(lockY)); return true;
+    }
+    document.addEventListener('focusin', function (e) { if (wall && wall.contains(e.target)) { focusAt = performance.now(); toTv(); } });
+    addEventListener('message', function (e) {
+      if (e.origin !== location.origin || e.source !== frame.contentWindow || !e.data || !e.data.garage) return;
+      var m = e.data;
+      if (m.walkPx) {
+        // a resize mid-walk (the walk's length follows the screen's height) keeps the visitor's place in it
+        var left = ready && state === 'walk' && m.walkPx !== walkPx ? (lockY - scrollY) / walkPx : -1;
+        walkPx = m.walkPx; measure();
+        if (left >= 0) jump(Math.max(0, Math.round(lockY - left * walkPx)));
+      }
+      if (m.garage === 'boot') booted = true;
+      if (m.garage === 'error' && !ready) fallback();
+      if (m.garage === 'ready' && !ready) {
+        ready = true;
+        clearTimeout(slow); clearInterval(give);
+        skip.classList.remove('is-up');
+        H.classList.remove('ho-loading');
+        measure(); onScroll();
+      }
+    });
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('wheel', wheel, { capture: true, passive: false });
+    // the room never started (a script failed to load), or its loading screen gave up on a stall: today's home page
+    frame.addEventListener('load', function () {
+      try { if (frame.contentWindow.location.href !== 'about:srcdoc') return; } catch (e) {} // (the frame's first, empty page)
+      setTimeout(function () { if (!booted && !ready) fallback(); }, 1500);
+    });
+    var watch = setInterval(function () {
+      if (ready || !H.classList.contains('ho-on')) { clearInterval(watch); return; }
+      try { var d = frame.contentDocument; if (booted && d && !room() && !d.documentElement.classList.contains('lights-loading')) fallback(); /* (room() is set just before 'ready') */ } catch (e) {}
+    }, 1000);
+    addEventListener('resize', function () { measure(); queue(); });
+    skip.addEventListener('click', function () { if (!ready) fallback(true); }); // (not in the 0.3 s it takes to fade out once the room is up)
+    // Skip comes up after 6 s of loading, but not as the room is about to take over: once the loading screen's last light
+    // bank is on (its log, lights/lights-on.js) the hand-off is a second or two away, and the button flashed up and out
+    // (11-20). It waits 3 s more, once: a load that stalls after the last bank still gets its Skip
+    function lastBank() { try { var w = frame.contentWindow; return w.lightsOn.log.length > w.LIGHT_BANKS.length; } catch (e) { return false; } }
+    var slow = setTimeout(function up() {
+      if (ready) return;
+      if (!up.waited && lastBank()) { up.waited = true; slow = setTimeout(up, 3000); return; }
+      skip.classList.add('is-up');
+    }, 6000);
+    // 45 s of the tab being looked at: one opened in the background loads when the visitor comes to it (its room
+    // waits for frames a hidden tab doesn't draw)
+    var give = setInterval(function () { if (!ready && !document.hidden && (waited += 1000) >= 45000) fallback(); }, 1000);
+    scrollTo(0, 0);
+    measure();
+    note('started');
+    // the room's picture of the TV: this page photographs its own TV while the room loads (tv-photo.js, with the why
+    // and the how, and the library it uses; both beside the room's files, fetched together, run in this order, only
+    // here). window.__hoTv says how it went (the checks read it). Either file missing: the room keeps its saved photo
+    window.__hoTv = { state: 'waiting' };
+    ['vendor/modern-screenshot/modern-screenshot-4.7.0.js', 'tv-photo.js'].forEach(function (f, i) {
+      var s = document.createElement('script'); s.src = '/garage-9f3c/' + f; s.async = false;
+      s.onerror = function () { window.__hoTv = { state: 'failed', why: 'no ' + f }; };
+      if (i) s.onload = function () { try { window.__hoTvPhoto(frame, navTotal); } catch (e) { window.__hoTv = { state: 'failed', why: String(e && e.message || e) }; } };
+      document.head.appendChild(s);
+    });
+    fetch('/garage-9f3c/', { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (html) {
+        if (!H.classList.contains('ho-on')) return;
+        // ?look=<id>: another look for the room than its own (room.html LOOK_DEFAULT, VHS since Dan's pick, 2026-11-18):
+        // today (today's look, without one), vhs or vhs-more (the three being compared, 11-20; film and 16mm stay on
+        // the room's own unlisted page); only an id on this list
+        var look = null; try { look = new URLSearchParams(location.search).get('look'); } catch (e) {}
+        if (['today', 'vhs', 'vhs-more'].indexOf(look) < 0) look = '';
+        // (and the room's embed class before its first paint: its own script adds it once its imports are in, and until
+        // then its builder's Bench button showed on the black start of the loading screen)
+        var head = '<base href="/garage-9f3c/"><script>window.__EMBED = { nav: ' + navTotal() + ', sale: \'' + (H.dataset.sale || (H.dataset.saleSoon ? 'soon' : '')).replace(/[^a-z]/g, '') + '\'' + (look ? ', look: \'' + look + '\'' : '') + ' }; document.documentElement.classList.add(\'embed\');<\/script>';
+        frame.srcdoc = html
+          .replace(/<head[^>]*>/i, function (m) { return m + head; })
+          // the room's pictures of this page's nav, TV and below are not shown here; and the browser's early fetches in
+          // a srcdoc ignore its <base> (Chrome asked /assets/..., /lights/... at the root), so the rest go absolute
+          .replace(/ src="assets\/(nav|below|tv)-[^"]*"/g, '') // (the TV's saved photo for this screen's width comes from the room's resize(); this page's own photo of its TV takes its place, tv-photo.js)
+          .replace(/ src="(assets|lights|vendor)\//g, ' src="/garage-9f3c/$1/');
+      })
+      .catch(fallback);
+  })();
+</script>
+
+<script>
+  // the site's scroller, for the inline script above (which has to run before any module loads)
+  import { lenis } from '../lib/motion';
+  (window as any).__hoLenis = () => lenis;
+</script>
+
+<style>
+  .ho { display: none; }
+  :global(html.ho-on) .ho { display: block; height: var(--ho-walk, 370vh); }
+  .ho-frame { position: fixed; inset: 0; width: 100%; height: 100vh; border: 0; z-index: 1; pointer-events: none;
+    background: #060509; color-scheme: dark; }
+  :global(html.ho-past) .ho-frame { visibility: hidden; }
+  /* the site's nav is glass (and the sale strip sits over it): over the room it let the room through, tinted by it,
+     and went back to grey in the frame the room hid (11-20; sharp where the browser does not draw the blur). So a strip of the page's own dark lies between the room and the two, for as long as
+     the room shows: the nav as over the top of any page. Back at once with the room; out slowly, the smoke that takes
+     its place is a shade lighter */
+  :global(html.ho-on) .ho::after { content: ''; position: fixed; inset: 0 0 auto; height: calc(var(--site-nav-h, 41px) + var(--sale-h, 0px));
+    z-index: 1; background: var(--bg-0); pointer-events: none; }
+  :global(html.ho-past) .ho::after { opacity: 0; visibility: hidden; transition: opacity .4s ease-out, visibility 0s .4s; }
+  /* speed (2026-11-18, O-2): the site's smoke plates sit behind the opaque frame for the whole walk; unseen, they still
+     cost the compositor about 3 ms a frame. They come back with ho-past, when the frame hides: over 0.4 s (11-20), not
+     in one frame, which showed as the fog snapping on over the section under the TV */
+  :global(html.ho-on:not(.ho-past) .haze) { visibility: hidden; opacity: 0; }
+  :global(html.ho-on.ho-past .haze) { transition: opacity .4s ease-out; }
+  /* the real TV waits, unseen, at the end of the walk; at the lock it fades in over the room's TV, and back up into the
+     walk it fades out over it (0.2 s, 11-20: at once, the sharp TV became the room's softer one in one frame).
+     Unseen, not hidden: it stays in the tab order and for screen readers (focus in it lands on the lock, the script
+     above); until then nothing in it takes the mouse (its lit panel sets pointer-events and visibility of its own) */
+  :global(html.ho-on .garage-wall) { position: relative; z-index: 2; opacity: 0; transition: opacity .2s ease-out; }
+  :global(html.ho-on:not(.ho-locked) .garage-wall), :global(html.ho-on:not(.ho-locked) .garage-wall *) { pointer-events: none !important; }
+  :global(html.ho-on.ho-locked .garage-wall) { opacity: 1; transition: opacity .45s ease-out; }
+  :global(html.ho-loading), :global(html.ho-loading body) { overflow: hidden; scrollbar-gutter: stable; }
+  .ho-skip { position: fixed; left: 50%; bottom: 28px; translate: -50% 0; z-index: 3; appearance: none; cursor: pointer;
+    border: 1px solid rgba(232, 200, 120, 0.45); border-radius: 999px; background: rgba(12, 10, 8, 0.82); color: #e8dccb;
+    font: 600 13px/1 Inter, system-ui, sans-serif; letter-spacing: 0.04em; padding: 12px 18px;
+    opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility 0s .3s; } /* (in and out over 0.3 s, 11-20: it popped) */
+  .ho-skip.is-up { opacity: 1; visibility: visible; transition-delay: 0s; }
+  .ho-skip:hover, .ho-skip:focus-visible { border-color: #e8c878; color: #fff3d6; }
+</style>
