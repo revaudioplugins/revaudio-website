@@ -288,8 +288,9 @@ export const plugins: Plugin[] = [
       ],
       // Chain spot + redline meaning match the product page (Yoni 2026-10-07:
       // last on the master bus; redline = threshold, as in the plugin's DESIGN.md).
+      // the line break: Dan's bench edit 2026-11-24 (the TV's blurb keeps it, white-space: pre-line on laptops)
       blurb:
-        'Multiband compression, saturation and an adaptive limiter in one chain, built to sit last on your master bus. The redline is the threshold.',
+        'Multiband compression, saturation and an adaptive limiter in one chain, built to sit last on your master bus.\nThe redline is the threshold.',
       alt: 'RevLimiter plugin window: the rev gauge with its redline, the band controls and the meters',
     },
     trialUrl: 'https://revlimiter-license.revaudio.workers.dev/download',

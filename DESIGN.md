@@ -155,6 +155,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     grid) and never move, and the picture changes in a fixed stage on the right. The words change in place (they fade,
     never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
     it on laptops.
+    - The keys in B (Dan's bench export, 2026-11-24): row 1 = Try (one fixed width for every plugin, 16rem) with the
+      price beside it, big (Bebas 3.4rem; "Free beta" 2.4rem), at the same spot on every plugin; row 2 = Product page
+      and Add to cart, left, side by side.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
       comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
       2.7rem; the type word and the five words in Oswald 600; the blurb in Inter 500 at

@@ -304,7 +304,7 @@ const first = items[0]?.slug ?? '';
               ))}
             </p>
             <div class="ww-buy">
-              {it.price && <span class="ww-price">{it.price}</span>}
+              {it.price && <span class:list={['ww-price', { 'is-long': it.price.length > 5 }]}>{it.price}</span>}
               {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost;
                   on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS) */}
               {it.action && (it.action.href ? (
@@ -2511,25 +2511,32 @@ html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-phead { di
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-pname { font-size: var(--lay-nm) !important; line-height: .95; white-space: nowrap; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ptype { font-size: .82rem; white-space: nowrap; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-blurb {
+  white-space: pre-line;
   font-size: var(--lay-bl, 1rem); line-height: 1.42; height: calc(var(--lay-bl-lines) * 1.42em); overflow: hidden;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lay-bl-lines);
 }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-pwords { width: 100%; font-size: .86rem; line-height: 1.4; height: 1.4em; white-space: nowrap; overflow: hidden; }
-/* the keys on a grid: the price, Try, Product page and Add to cart each keep their spot (a free plugin just has no
-   cart); the stack is set per layout (--lay-buy) */
+/* the keys (Dan's bench export, 2026-11-24, "apply this composition to all plugins"): Try at the column's edge, the
+   price big beside it, Product page + Add to cart under Try with a small gap. Every plugin's Try is the same width
+   (--lay-try-w, the widest label: RevFX's) so the price sits at one spot on every channel and never runs into a wider
+   key; a long price word ("Free beta") is set smaller so it stays inside the column at 1141. A free plugin just has
+   no Add to cart. */
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-buy {
-  display: grid; grid-template-columns: var(--lay-buy-cols); grid-template-areas: var(--lay-buy);
-  justify-content: start; align-items: center; gap: .5rem .9rem; margin-top: .2rem;
+  display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); grid-template-areas: 'try try .' 'more cart .';
+  justify-content: stretch; align-items: center; gap: .5rem .4rem; margin-top: .2rem;
 }
-html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price { grid-area: price; font-size: 1.6rem; }
-html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-try { grid-area: try; justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-try { grid-area: try; justify-self: start; width: var(--lay-try-w); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price {
+  grid-row: 1; grid-column: 1 / -1; justify-self: start; margin-left: calc(var(--lay-try-w) + 1.25rem);
+  font-size: 3.4rem; line-height: .8; white-space: nowrap;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price.is-long { font-size: 2.4rem; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-more { grid-area: more; justify-self: start; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-cart { grid-area: cart; justify-self: start; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] {
   grid-template-columns: minmax(0, 1fr); grid-template-areas: 'osd' 'list' 'panel';
   --lay-strip: clamp(4.6rem, 12vh, 6.4rem); --lay-nm: clamp(2.2rem, 3.2vw, 3rem); --lay-bl-lines: 3;
-  /* a wider column: the price beside Try, the two small keys under Try */
-  --lay-buy-cols: 5.8rem max-content max-content; --lay-buy: 'price try try' '. more cart';
+  --lay-try-w: 16rem;
 }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { gap: .45rem; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list { container-type: normal; height: var(--lay-strip); grid-template-columns: repeat(var(--ww-rows, 6), minmax(0, 1fr)); grid-auto-flow: column; align-content: stretch; gap: 0 clamp(.5rem, 1.2vw, 1rem); }

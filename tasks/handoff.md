@@ -42,6 +42,16 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   dev-only block now draws an 8 px grid (stronger every 32) while the harness's SNAP is on, starting at the picked
   part's own corner (SNAP moves in 8 px steps from where a part sits), and `&grid` turns SNAP on at load. Checked in
   Chromium: a snapped move lands the part's edge on a line.
+- 2026-11-24: Dan exported the bench ("apply this composition to all plugins"; the JSON moved to
+  `~/Archive/bench-exports/revaudio-home-tv-bench-deltas-index-2026-11-24-09-42.json`). Baked into B's block as rules
+  for every plugin, not per-plugin moves: Try one fixed width (16rem) at the column's left edge, the price big (3.4rem)
+  beside it at one fixed spot, Product page + Add to cart in a row under them. Two deliberate changes from the raw
+  moves: with the moves as exported RevFX's wider Try ran under its price and GAS's FREE floated off, hence the one
+  width and the fixed spot; "Free beta" (Drift) is 2.4rem so it fits. Dan's RevLimiter blurb edit (a line break before
+  "The redline is the threshold.") is in `src/data/plugins.ts`, shown by `white-space: pre-line` on the TV only.
+  Checked in Chromium at 1312x734 and 1141x636: all six plugins, Try / price / keys at the same spots, nothing
+  overlaps, the price stays in the column (Drift's widest: 410 of 416 px), no blurb cut, the TV still fits; the phone
+  (390) unchanged, no sideways scroll; `npm run build` passes. Files added to the claim: `src/data/plugins.ts`.
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
