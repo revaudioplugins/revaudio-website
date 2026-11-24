@@ -36,7 +36,16 @@ export async function dress({ R, scene, liveScreen, shiny, glowOf, model }) {
     // (liveScreen, the room's own way for a screen: its finishing pass leaves these pixels as they are, so at the phone's lock the 3D screen IS the site's picture)
     const face = (t, h, z) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(S.w, h), liveScreen(new THREE.MeshBasicMaterial({ map: t, toneMapped: false, fog: false }))); m.rotation.x = -Math.PI / 2; m.position.set(0, S.t + 0.0006, z); return m; };
     const navH = S.h * S.nav;
-    phone.add(shell, face(await tex('assets/nav-390.webp'), navH, -S.h / 2 + navH / 2), face(await tex('assets/tv-390x844.webp'), S.h - navH, navH / 2));
+    // the page on the screen: today's phone home page (assets/), or one of the frameless versions (assets/dive/page-<name>/, Dan 2026-11-24: "there is a
+    // frame inside the frame ... keep it like a regular phone", then "same background, same everything"); ?page=plain|glass, setPage(name) on the open page
+    const PAGES = ['today', 'plain', 'glass'], dirOf = (n) => (n === 'today' ? 'assets/' : `assets/dive/page-${n}/`);
+    let page = PAGES.includes(new URLSearchParams(location.search).get('page')) ? new URLSearchParams(location.search).get('page') : 'today';
+    const navFace = face(await tex(dirOf(page) + 'nav-390.webp'), navH, -S.h / 2 + navH / 2), tvFace = face(await tex(dirOf(page) + 'tv-390x844.webp'), S.h - navH, navH / 2);
+    phone.add(shell, navFace, tvFace);
+    var setPage = async (n) => { if (!PAGES.includes(n) || n === page) return; page = n; // (var: the return below hands it out)
+      const [a, b] = await Promise.all([tex(dirOf(n) + 'nav-390.webp'), tex(dirOf(n) + 'tv-390x844.webp')]);
+      for (const [f, t] of [[navFace, a], [tvFace, b]]) { const old = f.material.map; f.material.map = t; f.material.needsUpdate = true; old?.dispose(); } };
+    var getPage = () => page;
     scene.add(phone);
 
     // -- what the looks are made of --
@@ -326,5 +335,5 @@ export async function dress({ R, scene, liveScreen, shiny, glowOf, model }) {
     }
   }
 
-  return { THREE, screen: S, place: SET.phone, phone, looks: Object.keys(LOOKS), setLook, get look() { return look; }, fan2, platter, guitar };
+  return { THREE, screen: S, place: SET.phone, phone, looks: Object.keys(LOOKS), setLook, get look() { return look; }, setPage, get page() { return getPage(); }, pages: ['today', 'plain', 'glass'], fan2, platter, guitar };
 }

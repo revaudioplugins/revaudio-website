@@ -42,6 +42,17 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
   page follows (`.rest`: the same sheet from one screen down, then `assets/below-390.webp`, loaded once the room is up).
   Checked in the Simulator at 6 steps past the landing: whole rows, the TV's foot, "Goes with every vehicle", the
   footer; both sides of the cut line up with the page's picture at the same row (diff 0.55 above, 0.33 below).
+- **The page on the phone without the TV's frame** (Dan 2026-11-24: "there is a frame inside the frame. So let's remove the
+  second frame, the metal one. And keep it like a regular phone", then "make the whole simulator similar to the phone vibe.
+  Same background, same everything"). Read as: the TV's metal bezel inside the page goes (the brass phone stays). Two
+  directions, captured from this branch's own home page (astro dev, 390x844 @3, clock 2026-11-19 = no sale strip; the
+  unchanged capture matches the saved one, 0.13) with a phone-only style laid over it (`assets/dive/page-<name>/look.css`):
+  A Glass = no frame, the TV's glowing glass (scanlines, grille) is the whole page's background; B Plain = no frame, the list
+  on the page's own dark like every section under it. Pictures in `assets/dive/page-glass/` and `page-plain/`; the 3D
+  screen (`set.js` `setPage`), the landing and the page after it all switch together. `phone-dive.html` opens on Glass
+  (my pick, Dan's pick pending), three buttons on the picture: Today, A Glass, B Plain (`?page=`, `?pages=0` hides them).
+  The reveal with Plain: 0.95 of 255 (3D vs page). ONLY PICTURES: the real phone page still has its frame; making it so
+  is part of the home-page step (a garage-on-phones style on the real page, never every phone visitor without Dan's word).
 - **Not checked:** a real phone (iOS momentum and the hold under a real thumb, Safari's bars, the frame rate on a phone's
   GPU). Synthetic mouse drags on the Simulator were not used: it runs full screen on another Space, so they would land on
   Dan's open windows. The governor never fired here (fast Mac).
