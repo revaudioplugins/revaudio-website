@@ -1,4 +1,4 @@
-## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`), NOT on main: waits for Yoni's push word
+## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
 Claim: CLOSED 2026-11-24 `revaudio-cc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `widebeam`), `src/pages/review.astro`, `DESIGN.md` (Review picker bullet only), this entry.
 - Yoni: "add widebeam to the review section, same rules" (= the GAS 2 / RevFX steps).
@@ -7,12 +7,12 @@ Claim: CLOSED 2026-11-24 `revaudio-cc`. Files: `src/data/review-survey.ts` (`REV
 - Picker: seven no longer fit one row (~85 px cubes), so the grid became flex rows of `--cols` (4 from 900 px, 3 from 641, 2 on phones) with a
   short last row centred: 4 + 3, 3 + 3 + 1, 2 + 2 + 2 + 1. Names back to full size at 4 across (the 6-across step-down is gone). Any count works.
 - Worker: nothing to do. `REVIEW_PLUGINS` in the RevLimiter worker has `widebeam` since `f06a0b0` / `0f241f7`; the latest deploy stamp `206f618`
-  covers worker HEAD `e00c984`. Not live-probed (the probe POST was blocked in this session) - one empty-form POST after the push settles it.
+  covers worker HEAD `e00c984`. Not live-probed (the auto-mode classifier blocked the empty-form POST twice) - the first real WIDE BEAM
+  review settles it ("bad request" = the live worker lacks the slug).
 - Checks (local build, Chromium): `npm run build` green; at 390 / 640 / 641 / 760 / 899 / 900 / 1280 / 1920 px: 7 cubes, square, every picture
   loaded, every name inside its cube, rows as above, no sideways scroll; price question RevLimiter $49, Radio Roulette $19, RevFX $19,
   WIDE BEAM $9, DRIFT / GAS / GAS 2 hidden; WIDE BEAM lights blue when picked; no page errors.
-- Next: Yoni's push word -> merge to main (head commit without `[skip ci]`), live check of /review/, one real WIDE BEAM review -> code mail +
-  team copy "Review: WIDE BEAM n/10".
+- Next: one real WIDE BEAM review -> code mail + team copy "Review: WIDE BEAM n/10".
 
 ## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
 
