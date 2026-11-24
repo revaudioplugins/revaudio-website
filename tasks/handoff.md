@@ -35,6 +35,13 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
     (390x844 / 402x714; before 0.97 / 0.88 and 0.86 / 0.68), worst block 4-6 of 255 in all. Simulator Safari: 0.73 / 4.6.
   - The governor, forced with the CPU slowed 12x: one step at 34.7 ms a frame, no gain (39.2 ms: the CPU, not the pixels),
     taken back, done: as designed.
+- **Past the landing, the page goes on** (Dan in the Simulator, 2026-11-24: "a little bit cut underneath"). Measured first in
+  Simulator Safari, stepping through the end with safaridriver: the moment of the reveal matched (3D screen vs the page,
+  blurred mean 0.73 of 255); the cut came after it: the page was one screen's picture, so once the pinned screen slid
+  up it ended halfway through the Radio Roulette row, over a dark strip. Now on phones (<700 px) the rest of the home
+  page follows (`.rest`: the same sheet from one screen down, then `assets/below-390.webp`, loaded once the room is up).
+  Checked in the Simulator at 6 steps past the landing: whole rows, the TV's foot, "Goes with every vehicle", the
+  footer; both sides of the cut line up with the page's picture at the same row (diff 0.55 above, 0.33 below).
 - **Not checked:** a real phone (iOS momentum and the hold under a real thumb, Safari's bars, the frame rate on a phone's
   GPU). Synthetic mouse drags on the Simulator were not used: it runs full screen on another Space, so they would land on
   Dan's open windows. The governor never fired here (fast Mac).

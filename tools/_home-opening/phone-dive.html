@@ -55,6 +55,17 @@
   .wait span { position: absolute; left: 16px; right: 16px; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ink); font: 500 13px/1 "IBM Plex Mono", monospace; letter-spacing: .08em; text-shadow: 0 1px 6px #000; }
   .wait.gone { opacity: 0; pointer-events: none; }
   .after { min-height: 60vh; display: grid; place-items: center; padding: 40px 20px; color: var(--dim); text-align: center; border-top: 1px solid var(--line); }
+  /* the rest of the phone home page under the landed screen (Dan 2026-11-24, in the Simulator: past the landing the page "is a little bit cut underneath":
+     the site's picture ended at the screen's bottom edge, half a plugin row, then a dark strip). On a phone the pinned picture is the whole screen, so the
+     page goes on below it: the same sheet from one screen down (the part the screen cut), then the page below the first screen (assets/below-390.webp,
+     captured with the other two by tvcap.mjs). Its width is the sheet's in the box (max(100cqw, 100cqh x 390 / 844)), so the cut lines up to the pixel */
+  .rest { display: none; }
+  @media (max-width: 699px) {
+    .rest { display: block; overflow: hidden; background: var(--bg); }
+    .rest .sheet { width: max(100vw, var(--vh) * 390 / 844); margin: calc(-1 * var(--vh)) 0 0 50%; transform: translateX(-50%); }
+    .rest img { display: block; width: 100%; height: auto; }
+    .rest + .after { border-top: 0; }
+  }
 
   .bench { position: fixed; left: 16px; bottom: 16px; width: 320px; max-height: calc(100vh - 32px); overflow: auto; padding: 12px 14px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(12,10,8,.94); display: none; }
   @media (min-width: 1000px) { .bench { display: block; } }
@@ -96,7 +107,8 @@
     </div>
   </div>
 </div>
-<div class="after">The phone site carries on from here.<br>(Prototype: this is where the real page scrolls.)</div>
+<div class="rest" aria-hidden="true"><div class="sheet"><img src="assets/nav-390.webp" alt=""><img src="assets/tv-390x844.webp" alt=""><img src="assets/below-390.webp" alt="" loading="lazy" decoding="async"></div></div>
+<div class="after">The phone site carries on from here.<br>(Prototype: the page above is its picture; the real page scrolls here.)</div>
 
 <aside class="bench" aria-label="Dive bench">
   <b>PHONE DIVE</b>
@@ -306,6 +318,7 @@ window.__dive = { DIVE, FEEL, get held() { return held; }, get holds() { return 
 if (!REC && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = 1.4; // (the picture was taken with set(0, 0.4): 0.4 s x 2 rad/s + 0.6)
 await new Promise((res) => { let n = 0; const tick = () => (++n > 12 ? res() : w.requestAnimationFrame(tick)); w.requestAnimationFrame(tick); });
 $('wait').classList.add('gone');
+document.querySelector('.rest img[loading="lazy"]')?.setAttribute('loading', 'eager'); // the rest of the page (108 KB) once the room is up: never competing with it, and in before a fast thumb reaches it
 </script>
 </body>
 </html>
