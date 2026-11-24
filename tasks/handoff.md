@@ -38,6 +38,10 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   to cart in `WordWall.astro` (scoped CSS, the screen wall only; html.hc and the wood wall keep the button family; rgb
   glows, no color-mix). The worn paper is saved as a recipe: `docs/worn-paper.md` (what Dan liked, the CSS with generic
   classes, the fall as a function), pointed to from `DESIGN.md` §4, which also has layout B and Fastext now.
+- 2026-11-24: Dan: "open the bench so I can move stuff around and resize freely and on a grid". `/?bench&grid`: the
+  dev-only block now draws an 8 px grid (stronger every 32) while the harness's SNAP is on, starting at the picked
+  part's own corner (SNAP moves in 8 px steps from where a part sits), and `&grid` turns SNAP on at load. Checked in
+  Chromium: a snapped move lands the part's edge on a line.
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 

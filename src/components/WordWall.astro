@@ -1353,6 +1353,46 @@ const first = items[0]?.slug ?? '';
       wall.querySelectorAll<HTMLElement>('[style]').forEach((el) => {
         if (el.closest(GROUP) && Object.keys(own(el)).length) mirror(el);
       });
+
+      /* The grid (Dan 2026-11-24: "move stuff around and resize freely and on a grid"). The harness's SNAP (G) moves a
+         part in 8 px steps from where it sits and sizes it in 8 px steps, so the grid drawn here starts at the picked
+         part's own corner (as if it had not been moved): its edges land on the lines. Nothing picked: the grid starts
+         at the TV's content corner. Lines every 8 px, stronger every 32. Shown only while SNAP is on; `?bench&grid`
+         turns SNAP on at load. Free movement = SNAP off (G again). */
+      const grid = document.createElement('div');
+      grid.setAttribute('aria-hidden', 'true');
+      grid.style.cssText = 'position:fixed;inset:0;z-index:2147482990;pointer-events:none;display:none;'
+        + 'background-image:linear-gradient(to right, rgb(120 220 255 / .3) 1px, transparent 1px),linear-gradient(to bottom, rgb(120 220 255 / .3) 1px, transparent 1px),'
+        + 'linear-gradient(to right, rgb(120 220 255 / .1) 1px, transparent 1px),linear-gradient(to bottom, rgb(120 220 255 / .1) 1px, transparent 1px);'
+        + 'background-size:32px 32px,32px 32px,8px 8px,8px 8px;';
+      document.body.appendChild(grid);
+      if (new URLSearchParams(location.search).has('grid')) {
+        const on = window.setInterval(() => {
+          const b = document.querySelector<HTMLElement>('.bench-b-snap');
+          if (!b) return;
+          window.clearInterval(on);
+          if (!b.classList.contains('bench-btn-on')) b.click();
+        }, 200);
+      }
+      window.setInterval(() => {
+        const snapOn = !!document.querySelector('.bench-b-snap.bench-btn-on');
+        grid.style.display = snapOn ? 'block' : 'none';
+        if (!snapOn) return;
+        let ox: number, oy: number;
+        const path = document.querySelector('.bench-selpath')?.textContent?.trim();
+        let picked: HTMLElement | null = null;
+        try { picked = path && document.querySelector('.bench-sel-box')?.getAttribute('style')?.includes('block') ? document.querySelector<HTMLElement>(path) : null; } catch { picked = null; }
+        if (picked) {
+          const r = picked.getBoundingClientRect();
+          const [tx, ty] = (picked.style.getPropertyValue('translate') || '0 0').split(/\s+/).map((v) => parseFloat(v) || 0);
+          ox = r.left - tx; oy = r.top - (ty || 0);
+        } else {
+          const r = wall.getBoundingClientRect(), cs = getComputedStyle(wall);
+          ox = r.left + parseFloat(cs.paddingLeft); oy = r.top + parseFloat(cs.paddingTop);
+        }
+        const pos = `${ox}px ${oy}px`;
+        grid.style.backgroundPosition = [pos, pos, pos, pos].join(',');
+      }, 120);
     }
 
     /* One screen: lock the scroll onto the TV (Dan 2026-10-14). Only after the
