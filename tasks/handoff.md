@@ -59,6 +59,17 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
   screen itself keeps the plugin list (the 11-20 capture, copied into `page-today/`): main's TV now opens on Gil's
   temporary "Built like cars. Step inside." screen, which the garage on phones would replace (to decide at the home-page
   step). Checked in Simulator Safari past the landing: whole rows, the small DAW strip, the sign, the footer.
+- **The first picture on every phone** (Dan opened the iPhone 17 Pro Max simulator, same day): the opening picture was
+  390 x 844 scaled to cover, so on any other phone shape it was a zoomed crop and the view jumped outward when the live
+  room took over. Now `assets/dive/open-wide.webp` (640 x 844 @2, `?rec&novig&mp=2.2e6`) is fitted by HEIGHT (the camera's
+  angle is vertical: a wider phone sees more at the sides, never more top to bottom); the VHS vignette and scanlines are
+  drawn over it in CSS at the box's own size (`.wait-look`, the sums of room.html `lookOverlay`; `room.html &novig` draws
+  the still without them); and the way down's height runs on the 390 x 844 shape until halfway, then onto the screen's own
+  lock (`hRef` in `pose()`), so the opening frame is one picture for every phone (it had drifted up to 1.4 % in height).
+  First picture vs the live room (fans held): 390x844 Chromium 0.63, 402x754 WebKit 0.64, 440x880 Chromium 0.52,
+  360x640 WebKit 0.95. The landing on wide phones unchanged: 440x880 0.73, 402x754 0.71 (WebKit).
+  Seen once, not reproduced: on the Pro Max's very first boot the picture went black for a few seconds before the room
+  came up; a reload on the same device showed no black frame (14 shots, 0.6 s apart).
 - **Not checked:** a real phone (iOS momentum and the hold under a real thumb, Safari's bars, the frame rate on a phone's
   GPU). Synthetic mouse drags on the Simulator were not used: it runs full screen on another Space, so they would land on
   Dan's open windows. The governor never fired here (fast Mac).

@@ -408,7 +408,7 @@ const STREET_GRADE = 'G1';
 // The same room and the same data, but only what that camera can see is loaded and drawn: the models whose slots touch
 // `keep` (metres on the floor: x from..to, z from..to), the small texture set, one shadowed lamp, no mirror pass, no
 // multisampling, a 1.3 MP picture. Without ?dive nothing here runs: the laptop room is as it was.
-const DIVE = new URLSearchParams(location.search).has('dive') ? { keep: { x: [0.95, 3.9], z: [4.5, 10.5] }, always: ['N40'], pbr: 'assets/pbr/phone/', pic: 384, mp: 1.3e6, dpr: 2, lamps: [0.55, 0.2], shadow: 0.55 } : null;
+const DIVE = new URLSearchParams(location.search).has('dive') ? { keep: { x: [0.95, 3.9], z: [4.5, 10.5] }, always: ['N40'], pbr: 'assets/pbr/phone/', pic: 384, mp: (CAPTURE != null && +new URLSearchParams(location.search).get('mp')) || 1.3e6, /* (&mp=: a still's own pixel budget, the first picture's render only) */ dpr: 2, lamps: [0.55, 0.2], shadow: 0.55 } : null;
 // ?dive&live (phone-dive.html, 2026-11-24): the phone's opening is a capture of the camera's place only; the room in it runs
 // live as on the laptop: the look's grain moves, the lights hum and flicker, the dust, the governor for weak machines.
 // Without &live (?rec recordings, stills) it stays the steady still it was
@@ -637,6 +637,7 @@ function lookInit() {
   bloomPass.enabled = false;
   for (const rt of [composer.renderTarget1, composer.renderTarget2]) { rt.texture.generateMipmaps = true; rt.texture.minFilter = THREE.LinearMipmapLinearFilter; } // the halation's levels
   if (LOOK_FLAT) { const u = finishPass.uniforms; u.uG.value.z = 0; u.uF.value.x = 0; u.uF.value.z = 0; } // (&flat: no vignette, grain or scanlines)
+  if (CAPTURE != null && new URLSearchParams(location.search).has('novig')) { const u = finishPass.uniforms; u.uG.value.z = 0; u.uF.value.z = 0; } // (&novig: a still with no vignette or scanlines, which the page lays over it in CSS at its own size: the phone's first picture, phone-dive.html)
 }
 // the loading screen in the look (lights/lights-on.js): its pictures are drawn &flat, and the vignette and the scanlines
 // lie over them here the way the finish lays them over the room: the same factors (multiplied, as the finish multiplies

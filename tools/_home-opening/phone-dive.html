@@ -50,11 +50,18 @@
   /* the site's page as the 3D screen shows it at the lock: its top on the picture's top, as wide as the picture (or as tall, on a window narrower than the phone) */
   .live .sheet { position: absolute; top: 0; left: 50%; width: max(100cqw, 100cqh * 390 / 844); transform: translateX(-50%); }
   .live img { display: block; width: 100%; height: auto; }
-  /* the first picture: the opening frame as the room draws it (assets/dive/open-390.webp, rendered from this page at 0 %),
+  /* the first picture: the opening frame as the room draws it (assets/dive/open-wide.webp, rendered from this page at 0 % in a
+     640 x 844 window: ?rec&mp=2.2e6). The camera's view is set by its height (a fixed vertical angle), so a wider phone sees
+     more at the sides, never more top to bottom: the picture is fitted by HEIGHT and is wide enough for any phone held
+     upright (Dan 2026-11-24 on the iPhone 17 Pro Max: the 390-wide picture, scaled to cover, was a zoomed crop and the view
+     jumped outward when the live room took over). The VHS vignette and scanlines are the canvas's own (a wider picture
+     carried a lighter vignette into a narrow phone): the picture is drawn without them (?rec&novig) and .wait-look lays
+     them over it in CSS at the box's own size, as the laptop's loading screen does (room.html lookOverlay),
      so the visitor sees the garage from above at once and the live room takes over on the same picture */
-  .wait { position: absolute; inset: 0; background: #0b0a09 url(assets/dive/open-390.webp) center / cover no-repeat; transition: opacity .7s ease; }
+  .wait { position: absolute; inset: 0; background: #0b0a09 url(assets/dive/open-wide.webp) center / auto 100% no-repeat; transition: opacity .7s ease; }
   .wait span { position: absolute; left: 16px; right: 16px; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ink); font: 500 13px/1 "IBM Plex Mono", monospace; letter-spacing: .08em; text-shadow: 0 1px 6px #000; }
   .wait.gone { opacity: 0; pointer-events: none; }
+  .wait-look { position: absolute; inset: 0; mix-blend-mode: multiply; background-blend-mode: multiply; pointer-events: none; }
   .after { min-height: 60vh; display: grid; place-items: center; padding: 40px 20px; color: var(--dim); text-align: center; border-top: 1px solid var(--line); }
   /* the rest of the phone home page under the landed screen (Dan 2026-11-24, in the Simulator: past the landing the page "is a little bit cut underneath":
      the site's picture ended at the screen's bottom edge, half a plugin row, then a dark strip). On a phone the pinned picture is the whole screen, so the
@@ -111,7 +118,7 @@
         <button class="chip" type="button" data-set="0,0.25">B · Gentle</button>
         <button class="chip" type="button" data-set="-1,0.25">C · Against</button>
       </nav>
-      <div class="wait" id="wait"><span id="waitNote">Opening the garage…</span></div>
+      <div class="wait" id="wait"><div class="wait-look" id="waitLook"></div><span id="waitNote">Opening the garage…</span></div>
     </div>
   </div>
 </div>
@@ -165,12 +172,20 @@ const frame = $('room'), box = $('box');
 // the room's look, as on the laptop's home page (?look=today | vhs | vhs-more; the room's default is VHS, Dan's pick 2026-11-18)
 const ROOM_LOOK = ['today', 'vhs', 'vhs-more'].includes(Q.get('look')) ? Q.get('look') : null;
 const PAGE0 = ['today', 'plain', 'glass'].includes(Q.get('page')) ? Q.get('page') : 'glass'; // my pick to start on (glass: the screen's glow all the way down); Dan's pick pending
-frame.src = 'room.html?capture=0&expose' + (Q.has('full') ? '' : '&dive') + (REC ? '' : '&live') + (ROOM_LOOK ? '&look=' + ROOM_LOOK : '') + '&page=' + PAGE0; // &live: the room runs live as on the laptop (grain, lights, dust, governor); a recording keeps it still
+frame.src = 'room.html?capture=0&expose' + (Q.has('full') ? '' : '&dive') + (REC ? '' : '&live') + (ROOM_LOOK ? '&look=' + ROOM_LOOK : '') + '&page=' + PAGE0 + (REC && Q.has('mp') ? '&mp=' + encodeURIComponent(Q.get('mp')) : '') + (REC && Q.has('novig') ? '&novig' : ''); // (?rec&mp=: a still's pixel budget, for the first picture's render) // &live: the room runs live as on the laptop (grain, lights, dust, governor); a recording keeps it still
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 const easeIO = (t, k) => (t < 0.5 ? Math.pow(2 * t, k) / 2 : 1 - Math.pow(2 * (1 - t), k) / 2);
 
 // if the room never arrives (no WebGL, a crash, a dead connection), the page says so instead of sitting on its picture
+// the room's VHS vignette and scanlines over the first picture, at the box's size (room.html lookOverlay, the same sums;
+// the numbers mirror room.html LOOKS: vhs / vhs-more; ?look=today has none)
+{ const LV = { vhs: { scan: 0.05, vig: 0.24 }, 'vhs-more': { scan: 0.08, vig: 0.28 } }[ROOM_LOOK || 'vhs'];
+  if (LV) { const grey = (v) => { const c = (255 * v).toFixed(1); return `rgb(${c} ${c} ${c})`; }, layers = [];
+    { const st = []; for (let i = 0; i <= 12; i++) { const y = i / 4; st.push(`${grey(1 - LV.scan * (0.5 - 0.5 * Math.cos(2 * Math.PI * y / 3)))} ${y}px`); } layers.push(`repeating-linear-gradient(to top, ${st.join(', ')})`); }
+    { const st = [`${grey(1)} 0%`]; for (let i = 0; i <= 16; i++) { const r2 = 0.12 + 0.5 * i / 16, t = (r2 - 0.12) / 0.5; st.push(`${grey(1 - LV.vig * t * t * (3 - 2 * t))} ${(100 * Math.sqrt(r2)).toFixed(2)}%`); }
+      layers.push(`radial-gradient(${(100 / Math.SQRT2).toFixed(3)}% ${(100 / (0.8 * Math.SQRT2)).toFixed(3)}% at 50% 50%, ${st.join(', ')})`); }
+    $('waitLook').style.backgroundImage = layers.join(', '); } }
 const giveUp = setTimeout(() => { if (!window.__dive) $('waitNote').textContent = 'The garage did not open on this device.'; }, 45000);
 // the room, once its page has built it
 const w = await new Promise((res) => { const tick = () => (frame.contentWindow && frame.contentWindow.__room ? res(frame.contentWindow) : setTimeout(tick, 120)); tick(); });
@@ -200,7 +215,10 @@ function pose(p) {
   const th = Math.tan(D.lockFov / 2 * Math.PI / 180), hEnd = Math.min(S.h / 2 / th, S.w / 2 / (th * asp)) * 0.9995, h0 = D.start.y - C.y;
   // ... from its TOP: a browser window is shorter than the phone's screen, and the site's page starts at its top (centred, the 3D screen sat 70-90 px off the page that replaced it)
   const cLock = C.clone().addScaledVector(upPhone, Math.max(0, S.h / 2 - hEnd * th * 1.0005)); // (a hair past the top edge, as at the sides: never a sliver of bezel)
-  const h = (h0 + (hEnd - h0) * e) * (1 - D.feel) + h0 * Math.pow(hEnd / h0, e) * D.feel, y = C.y + h;
+  // the way down's height: on the shape the dive was set on (390 x 844) for most of the way, so the opening frame is the same on every
+  // phone (it is a picture: assets/dive/open-wide.webp), then onto this screen's own lock by the end (a wider screen locks a little lower)
+  const hRef = Math.min(S.h / 2 / th, S.w / 2 / (th * (390 / 844))) * 0.9995, hPath = (hE) => (h0 + (hE - h0) * e) * (1 - D.feel) + h0 * Math.pow(hE / h0, e) * D.feel;
+  const h = hPath(hRef) + (hPath(hEnd) - hPath(hRef)) * smooth(0.5, 0.95, p), y = C.y + h;
   const k = 1 - smooth(D.start.y, D.over, y); // 1 above the ceiling, 0 once over the phone
   // the turn: from the first move to just before the lock, one even corkscrew that ends square with the phone
   const still = reduced ? 0 : 1, aEnd = (D.phone.yaw + 360 * D.turns * still) * Math.PI / 180, a = aEnd * smooth(0.02, 0.965, p);
