@@ -72,8 +72,15 @@ const DATA = [
         <p class="obd-tag">Plug in. Read the note. Tune it.</p>
         <p class="obd-lede">Vocal pitch correction built like a shop scan tool. It reads every note you sing, finds the key by itself, and puts each note where it belongs, as hard or as human as you set it. Then it stacks the harmonies and finishes the vocal with its own EQ, compression, echo and reverb.</p>
         <div class="obd-ctas">
-          <a class="obd-btn obd-btn--hot" href="#obd-get">Try it free</a>
           <a class="obd-btn" href="#obd-bench">Play with it ↓</a>
+          <a class="obd-btn obd-btn--hot" href="#obd-get">Try it free</a>
+          {canBuy && (
+            <button
+              type="button" class="obd-btn obd-btn--buy"
+              data-add-to-cart data-cart-open
+              data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+            >Buy now<span class="obd-btn-price">{fmtUsd(obdtune.priceUsd!)}</span></button>
+          )}
         </div>
         <ul class="obd-chips" aria-label="At a glance">
           <li>DETECT finds the key</li><li>1–200 ms SPEED</li><li>13 scales</li><li>2 harmony voices</li><li>EQ · SQUEEZE · ECHO · REVERB</li>
