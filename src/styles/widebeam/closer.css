@@ -1,0 +1,142 @@
+/* /widebeam closer, "Runs on your setup." (lane A, D4 C): one plate cut from the plugin's photo (.wb-plate--badge,
+   parts.css) with the plugin's two headlamps in its top corners, the compat rows, the one ask, one odometer and the
+   folds. The Specs fold opens onto the plugin's owner's card (the plugin's INFO card: cream stock, oxblood band,
+   Courier values). No ::before / ::after on .wb-closer-plate: the parts kit uses both. */
+.wb-closer { padding: var(--wb-gap) 16px; }
+.wb-closer-plate {
+  --wb-ps: .4;
+  --wb-lamp-w: clamp(64px, 8vw, 92px);
+  --wb-plate-pad: 14px clamp(16px, 2.6vw, 30px) 18px;
+  max-width: 1040px; margin: 0 auto;
+}
+
+/* ---------- the two headlamps: dipped, steady, following WIDTH and HIGH BEAM (furniture.ts sets --wb-lamp) ---------- */
+.wb-closer-lamp { position: absolute; top: 4px; left: clamp(10px, 1.6vw, 22px); width: var(--wb-lamp-w); --wb-lamp: .78; pointer-events: none; }
+.wb-closer-lamp--r { left: auto; right: clamp(10px, 1.6vw, 22px); }
+/* the lit lens throws a little light onto the steel round it, no more (no page flash, art-13 / motion-13) */
+.wb-closer-lamp::before {
+  content: ''; position: absolute; inset: -30%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 228, 170, calc(max(0, var(--wb-lamp) - .5) * .22)), transparent);
+}
+
+.wb-closer-top { text-align: center; padding: 6px calc(var(--wb-lamp-w) + 8px) 0; min-height: calc(var(--wb-lamp-w) * .7); }
+/* max-width: none lifts the house `p { max-width: 64ch }`: a 64ch box with no auto margins sat left of centre, the
+   eyebrow ~97 px left of the heading on laptops */
+.wb-closer-top .wb-eyebrow { color: var(--brass); max-width: none; }
+.wb-closer-top h2 { margin: .12em auto .2em; text-shadow: var(--wb-engrave-cut); }
+
+.wb-closer-grid { display: grid; grid-template-columns: 1fr 1.02fr; gap: clamp(20px, 3vw, 36px); margin-top: 16px; align-items: start; }
+
+/* ---------- MAC / WINDOWS ---------- */
+.wb-closer-compat { margin: 0 0 18px; display: grid; gap: 10px; }
+.wb-closer-compat > div { display: grid; grid-template-columns: 7.4em 1fr; gap: 12px; align-items: baseline; }
+.wb-closer-compat dt { font-size: 1rem; }
+.wb-closer-compat dd { margin: 0; display: grid; gap: 2px; }
+.wb-closer-compat dd b { font-family: var(--wb-read); font-weight: 400; font-size: 1rem; letter-spacing: .04em; color: var(--ivory); }
+.wb-closer-compat dd span { font-size: .86rem; color: var(--ivory-2); line-height: 1.4; }
+
+/* ---------- the ask (the same one as the plate; its field + key styles are .wb-get-form in get.css) ---------- */
+.wb-closer-ask-l { margin: 0 0 12px; font-family: var(--wb-display); font-size: clamp(1.6rem, 2.4vw, 2rem); line-height: 1; letter-spacing: .02em; color: var(--ivory); text-shadow: var(--wb-engrave-cut); text-wrap: balance; } /* no lone "opens" at 375-414 (r-asks-widow) */
+.wb-closer-ask .wb-get-notice { margin-top: 8px; }
+.wb-closer-ask.is-joined .wb-get-notice { display: none; }
+.wb-closer-own { margin-top: 18px; }
+.wb-closer-price { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: .4em; }
+.wb-closer-price b { font-family: var(--wb-display); font-weight: 400; font-size: 1.7rem; line-height: 1; letter-spacing: .03em; color: var(--brass-hi); text-shadow: var(--wb-engrave-cut); }
+.wb-closer-price span { font-size: 1rem; }
+.wb-closer-own .wb-buy { margin: 12px 0 0; }
+
+/* ---------- the odometer: one chrome bezel, four readings, white-on-black drums ---------- */
+.wb-odo {
+  margin: 0; padding: 12px 10px 10px; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2a2520, #15120f);
+  box-shadow: inset 0 0 0 1px #0b0a09, 0 0 0 2px #76726a, 0 0 0 3px #d8d4cc, 0 0 0 4px #4a463f, 0 10px 22px rgba(8, 6, 4, .55);
+}
+/* align-content: start: a cell stretched to its row's tallest (a 3-line caption beside 2-line ones) keeps its rows at
+   content height. Stretched rows grew the drums' bezel 8 px and dropped the shorter captions 8-9 px (r-asks-odocaps) */
+.wb-odo-cell { display: grid; justify-items: center; align-content: start; gap: 8px; text-align: center; }
+.wb-odo-drums {
+  display: inline-flex; gap: 2px; padding: 3px; border-radius: 4px;
+  background: #0b0a09; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 236, 200, .08);
+}
+.wb-odo-drum {
+  --wb-odo-h: 1.12em;
+  position: relative; display: block; width: .72em; height: var(--wb-odo-h); overflow: hidden; border-radius: 2px;
+  font-family: var(--wb-display); font-size: clamp(1.9rem, 2.8vw, 2.4rem); line-height: var(--wb-odo-h); color: var(--ivory);
+  background: linear-gradient(180deg, #050504, #1c1a17 46%, #24211d 52%, #050504);
+}
+/* the drum's curve: darker at the top and bottom edge of the window */
+.wb-odo-drum::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 4, 3, .85), transparent 32%, transparent 68%, rgba(5, 4, 3, .85));
+}
+.wb-odo-strip { display: block; transform: translateY(calc(var(--d, 0) * var(--wb-odo-h) * -1)); }
+.wb-odo-strip > span { display: block; height: var(--wb-odo-h); text-align: center; }
+.wb-odo-unit { font-size: .8rem; line-height: 1.3; letter-spacing: .1em; max-width: 13ch; }
+
+/* ---------- the folds ---------- */
+.wb-closer-side .wb-folds { margin-top: 18px; display: grid; gap: 0; }
+.wb-fold { border-top: 1px solid rgba(201, 163, 92, .28); }
+.wb-fold:last-child { border-bottom: 1px solid rgba(201, 163, 92, .28); }
+.wb-fold > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 44px; padding: 6px 4px; font-size: 1.04rem;
+}
+.wb-fold > summary::-webkit-details-marker { display: none; }
+/* a small brass chevron, turned down when open */
+.wb-fold > summary::after {
+  content: ''; width: 8px; height: 8px; flex: none; margin-right: 6px; border-right: 2px solid var(--brass); border-bottom: 2px solid var(--brass);
+  transform: rotate(-45deg); transition: transform .18s cubic-bezier(.22, 1, .36, 1);
+}
+.wb-fold[open] > summary::after { transform: rotate(45deg); }
+.wb-fold > summary:focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 2px; border-radius: 4px; }
+.wb-fold > p { margin: 0 4px 12px; max-width: 62ch; color: var(--ivory-2); font-size: .92rem; line-height: 1.55; }
+.wb-fold > p:first-of-type { margin-top: 2px; }
+
+/* ---------- the owner's card (Specs): cream stock, oxblood band, Courier values (the plugin's INFO card) ---------- */
+.wb-spec-card {
+  position: relative; margin: 4px 0 14px; padding: 6px 16px 10px; border-radius: 3px; color: #2c2218;
+  /* the plugin's own band (WideBeam Source/ui/cards.css .ic-band: 6 px, its oxblood gradient) drawn as a layer, as the
+     plugin does, not as a border; then the stock's highlight line under it, then the cream stock */
+  background:
+    linear-gradient(#6a3333, #5c2a2a 55%, #4d2222) 0 0 / 100% 6px no-repeat,
+    linear-gradient(rgba(255, 250, 235, .5), rgba(255, 250, 235, .5)) 0 6px / 100% 1px no-repeat,
+    linear-gradient(172deg, #efe3c8, #e3d4b3 55%, #d8c7a3);
+  box-shadow: 0 10px 24px rgba(8, 6, 4, .55), 0 2px 4px rgba(8, 6, 4, .5);
+}
+.wb-spec-card-title {
+  margin: 0; padding: 10px 0 6px; font-family: var(--wb-engrave-font); font-variant: small-caps; letter-spacing: .14em; font-size: 1rem; color: #7d2b22;
+}
+.wb-spec-card dl { margin: 0; }
+.wb-spec-card .wb-dr { display: grid; grid-template-columns: 8.2em 1fr; gap: 10px; padding: 5px 0; border-top: 1px solid rgba(140, 111, 74, .4); align-items: baseline; }
+.wb-spec-card .wb-dr dt { font-family: var(--wb-engrave-font); font-size: .82rem; letter-spacing: .08em; color: #5b4027; }
+.wb-spec-card .wb-dr dd { margin: 0; display: grid; gap: 1px; }
+.wb-spec-card .wb-dr dd b { font-family: var(--wb-lcd); font-weight: 700; font-size: .92rem; color: #2c2218; }
+.wb-spec-card .wb-dr dd span { font-size: .8rem; line-height: 1.35; color: #4a3a28; }
+
+/* ---------- laptop under 1000 px, tablets ---------- */
+@media (max-width: 900px) {
+  .wb-closer-grid { grid-template-columns: 1fr; }
+  .wb-closer-side { margin-top: 6px; }
+}
+@media (max-width: 600px) {
+  .wb-closer-plate { --wb-ps: .3; --wb-lamp-w: 54px; --wb-plate-pad: 10px 12px 14px; }
+  .wb-closer-top { padding-inline: calc(var(--wb-lamp-w) + 2px); }
+  .wb-closer-top h2 { font-size: clamp(1.9rem, 8.6vw, 2.3rem); }
+  .wb-closer-compat > div { grid-template-columns: 1fr; gap: 2px; }
+  .wb-odo { grid-template-columns: repeat(2, 1fr); row-gap: 14px; }
+  .wb-odo-unit, .wb-closer-compat dd span, .wb-fold > p { font-size: var(--wb-fine-min); }
+  .wb-spec-card { padding-inline: 12px; }
+  .wb-spec-card .wb-dr { grid-template-columns: 1fr; gap: 1px; }
+  .wb-spec-card .wb-dr dt, .wb-spec-card .wb-dr dd span { font-size: var(--wb-fine-min); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-fold > summary::after { transition: none; }
+}
+
+/* high contrast (html.hc): the card keeps its dark ink on the cream (base.css lifts .wb-dr dd to LCD ink for the dark
+   readouts; on the card that would be near-white on cream), the plate print goes to the hc tokens */
+html.hc .wb-page .wb-spec-card { background: #f4ecd8; }
+html.hc .wb-page .wb-spec-card :is(.wb-dr dt, .wb-dr dd, .wb-dr dd b, .wb-dr dd span, .wb-spec-card-title) { color: #1a130c; text-shadow: none; }
+html.hc .wb-page .wb-closer-lamp::before { display: none; }

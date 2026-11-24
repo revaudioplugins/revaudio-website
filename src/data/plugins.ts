@@ -20,7 +20,7 @@
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
-export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx';
+export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx' | 'stereo';
 
 /** A category on the home TV's plugin library (labels + order: src/data/library.ts). 'free' is never listed on a
  *  plugin: the library adds it from `isFree`, so "free" has one source. */
@@ -643,6 +643,56 @@ export const plugins: Plugin[] = [
       blurb:
         'Pitch, echo, reverb, halo and glue comp in one rack. Drag them into any order, or roll the dice for a whole scene.',
       alt: 'RevFX plugin window: the Pitch, Echo, Reverb, Halo and Glue Comp strips side by side under the snapshots, the dice log and RANDOMIZE',
+    },
+  },
+  {
+    // WIDE BEAM: on sale 2026-11-23 (Gil). Keep paddlePriceId and introPriceUsd equal to src/data/widebeam.ts
+    // (paddlePriceId, priceUsd). 'live' puts it on /support, /buy/widebeam and the cart; `library` puts it on the
+    // home TV. The /widebeam page is its own route ([slug].astro OWN_ROUTE).
+    slug: 'widebeam',
+    name: 'WIDE BEAM',
+    category: 'stereo',
+    tagline: 'Stereo width control',
+    oneLiner: 'Open the stereo image. Keep the bass on the centre line.',
+    plainHook: 'Wider, not weaker.',
+    plainWhat:
+      'A stereo widener fronted by a pair of classic headlights: open the image, keep the low end in mono, check it with the correlation needle.',
+    longPitch:
+      'WIDTH opens the side, LOW FOCUS keeps the bass on the centre line, HIGH BEAM adds a decorrelated shine on top and TILT leans it bright or dark. The correlation needle and MONO check keep it safe for every speaker.',
+    status: 'live',
+    statusLabel: 'Available now',
+    trialOpen: true,
+    introPriceUsd: 9, // = widebeam.ts priceUsd (the cart's price; Paddle charges its own $9.00)
+    regularPriceUsd: null,
+    paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m',
+    checkoutPaused: false,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'widebeam-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'WIDTH + LOW FOCUS', desc: 'Open the side, keep everything under the LOW FOCUS split in mono.' },
+      { name: 'HIGH BEAM', desc: 'A decorrelated shine on the side, as far as REACH sends it.' },
+      { name: 'Correlation needle', desc: 'Watch mono safety live; MONO and SIDE check it by ear.' },
+    ],
+    audioDemos: [],
+    // = widebeam.ts formatsLine(): macOS 11+ universal, Windows x64 VST3 (WebView2); AAX on Mac only
+    systemReq: { ...baseSystemReq, os: 'Windows 10/11 64-bit, macOS 11+', formats: 'VST3 + AU + AAX on Mac, VST3 on Windows' },
+    reviewsCount: 0,
+    reviewsAvg: 0,
+    library: {
+      cats: ['modulation'],
+      typeWord: 'stereo widener',
+      words: [
+        { w: 'Open',     o: 0.5 },
+        { w: 'Mono-safe', o: 0.72 },
+        { w: 'Wider',    o: 1, hot: true },
+        { w: 'Centred',  o: 0.72 },
+        { w: 'Clean',    o: 0.5 },
+      ],
+      blurb:
+        'One big WIDTH knob opens the stereo image, and a steep split keeps the bass in mono. HIGH BEAM throws a mono source wide.',
+      alt: "WIDE BEAM plugin window: the big WIDTH knob, LOW FOCUS, MIX, TILT, the HIGH BEAM switch and the correlation needle",
     },
   },
   {

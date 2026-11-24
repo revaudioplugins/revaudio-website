@@ -1,0 +1,74 @@
+/* /widebeam ask plate under the hero (lane A, D4 C): the plate is the parts kit's .wb-plate--badge (leather, brass
+   trim, brushed steel, four screws, the oxblood strap and the RevAudio nameplate, all cut from the plugin's photo).
+   This file only lays out what sits on the steel. No ::before / ::after on .wb-get-plate: the kit uses both. */
+.wb-get { position: relative; padding: clamp(36px, 5vw, 64px) 16px 0; }
+.wb-get-plate {
+  --wb-plate-pad: clamp(18px, 2.6vw, 30px) clamp(16px, 3vw, 40px) clamp(16px, 2vw, 24px);
+  max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1.3fr auto 1fr; align-items: center;
+  gap: clamp(18px, 3vw, 40px);
+}
+/* the ask: a Bebas line stamped into the steel, the field sunk into it, the key raised off it */
+.wb-get-label {
+  margin: 0 0 14px; font-family: var(--wb-display); font-size: clamp(1.7rem, 2.6vw, 2.2rem); line-height: 1; letter-spacing: .02em; color: var(--ivory);
+  text-shadow: var(--wb-engrave-cut);
+  text-wrap: balance; /* a two-line label breaks evenly, never a lone "opens" (r-asks-widow: 414 and 430) */
+}
+.wb-get-form { display: flex; gap: 10px; }
+.wb-get-form[hidden] { display: none; } /* a sent form goes away; its status line says what happened */
+.wb-get-form input[type='email'] {
+  flex: 1; min-width: 0; height: 56px; padding: 0 1.1em; border-radius: 14px; font: inherit; color: var(--ivory);
+  background: linear-gradient(180deg, #0b0a08, #14120f); border: 1px solid #5c4628;
+  box-shadow: inset 0 3px 8px rgba(8, 6, 4, .8), 0 1px 0 rgba(255, 236, 200, .07);
+}
+.wb-get-form input[type='email']::placeholder { color: var(--ivory-3); opacity: 1; }
+.wb-get-form input[type='email']:focus { outline: 2px solid var(--brass-hi); outline-offset: 2px; }
+.wb-get-form input[aria-invalid='true'] { border-color: var(--oxide-text); }
+/* the small print in the plate's engraved serif small caps (.wb-plate-label, parts.css); sizes only here */
+.wb-get-micro { margin: 12px 0 0; font-size: 1.02rem; line-height: 1.3; }
+.wb-get-notice { margin: 6px 0 0; color: var(--ivory-2); font-size: .8rem; line-height: 1.5; max-width: 52ch; }
+.wb-get-notice a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.wb-get-status { margin: 10px 0 0; font-size: .95rem; color: var(--ivory-2); }
+.wb-get-status:empty { display: none; }
+.wb-get-status.ok { color: var(--emerald-text); }
+.wb-get-status.err { color: var(--oxide-text); }
+.wb-get-status:focus { outline: none; }
+/* the trial key while it waits for the script (WbGet.astro): dimmed like any disabled key, and if the script never
+   binds the form (JS on, the page script failed) a line says why from 9 s, the hero's own failsafe beat (hero.css
+   8.5 s; the slow-line case lands by 4.5 s). capture.ts removes [data-wb-needs-script] on bind, so the line never
+   shows on a working page; with JS off the <noscript> line speaks instead (r-asks-deadtrial) */
+.wb-get-late { display: none; }
+/* waiting, it takes no room (no box, no margin): the bind would otherwise shrink the plate and shift the page */
+form[data-wb-needs-script] ~ .wb-get-late { display: block; visibility: hidden; max-height: 0; margin: 0; overflow: hidden; animation: wb-late 0s 9s forwards; }
+@media (scripting: none) { form[data-wb-needs-script] ~ .wb-get-late { display: none; } }
+@keyframes wb-late { to { visibility: visible; max-height: none; margin-top: 10px; overflow: visible; } }
+/* the joined state: the field and its small print go; the status line says so (capture.ts) */
+[data-wb-ask].is-joined .wb-get-micro:not(.wb-get-formats), [data-wb-ask].is-joined .wb-get-notice { display: none; }
+/* the divider: a brass hairline on the steel */
+.wb-get-or { align-self: stretch; position: relative; width: 1px; margin: 6% 0; background: linear-gradient(transparent, rgba(201, 163, 92, .55), transparent); }
+.wb-get-buy { display: grid; justify-items: center; text-align: center; }
+.wb-get-price { margin: 0 0 18px; display: grid; gap: 8px; }
+.wb-get-price b {
+  font-family: var(--wb-display); font-weight: 400; font-size: clamp(2.6rem, 4vw, 3.4rem); line-height: .9; letter-spacing: .02em; color: var(--brass-hi);
+  text-shadow: var(--wb-engrave-cut);
+}
+.wb-get-price span { font-size: 1.02rem; }
+.wb-get-formats { margin-top: 0; font-size: 1.12rem; }
+.wb-buy { min-width: 220px; margin-bottom: 14px; }
+.wb-get-trust { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .wb-get-plate { grid-template-columns: 1fr; text-align: center; }
+  .wb-get-trial { display: grid; justify-items: center; }
+  .wb-get-form { width: 100%; max-width: 480px; }
+  /* the plate's centred column only: the closer reuses .wb-get-notice in a left-aligned column */
+  .wb-get-plate .wb-get-notice { margin-inline: auto; }
+  .wb-get-or { width: auto; height: 1px; margin: 0 8%; background: linear-gradient(90deg, transparent, rgba(201, 163, 92, .55), transparent); }
+  .wb-get-price { margin-bottom: 12px; }
+}
+
+@media (max-width: 560px) {
+  .wb-get-form { flex-direction: column; }
+  .wb-get-form input[type='email'] { flex: none; } /* stacked: keep the 56px, flex: 1 would collapse it */
+  .wb-get-micro, .wb-get-price span { font-size: 14px; letter-spacing: .12em; }
+  .wb-get-formats { font-size: 15px; letter-spacing: .08em; }
+}

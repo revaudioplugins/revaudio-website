@@ -544,3 +544,21 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
 - A load-path change can break another branch with no conflict at all: `prefetchModels()` starts before `createRoom()`
   and merges cleanly into the phone cut, whose filter lives later, in `loadModels()` (test merge: 100 model requests
   instead of 30). After a merge that touches the boot line, count the `.glb` requests of every page that filters.
+
+## 2026-11-18 - A once-per-tab intro hides itself from the reviewer; Lenis and a scrub trigger on the mover (`Wide Beam page tour`)
+
+- Dan opened /widebeam and saw no car. The intro played once per tab (`sessionStorage`): the session had opened the
+  tab for him while he was away, so it played to nobody, and every reload after that showed only the road. An intro
+  that hides itself after one play hides from exactly the person reviewing it. Play it on every load and skip it only
+  when the visitor comes back with Back / Forward (`performance.getEntriesByType('navigation')[0].type`).
+- A knob with a wheel handler turns whenever a page scroll passes over it (WIDTH 136 -> 0 in one pass down the page),
+  and Lenis scrolls the page anyway: it ignores `preventDefault`. Turn a control by wheel only while it has focus, and
+  give it `data-lenis-prevent-wheel` for that time.
+- `lenis.scrollTo(element)` adds the page's `scroll-padding-top` (here nav + 0.75rem, ~56 px) and adds the element's
+  rect to its own animated scroll, which runs ahead of the page while a wheel glide is still going: the preset click
+  landed 57 px short in WebKit and 115 px off in Chrome. Pass a number computed from `getBoundingClientRect().top +
+  scrollY`. A native smooth `scrollIntoView` under Lenis stopped ~70 px short too.
+- A scrub tween whose trigger is the element it moves is measured in its start pose (here 80 px down, scale .9), so it
+  ends ~135 px late. Trigger on a still parent.
+- Test path: a native `scrollIntoView` in a check leaves Lenis stale, and the next click lands on an element that has
+  since moved off screen (WebKit: the knob at y -21). Reach a spot with `mouse.wheel` the way a visitor does.

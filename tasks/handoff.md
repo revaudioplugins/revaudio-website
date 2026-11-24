@@ -60,6 +60,275 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   cart" fits row 2 and Product page does not move. Pre-line and the small "Free beta" are laptop-only rules; the
   blurb's `\n` only reaches the TV (home + /plugins), where phones show it as a space.
 
+## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page` (the branch itself NOT pushed); PUSHED for team QA as `qa/widebeam-page-1121` on 2026-11-21 (Dan's word), NOT on main
+
+Claim: OPEN (Dan, 2026-11-18: "fix the code ... review it and fix whatever you see fit, then we continue with the design").
+Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`, `tasks/widebeam-polish-plan-2026-11-18.md`, one line of
+`tasks/widebeam-handoff-dan-2026-11-17.md` (the intro rule), `tasks/lessons.md` (2026-11-18 entry), this entry.
+
+- The car: Dan didn't see it. It played once per tab (`sessionStorage`), so the tab opened for him played it unseen and
+  every reload showed only the road. Now it plays on every load; Back / Forward skips it (`intro.ts`).
+- Launch list: the status line was looked up as `[data-wb-notify-status]` (the page has `data-wb-status`), and both
+  forms' `hidden` lost to their `display: flex`. A visitor pressing "Notify me" saw nothing change, not even for a bad
+  email. Both forms now go away after sending and say what happened.
+- Knobs: the wheel turned whichever knob was under the cursor while the visitor scrolled the page past the dash
+  (WIDTH 136 -> 0 in one pass). The wheel now turns a control only once it is clicked or tabbed to; Lenis leaves the
+  wheel to it then (`data-lenis-prevent-wheel` while focused).
+- The dash fits a laptop screen (min-width 901 px: the 3:2 face sized to the height under the nav; 1141x636 -> 828x552,
+  was 1109x739, never whole on screen). A preset click lands the whole face centred under the nav (a number to
+  `lenis.scrollTo`), and the dash's rise is triggered on its still wrapper, so it finishes where it should.
+- The stereo road: twin sources that meet (BASS / BASS, PAD / PAD, GTR L / GTR R) share one label instead of
+  printing over each other ("BASBASS" on a phone).
+- Checked (stubbed worker, nothing sent; Chrome + Playwright WebKit at 1141x636, WebKit 390x844): 9 of 9 fix checks
+  pass in both engines (car on first load, on reload, skipped on Back; dash fits; wheel ignored / works after a
+  click; launch list bad + good email; trial form), the old code failed the car-on-reload, wheel and launch-list checks
+  earlier the same session; preset click lands the face at 64-616 of 636 in both; `npm run build` green; no page
+  errors. Not checked: real Safari / iPhone (remote automation is off on Dan's Mac), Firefox, Windows, the sound by ear.
+- Left for Dan (design round next): the music starts on the first click anywhere (cookie Decline included); the
+  "AAX" in the two formats lines (WideBeam README: PACE wcguid not created); the gold gradient on the WIDE BEAM lockup
+  (the design hook flags gradient text; Gil chose it to match the plugin plate).
+- **Design round, same day** (Dan: "a team of designers that knows how we build websites ... meet the standard of the
+  DRIFT page and the GAS 2 page ... a place for a tutorial video ... no bugs"). Ten designer agents (guidelines, art,
+  motion, hero, video, copy, demo, mobile, a11y, perf) studied the page against DRIFT + GAS 2, debated, a lead wrote the
+  plan, one verifier per bug re-ran it (46 of 53 reproduced, 6 partly, 1 not), and a critic checked the plan. The plan,
+  with the critic's corrections on top: `tasks/widebeam-polish-plan-2026-11-18.md`. Four more designers mocked the 8
+  visual options (0 credits; the pictures live in the session scratchpad only).
+- **Dan's pick page:** https://claude.ai/artifact/CnPheXrffMYYjpPcN6Dr8Y (private; 8 looks + 5 plain calls, my pick
+  marked). His picks save to its database, collection `picks` (ArtifactData `list`). P1 (Black Friday) is time-bound:
+  `sale.ts` on main takes "Wide Beam ($9)" out of the bundle on Nov 22 unless it is released.
+- **State:** nothing from the plan is built; repo files touched by the round: the plan file and this entry only. Next,
+  after the picks: Step 0 (merge `origin/main` in in a temp worktree after `git merge-tree`; baselines), Step 0.5 (the
+  critic's corrections), lane F alone, then lanes H / D / S / A / T in their own worktrees, then the gates; commit per
+  lane by exact path; no push or merge to main until Dan says "push".
+- **Dan picked, 2026-11-18 ~16:10** (on the pick page, no notes): D1 B (the four readings), **D2 B "WIDER MIX. BASS DEAD
+  CENTRE."** (not my A), D3 B (satin brass), D4 C (cut from the plugin, engraved serif labels), D5 A (console column),
+  D6 A (Owner's Manual plate + strap), D7 B (phone deck), D8 B (portrait cut that follows the car), P1 A (launch after
+  Black Friday: WIDE BEAM leaves the bundle on Nov 22 by Gil's rule, "Price at launch", the BF strip hidden on
+  /widebeam), P2 B (music on the first touch of the demo), P3 B (3-4 real clips through the live demo), P4 A (a
+  partner records the film), P5 A ("Mac VST3 · AU · Windows VST3", the build guards the Windows flag).
+- **Build started the same day:** `origin/main` merged in (only this file clashed; `/widebeam` is still excluded in
+  both popups). Lanes and gates as in the plan.
+- **Build state, updated 2026-11-20 ~01:45 (all local on `feat/widebeam-page`, NOT pushed):**
+  - Stage 1 committed: `be6153d` the split into one file set per lane (196/196 shots pixel-identical, every behaviour
+    check the same), `49a9976` the parts kit cut from the plugin's photo (`tools/widebeam-parts/`), `0c0a6f8` DESIGN.md
+    §7 records Dan's D8 B exception.
+  - Stage 2 committed: `607fb1f` the data contract + honest words + final order + tokens (build green, honesty greps
+    clean, every behaviour change explained), `a7d186f` the plate label on the shared serif tokens.
+  - Stage 3 DONE and merged, 2026-11-20 ~01:20: five lanes built in their own worktrees
+    (`.claude/worktrees/wb-lane-{h,d,s,a,t}`, branches `wb/lane-{h,d,s,a,t}`), each committed by path; octopus merge
+    `7b06e2b` (no file touched by two lanes), build green. Lane servers 4513-4517 stopped. The lane worktrees and
+    `wb-base` (detached at `d76c750`) stay until stage 4 ends, then go.
+    - Stage 3's adversarial checkers for the hero, the dash and the glove box / road / manual never finished (sleep, then
+      the account limit); stage 4's hunt has three lenses that re-check those lanes' own claims.
+  - Stage 4, updated 2026-11-21 ~15:00. Run `wf_34e21857-e42` did the integration, 4 gate runs with fixes, timing
+    (9/9 PASS) and bug-hunt rounds 1-2 (65 + 31 findings; 28 + 27 real after a skeptic each, all fixed by area, a gate
+    run after each). It stopped at round 3: the lid was closed at 01:53 (pmset "Clamshell Sleep" until 13:49; caffeinate
+    can't stop that), then the Claude login had expired. Checkpoint commit `94d5663` (39 files, build green).
+    RESUMED as `wf_753116d1-2ea` (scratchpad `team/build/stage4-resume.js`, seeded with the round-2 state from the old
+    journal): round 3 (six lenses + the 25 carried lows, cap 60), timing, the final check, the section shots
+    (`team/gates/baseline-final`), the gate scripts into `tools/widebeam-gates/`. Pit Wall http://127.0.0.1:8795;
+    caffeinate until Mon 23 Nov 02:51 (keep the lid open). Dev server 4392 restarted fresh. All agents Opus.
+    - Biggest fixes so far: the words described the 0.9 plugin (a CRUISE switch, TRACTION); the trial form was not
+      wired in the open/released phases; MONO / SIDE did nothing below MIX 100 (12 of 16 presets); a mono own-track
+      file played hard left; the hero name lost its word space from 1236 px; the BF/CM sale strip would have shown on
+      /widebeam (now gated in `src/layouts/BaseLayout.astro`, the sale-gate line only).
+    - Built, not yet seen passing: the L1440 full-visit byte row (3.33 vs 3.30 MB before the face.ts tier fix) and the
+      G3 Firefox "stops" guard. The final gate run proves them.
+  - Dan, 2026-11-21: "we only deal with design" here, so his list holds design choices only. Shown with pictures on
+    https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs (every section now vs his picks, laptop + iPhone; the old stills
+    link is gone).
+  - For the launch owner (Gil / Yoni), not Dan: mail the whole newsletter list at launch (`launchMailToWholeList`, now
+    false; fixer's pick yes); the licence of the loops under the demo clips (Yoni's renders).
+  - Dan, 2026-11-21, "go with your picks" (`ec9ac17`): the phone deck puts HIGH BEAM / MONO / SIDE / POWER right under
+    WIDTH (A; the deck leaves the plugin's plate order); an upright tablet 600-1100 px wide gets the portrait cut that
+    follows the car (B, a little softer; DESIGN.md §7 extended). The stage 4 calls stay: the name capped at 137 px from
+    1236 px; on a slow line the film is skipped (REPLAY plays it); the dash inside the page column from 1212 px; dash
+    images q72, plate q80; the road's LEVEL reads 0.0 dB under CRUISE; 2x deck art on 3x phones; the no-JS line on the
+    trial forms; the phone bar on zoomed short screens; the seam before the manual kept.
+    - The running round-3 workflow's "known" list still calls deck order and iPad "held for Dan": stale since
+      `ec9ac17`, harmless (it tells fixers never to change them).
+  - Waiting on Dan (design): the intro film's bytes, only if the final G11 still fails (keep the film and move the bar,
+    or a lighter encode: `team/build/fix-cross/film-pick/index.html`, B drops some faint stars). Device checks: turn a
+    real phone while typing in the closer's field; VoiceOver on the deck; iPad B softness on a real iPad.
+  - Dan, 2026-11-21, "The two failures fix": the cookie banner is fixed on this branch, CSS only, the wording and the
+    script untouched (Yoni owns the consent text). `e401fba`: a phone held sideways (601-1099 px wide, 500 px tall or
+    less) gets one slim row with the phone's short line (844x390: 626 -> 63 px, top -236 -> 327). `bd8d4ac`, separate so
+    it can be dropped: the title above the full copy at 641-1099 px wide (an upright iPad: 626 -> 145 px, 4 lines).
+    Measured on /widebeam, / and /drift in Chrome and WebKit; 1100 px and wider and upright phones unchanged. Yoni's
+    note says "applied" now (`tasks/widebeam-cookie-banner-for-yoni.md`). Not seen on a real sideways iPhone.
+  - Dan, 2026-11-21, "send an agent to push the branch to qa": `qa/widebeam-page-1121` = `bd8d4ac` + origin/main
+    `2851c19` (merge `7b3e9ba`, the `qa/drift-page-1005` pattern), pushed by an Opus agent, nothing forced; build green
+    (34 pages); Dan's look served from the QA worktree (scratchpad `team/qa/wt`) on 127.0.0.1:4394. GitHub Pages builds
+    main only, so the branch has no web address. It holds the page up to the banner fix, not round 3 (still running).
+    - NOT in it: Gil's two commits on origin/feat/widebeam-page from 2026-11-19, `7a92522` (BUY NOW $9 via Paddle
+      `pri_01m7vhcdt6t1dtpbyn9g1mx00m`, the trial form posting to the download gate, a cart entry in plugins.ts,
+      `widebeam` in OWN_ROUTE) and `3c91404` (its handoff). This branch never took them in; they clash in
+      `src/data/widebeam.ts`, `src/pages/[slug].astro` and `src/pages/widebeam.astro`. Next, after the run: merge
+      origin/feat/widebeam-page in, re-run the gates (the trial form's flow changes with `gateWired: true`), refresh qa.
+    - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
+      it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
+      local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-23 ~15:00, Dan's NEW DIRECTION: the projector look (a look only; the site is unchanged):**
+    - Dan, 2026-11-22: "no player at all. no music nothing", in 3 sections: (1) the car film with the email gate from the
+      start; (2) the manual film full screen on a projector, a vintage educational film with our ElevenLabs voice (Gil
+      provides it), which turns over mechanically into the Buy plate + gate when it ends; (3) "understand it": the
+      plugin's face, presented, with the gate again under it. Why WIDE BEAM exists (Dan's pick A, same day): the cheap
+      first purchase that brings new customers in.
+    - The look: `bench/widebeam-projector/` (README there), published at
+      https://claude.ai/artifact/4oWMU9NiWGPcZniDsHee3Y (private; db `pick/dan` = {look, flip, note}, empty so far).
+      The first link (`6bbysbnKpcaGSKtCZu7hLL`) was deleted or lost its write access on 2026-11-23 (not by this
+      session); its db held no pick.
+    - The open, Dan 2026-11-23 ("the film just snaps" on reload): the screen starts black, the words rise in, and the
+      car film waits on its first frame until ~0.4 s after the first paint, then plays as it fades up (1.6 s). No
+      `autoplay` in the markup and `opacity:0` inline on the video (WebKit once painted it whole before the sheet
+      applied). Reduced motion: the still end frame fades up. Checked frame by frame (WebKit + Chrome, 1141 and 390,
+      film delayed 1.5 s too).
+    - Dan's calls on it, 2026-11-23: section 1 centred; its email card is smoked glass, then "more transparent"; the
+      small print on one row on a laptop (wraps on a phone); the line under the name is "THE PRECISE, GENTLE WIDENER"
+      and the lede "One big knob spreads your track, and a steep split keeps the bass in mono." (gentle = it opens a
+      touch wider, at most +6 dB side; precise = the 24 dB/oct split); two typefaces on the whole page, Bebas Neue +
+      Gelasio (the plugin face's LCD keeps Courier New). Checked in Playwright WebKit 1141 + Chrome 1312 + WebKit 390.
+    - Later the same day (Dan): the top text is down to the name + the tagline (the lede, then "Wider mix. Bass dead
+      centre." removed; the bass point now lives in section 3's heading); the name is the plugin's own engraved
+      letters (`title.webp`, cut from face.webp and unmixed from the plate's #242424), over the plugin's ruled subtitle
+      line carrying the tagline (in Gelasio, not the plugin's sans, to stay at two faces); "Scroll for the film"
+      centred and bigger; the email error line sits 10 px under the box's brass ring; the face's number pins are flat
+      round coins just before each printed name ("1 WIDTH"), hidden under 640 px of face (the names are ~5 px tall).
+      Left-to-right they read 2 4 1 3 (the list puts WIDTH first); 1-2-3-4 across would reorder the list too.
+    - The film's ending, Dan 2026-11-23, in steps: the latches off the panel ("let remove them"), then no flip at all
+      ("play like the film"), then "the card will be the film ... a little bit of glitch ... seamless", then "it moves
+      too much", then "it blinks too much, make it more like a real film". Now: the film cuts to its own 1930s title
+      card inside the film frame (black and white, double-ruled frame, the plugin's lettering in film white, the gate as
+      a white box + a white block key), under the film's grain (now every frame), a light that wavers a little each
+      frame (no blinks) and a single-frame dust speck now and then. The cut: one small shiver, a one-frame slip with the
+      frame line, one faint splice frame. The held card does not move (0 px over 12 s, both engines). Watch again runs
+      it back. On phones the film frame grows to hold the card (the film letterboxes in it). The flips (F1-F3), the
+      latches and the pivots stay in the code, switched off; the Look controls lost the flip and hardware rows.
+    - Open for Dan: the projector look (P1-P3; my pick P1 "Beam in the dark", not saved yet); section 3's face still or
+      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for section
+      3's plate too (still leather + brass).
+    - For Gil: the film as 16:9 (laptop) + 9:16 (phone); the captions as a cue file (VTT / SRT), not burned in; the $9
+      shown before launch (reverses P1 A's "Price at launch").
+    - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
+      in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
+      (fast-forward to `a58715c`); `qa/widebeam-page-1121` still waits for Dan's push line.
+  - **State 2026-11-22 ~13:30, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
+    `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
+    stereo road are cut (files kept; bring back = per section its line + import in widebeam.astro and its @import in
+    widebeam.css; the chapters stay on the dash). The manual's chapters drive to the dash; its note says "the dash
+    above". The art look-ahead starts on the first scroll (G11's first view). Gate rows for the two cut sections SKIP
+    while they are off the page.
+    - Phone bar (`2083c4e`, droppable): up over the dash now (before the plate), and up over the stand-by manual (G9
+      fell to 61.5-69.2 % without it; 80.8-84.6 % with it, one step of headroom on WebKit 390). Two "Email me at
+      launch" on that phone screen: the manual line's and the bar's.
+    - Gates (G0, G3-G11, G13 + fixtures, `rg-1122-123319`): 221 PASS, 31 SKIP, 4 FAIL, 1 MISSING. MISSING: G0 "every JS
+      file the page loads" (the production bundle is 2 files; the same row was MISSING on the 11-22 00:05 / 00:56
+      runs, not new). FAIL, all G8, whose fixed scroll fractions now land on the manual: B safe area at P390 / P360 (the
+      key is aside over the manual frame at 0.6 and the row reads its off-screen rect; with or without `2083c4e`); C
+      "never hidden while sound plays" S844 (could not start the sound); C "step aside over [data-wb-watch]" P390 /
+      P360, both engines (the playing key over the stand-by frame, ONLY with `2083c4e`, which lifts the key). Without
+      `2083c4e`, G9's ask rows fail instead. G8 left untouched; Dan / the session picks.
+    - Superseded by the map (dated 2026-11-22): plan:87 the plate under the hero, plan:105-107 the glove box under the
+      dash, the road per D4 C / plan:108-112, the manual note "the stereo road above", D2 B's body-copy rule (plan:9).
+    - Open for Dan: D2 B's two facts (the side below LOW FOCUS removed at any WIDTH; MIX under 100 blends the dry back)
+      now show only behind the closed Specs fold, and only in part (LOW FOCUS "the side below it is removed", no "at any
+      WIDTH"; MIX "Dry blend"); in view: the odometer's "24 dB/oct mono-bass split" and chapter 02's title. No copy
+      added; he decides.
+  - **State 2026-11-22 ~11:30 (local on `feat/widebeam-page`, NOT pushed; Dan: Black Friday, Gil wants it today):**
+    - `a040c17` the car film plays at 1.5x (intro.ts `RATE`, defaultPlaybackRate on every start; night.ts TRAVEL /
+      RATE). Measured Chrome / WebKit / portrait, Replay, Skip, slow line, hidden tab: ~5.4 s film, title ~3.4 s.
+      Known: under ~1 Mbit/s the 720 file stalls at 1.5x (1x stalls there too); fallback to 1x = a follow-up.
+    - `85b596c` lag: the empty haze plates are `display: none` until the footer nears (base.css). Measured on the qa
+      preview: wheel input to motion 40 -> 25 ms, wheel scroll 12.8 -> 10.3 s, rest 9 -> 4-5 % busy, 0 pixels differ.
+      The page itself drops no frames (even at 4x CPU). The rest: three orphaned headless Playwright Chromes on
+      Dan's Mac (12 days old, parent pid 1; PIDs 28952, 30280, 99358), one burning ~45 % CPU nonstop.
+    - qa worktree merged = `e36b6af`, built, preview on 4394 restarted (serves both). The qa push still waits on
+      Dan's `!` line. Bench for Dan's notes, round 1: https://claude.ai/artifact/NErJDGkBE3RyAsHDkWjjDh (24 screens
+      at 1312x734 from 203ea3d; db collection `notes`). Its two asks: the film speed, the site-wide Lenis glide
+      (lerp 0.1; 0.15-0.2 or smoothWheel off are the options; motion.ts is shared, not a WIDE BEAM file).
+  - **State 2026-11-22 ~02:10 (all local on `feat/widebeam-page`, HEAD `9b81220`, NOT pushed):**
+    - `0ca2471` round 3 committed (from the dead run's journal). `a44ec19` merged Gil's `7a92522` + `3c91404` in (phase
+      stays `preopen`, so the page shows none of BUY NOW / the gate yet; his plugins.ts formats line still says AAX: fix
+      before `released`). The two bullets above about "NOT in it" are done.
+    - Dan, 2026-11-21, "remove the player" -> "TRACK, VOLUME, Stop the engine": `0f16610` removes the console's TRACK,
+      VOLUME fader and engine key and the deck's TRACK; the 4 demo clips are deleted (so the loops' licence question
+      and "the clips by ear" are moot). Sound starts on SOUND, "Take it for a drive", a touch of the demo or a chosen
+      file, at the fader's old level (-3.9 dB); any start lights the face. Column beside the face: A/B over MONO CHECK.
+    - `72e8275` the spec's stub answers the Cloudflare beacon with an empty script (a production build failed "no page
+      errors" on JSON parsed as JS). `c64a7fe` the gate kit is in the repo: `tools/widebeam-gates/` (README there).
+    - `9b81220` the console switch picks its art by layout width: the 256 px toggle file had loaded during the dash's
+      rise (+49.6 KB), putting L1440's full visit at 3.32 MB > 3.30. Now 3.27 MB.
+    - Final check at `0f16610`, run rg-1121-235515 + fixture rerun rg-1122-005214 + G11 rg-1122-014335 at the fix:
+      build green (34 pages); G11 9/9 PASS; G0 open/released, G3-G10, G13 PASS. Left: G1 (baseline-B1 from 11-18 is
+      stale; new shots in scratchpad `team/gates/baseline-final`, WebKit shots there are unstable run to run), G0's
+      "every JS file" row (a dev-server count; the dist row passes). House specs: 86 pass; the /drift WebKit smoke fails
+      on WebKit's own video-control icons (not this page; not checked on main). Not run: the timing gates.
+    - QA: merged locally as `203ea3d` in scratchpad `team/qa/wt` (feat `9b81220` + origin/main `2851c19`), build
+      green, served on 127.0.0.1:4394. NOT pushed: auto mode refused the agent's push; Dan runs the push line.
+      origin/qa/widebeam-page-1121 is still `7b3e9ba`, Gil's `3c91404`, main `2851c19`.
+  - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
+    plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
+    film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE
+    WIDTH RIGHT" as the coach's first line on touch screens.
+  - Open for Dan: the four demo clips by ear (vocal, guitar, pad, full mix, cut from Yoni's renders already live on
+    /revfx, /radio-roulette, /gas; no licence note was found for the loops underneath) and the review page after stage 4.
+  - For Yoni (a note): in headless Chrome the AudioContext clock stays near 0, so the page's level checks are offline
+    renders of its own engine, not real-time measures.
+  - The gate kit and the stage scripts live in the session scratchpad (lost on a reboot); stage 4 copies the gate
+    scripts into the repo. Dan's stills page, after hunt round 2 (21 Nov): https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs
+  - Owed by others, unchanged: Gil (Paddle price, licence worker + hub line, signed builds on R2, the trial download,
+    a real test purchase; and on Nov 22 his `sale.ts` line takes "Wide Beam" out of the bundle with OBDTune), Ilay
+    (MANUAL -> /widebeam/#manual), a partner (the film), Yoni (Cloudflare long-cache rule; a look at the banner fix
+    in `tasks/widebeam-cookie-banner-for-yoni.md`). At launch someone sends the list "one email the day the trial
+    opens" (the page promises it; nothing sends it automatically).
+
+## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
+
+Claim: OPEN, handed to Dan. Full brief: `tasks/widebeam-handoff-dan-2026-11-17.md`.
+Files: `src/pages/widebeam.astro`, `src/lib/widebeam/*`, `src/data/widebeam.ts`, `src/styles/widebeam.css`,
+`src/assets/widebeam/*`, `public/widebeam/*`, `tools/assetver/integration.mjs` + `docs/assets.md` (the `widebeam/`
+folder), `src/components/{WelcomeDiscountPopup,ExitIntentPopup}.astro` (`/widebeam` excluded), this entry.
+
+- Unlisted product page for WIDE BEAM (revaudioplugins/WideBeam, 1.0 candidate): Higgsfield intro that dissolves into
+  its own last frame, a free-trial + BUY NOW plate, the plugin's real face live with a Web Audio demo, a scroll story,
+  the 16 factory presets, specs, launch list. House type and `.rv-btn` buttons.
+- Not wired, on purpose (Gil): BUY NOW is a placeholder until there is a Paddle price id; the trial form only joins the
+  list (`gateWired: false`) until the license worker has `DL_PLUGINS.widebeam`. Steps to go live: the brief, "Open".
+- `main` gained `713f6b3` today ("Wide Beam ($9)" in the BF/CM bundle, `sale.ts` only); the branch merges into
+  `origin/main` with no conflict (checked with `git merge-tree` before the push).
+- Checked: `npm run build` green; Playwright Chromium + WebKit at 1440×900 and 390×844, no page errors; the trial
+  form's payload against a stubbed worker; the cart's add-and-open with the same markup on revfx. Not checked: a real
+  iPhone, Windows, Firefox, the live host.
+- Next: Dan's review on the branch; Gil sends the Paddle id.
+
+## 2026-11-22 — "Black Friday in" countdown strip on every page, not just home (Claude Code `revaudio-eb`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-22 on Yoni's word "push" (`193d459`, rebased onto `2851c19`); deploy run 45016020586 success (incl. Cloudflare cache clear), smoke run 45016020692 success
+
+Claim: CLOSED 2026-11-22 `revaudio-eb`. Files: `src/layouts/BaseLayout.astro` (sale gate), `src/components/SaleStrip.astro` + `src/data/sale.ts` (comments), this entry.
+- Yoni: "theres the black friday skin - but its only in the homepage - lets make it pernament on every page".
+- The week-before strip (`html[data-sale-soon]`, Nov 20 00:00 PT until BF) was gated to `/` in the BaseLayout head script
+  (`sHome &&`, live + `?sale=soon` preview). Gate removed: the strip now shows on every BaseLayout page. Unchanged: the BF /
+  CM strip (already site-wide), SaleIntro (home only by design: it is the home TV), SaleTransition (BF/CM only).
+- Not covered: `/gas2/` and `/garage-9f3c/` are standalone pages (integrations, no BaseLayout), so they show no strip in any
+  phase; `paddle-test` and `pit-lane` have no layout either.
+- Checks: `npm run build` green (33 pages). `astro preview` + Playwright Chromium, real clock (Nov 22): 10 pages (`/`, `/plugins/`,
+  `/revlimiter/`, `/drift/`, `/radio-roulette/`, `/revfx/`, `/about/`, `/support/`, `/review/`, `/blog/`) x 1280x665 + 390x844
+  DPR2 = 20/20: strip visible at top (46 / 42 px), nav under it, odometer ticking, no sideways scroll, no page errors.
+- Live check on revaudio.net after the deploy: the same 10 pages x 2 viewports = 20/20 PASS (Chromium).
+- Also this session: the website `.git` had lost `pack-bd733105….pack` again (Drive sync); copied back from the Recycle Bin,
+  `verify-pack` + `fsck --connectivity-only` clean. The main clone (`revaudio-website`, 180 behind) still holds
+  `revaudio-99`'s uncommitted 2026-11-04 entry in `tasks/handoff.md`; left untouched.
+
+## 2026-11-18 — Temporary home hero ON THE TV (the garage's big line, pixel tune-in), with the BF/CM reskins (Claude Code, Gil's Mac) — branch `feat/temp-hero` (from main `94c8562`), PUSHED for Dan, NOT on main
+
+Claim: HANDED TO DAN 2026-11-18. Files: `src/components/TempHero.astro` (new), `src/components/WordWall.astro` (a slot),
+`src/pages/index.astro`, `src/components/SaleIntro.astro`, `tasks/temp-hero-handoff-dan-2026-11-18.md`, this entry.
+Gil 2026-11-18: until the garage is ready for everyone, the home TV first shows "Built like cars." on its glass. It
+tunes in pixelated, and the first scroll changes the channel to the menu. With the sale on, that scroll brings the
+sale's TV intro first, and its close shows the menu. "See the plugins" always goes to /plugins. Gil approved the look
+in the browser ("looks great").
+- Full brief, behaviour table, what was and wasn't checked, open items: `tasks/temp-hero-handoff-dan-2026-11-18.md`.
+- `npm run build` passes. Not tested: real Safari / iPhone, Windows, `?sale=soon`, `?home=garage` together with it.
+
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
 Claim: OPEN 2026-11-18. Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`

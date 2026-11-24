@@ -1,0 +1,86 @@
+---
+/** /widebeam phone deck (lane D, D.4 = Dan's pick D7 B; mobile-04, a11y-d03). Under 901 px held upright (DECK_MQ in
+ *  src/lib/widebeam/drive-to.ts) the face above is the live display and goes inert; this deck under it holds the controls,
+ *  big, on the plugin's own plate (.wb-plate, the parts kit), driving the same store (deck.ts, source 'deck'):
+ *    the trip LCD's reading in the plugin's LCD face (it prints what the face's trip LCD prints);
+ *    TILT (the face's wheel strip, 40 x 98) and WIDTH (150 px) on its seat with the plate's printed MONO / 100 / 200;
+ *    HIGH BEAM, MONO, SIDE, POWER (60 px parts, POWER 48 x 60) right under WIDTH, so the keys the coach asks for after a
+ *    drive are on the first screen (Dan's pick A, 2026-11-21; the deck leaves the plate's order here); then LOW FOCUS,
+ *    MIX, REACH (88 px) on their seats;
+ *    PRESET, an LCD with two 44 px keys (TRACK went with the player: Dan, 2026-11-21).
+ *  Every knob is a native <input type=range> under the art (a phone screen reader adjusts it with its own gestures:
+ *  a11y-d03); a finger or a mouse turns the art itself, with the face's rules (deck.ts). The strips are the face's files,
+ *  in the tier the face's loader picks for both (face.ts: one file per strip, loaded once the dash nears); the seats are
+ *  one small sprite cut from face-base.webp (deck-seats.webp, 459 x 959 = the four seats at 2x), shown once the deck nears.
+ *  Hidden at every other size: the face itself is the control there. */
+import seats from '../../assets/widebeam/deck-seats.webp';
+
+const KNOBS: [id: string, label: string, art: string][] = [['focus', 'Low focus', 'focus'], ['mix', 'Mix', 'mix'], ['reach', 'Reach', 'mix']];
+const arrow = (d: string) => `<svg viewBox="0 0 9 16" aria-hidden="true"><path d="${d}" /></svg>`;
+const PREV = arrow('M7.5 1.5L1.5 8l6 6.5'), NEXT = arrow('M1.5 1.5L7.5 8l-6 6.5');
+---
+<div class="wb-deck wb-plate" data-wb-deck data-wb-seats={seats.src} style={`--wb-seats: url(${seats.src})`}>
+  <p class="wb-deck-read" data-wb-deck-read aria-hidden="true"></p>
+
+  <div class="wb-deck-top">
+    <div class="wb-deck-cell wb-deck-cell--tilt">
+      <div class="wb-deck-knob wb-deck-knob--tilt" data-wb-deck-ctl="tilt" data-wb-demo>
+        <input class="wb-deck-in" type="range" id="wb-deck-tilt" min="0" max="100" step="1" value="50" data-wb-deck-k="tilt" />
+        <span class="wb-deck-art wb-deck-art--wheel" data-wb-deck-art="wheel"><span class="wb-deck-strip"></span></span>
+      </div>
+      <label class="wb-plate-label wb-deck-lab" for="wb-deck-tilt">Tilt</label>
+    </div>
+    <div class="wb-deck-cell wb-deck-cell--width">
+      <div class="wb-deck-seat wb-deck-seat--width">
+        <div class="wb-deck-knob wb-deck-knob--width" data-wb-deck-ctl="width" data-wb-demo>
+          <input class="wb-deck-in" type="range" id="wb-deck-width" min="0" max="100" step="1" value="68" data-wb-deck-k="width" />
+          <span class="wb-deck-art wb-deck-art--knob" data-wb-deck-art="width"><span class="wb-deck-strip"></span></span>
+        </div>
+      </div>
+      <label class="wb-plate-label wb-deck-lab" for="wb-deck-width">Width</label>
+    </div>
+    <div class="wb-deck-cell wb-deck-cell--pad" aria-hidden="true"></div>
+  </div>
+
+  <div class="wb-deck-row wb-deck-row--keys">
+    <button type="button" class="wb-deck-key" role="switch" aria-checked="false" data-wb-deck-sw="high" data-wb-demo>
+      <span class="wb-deck-art wb-deck-art--tog" data-wb-deck-art="toggle"><span class="wb-deck-strip"></span></span>
+      <span class="wb-plate-label wb-deck-lab">High beam</span>
+    </button>
+    <button type="button" class="wb-deck-key" aria-pressed="false" data-wb-deck-sw="mono" data-wb-demo>
+      <span class="wb-deck-cap" aria-hidden="true"><span class="wb-part-cap"></span></span>
+      <span class="wb-plate-label wb-deck-lab">Mono</span>
+    </button>
+    <button type="button" class="wb-deck-key" role="switch" aria-checked="false" data-wb-deck-sw="side" data-wb-demo>
+      <span class="wb-deck-art wb-deck-art--tog" data-wb-deck-art="toggle"><span class="wb-deck-strip"></span></span>
+      <span class="wb-plate-label wb-deck-lab">Side</span>
+    </button>
+    <button type="button" class="wb-deck-key" aria-pressed="true" data-wb-deck-sw="power" data-wb-demo>
+      <span class="wb-deck-art wb-deck-art--power" data-wb-deck-art="power"><span class="wb-deck-strip"></span><span class="wb-deck-strip wb-deck-lit"></span></span>
+      <span class="wb-plate-label wb-deck-lab">Power</span>
+    </button>
+  </div>
+
+  <div class="wb-deck-row wb-deck-row--knobs">
+    {KNOBS.map(([id, label, art]) => (
+      <div class={`wb-deck-cell wb-deck-cell--${id}`}>
+        <div class={`wb-deck-seat wb-deck-seat--${id}`}>
+          <div class={`wb-deck-knob wb-deck-knob--${id}`} data-wb-deck-ctl={id} data-wb-demo>
+            <input class="wb-deck-in" type="range" id={`wb-deck-${id}`} min="0" max="100" step="1" value="50" data-wb-deck-k={id} />
+            <span class="wb-deck-art wb-deck-art--knob" data-wb-deck-art={art}><span class="wb-deck-strip"></span></span>
+          </div>
+        </div>
+        <label class="wb-plate-label wb-deck-lab" for={`wb-deck-${id}`}>{label}</label>
+      </div>
+    ))}
+  </div>
+
+  <div class="wb-deck-pick">
+    <p class="wb-plate-label wb-deck-k" id="wb-deck-preset-k">Preset</p>
+    <div class="wb-con-lcd wb-deck-lcd" role="group" aria-labelledby="wb-deck-preset-k">
+      <button type="button" class="wb-con-step" data-wb-deck-step="-1" data-wb-demo aria-label="Previous preset" set:html={PREV}></button>
+      <span class="wb-con-name wb-deck-name" data-wb-deck-preset>DEFAULT</span>
+      <button type="button" class="wb-con-step" data-wb-deck-step="1" data-wb-demo aria-label="Next preset" set:html={NEXT}></button>
+    </div>
+  </div>
+</div>

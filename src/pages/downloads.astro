@@ -26,8 +26,8 @@ import { revfx } from '../data/revfx';
 import { pluginImage } from '../lib/images';
 
 // What the worker's /download/register can send (DL_PLUGINS + DL_PORTAL_ORDER
-// in the licence worker). RevFX joins once revfx.gateWired.
-const DL_SLUGS = ['drift', 'revlimiter', 'gas2', 'gas', 'radio-roulette',...(revfx.gateWired ? ['revfx'] : [])];
+// in the licence worker). RevFX joins once revfx.gateWired. WIDE BEAM: DL_PLUGINS.widebeam (2026-11-19).
+const DL_SLUGS = ['drift', 'revlimiter', 'gas2', 'gas', 'radio-roulette', ...(revfx.gateWired ? ['revfx'] : []), 'widebeam'];
 const info = Object.fromEntries(DL_SLUGS.map((slug) => {
   const p = bySlug(slug)!;
   return [slug, { gate: dlGateId(p), name: p.name, free: !!p.isFree, value: trialConversionValueUsd(p) || 0 }];

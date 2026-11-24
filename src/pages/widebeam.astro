@@ -1,0 +1,140 @@
+---
+/**
+ * /widebeam: the WIDE BEAM page (branch feat/widebeam-page). WIDE BEAM = the car-headlight stereo-width plugin
+ * (revaudioplugins/WideBeam). On sale since 2026-11-23 (Gil): indexed, on the home TV, /downloads and the cart; the
+ * phase and the listing live in src/data/widebeam.ts.
+ *
+ * The shell (lane F): it only places the sections. Lane F called this order final; Dan changed it on his page map
+ * (2026-11-22, Black Friday): hero, dash, plate, manual, closer, footer, with the glove box and the stereo road cut.
+ *   WbFlash (the HIGH BEAM page flash, position: fixed) · WbSound (the SOUND pill, fixed)
+ *   hero (WbHero) · the dash (WbDrive with WbConsole; lane D's phone deck renders inside it) · the ask plate (WbGet)
+ *   · the Owner's Manual (WbManual, #manual; its chapters drive to the dash) · the closer (WbCloser)
+ *   · the phone bar (WbStickyBar)
+ * The cut sections keep their components, data and scripts (presets.ts and story.ts are null-safe in init.ts); bring
+ * them back = the two lines marked below, their two imports and their two @imports in src/styles/widebeam.css.
+ * Each section is its own component in src/components/widebeam/, its styles a partial in src/styles/widebeam/
+ * (indexed by src/styles/widebeam.css), its script a module in src/lib/widebeam/ booted by init.ts. Every word that
+ * names the ask, the price, the formats or a control comes from src/data/widebeam.ts; assertWidebeamConfig() fails
+ * the build on a phase the page can't back.
+ *
+ * The face in #wb-drive is the plugin's own art: a clean 2x capture of Source/ui (every moving part hidden) with the
+ * baked filmstrips laid back on their seats (src/lib/widebeam/face.ts). It plays: the audio is a Web Audio mid/side
+ * sketch after the plugin's laws (audio.ts), fed by a synthesized loop or the visitor's own file, never uploaded.
+ * The face art is resolved here because the boot reads it from data-art. Nothing preloads the plate: face.ts loads the
+ * face art in the tier it needs once the dash nears, so the intro owns the first seconds (perf-01, G11).
+ */
+import { getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { plugins } from '../data/plugins';
+import { widebeam, askFor, assertWidebeamConfig } from '../data/widebeam';
+import WbFlash from '../components/widebeam/WbFlash.astro';
+import WbSound from '../components/widebeam/WbSound.astro';
+import WbHero from '../components/widebeam/WbHero.astro';
+import WbGet from '../components/widebeam/WbGet.astro';
+import WbDrive from '../components/widebeam/WbDrive.astro';
+// cut by Dan 2026-11-22 (page map): import WbStory from '../components/widebeam/WbStory.astro';
+// cut by Dan 2026-11-22 (page map): import WbGlove from '../components/widebeam/WbGlove.astro';
+import WbManual from '../components/widebeam/WbManual.astro';
+import WbCloser from '../components/widebeam/WbCloser.astro';
+import WbStickyBar from '../components/widebeam/WbStickyBar.astro';
+import '../styles/widebeam.css';
+
+import baseImg from '../assets/widebeam/face-base.webp';
+import widthImg from '../assets/widebeam/knob-width.webp';
+import focusImg from '../assets/widebeam/knob-focus.webp';
+import mixImg from '../assets/widebeam/knob-mix.webp';
+import toggleImg from '../assets/widebeam/switch-toggle2.webp';
+import powerImg from '../assets/widebeam/power-rocker.webp';
+import wheelImg from '../assets/widebeam/level-wheel.webp';
+
+// the social card (public/og/widebeam.png, 1200x630): the lit dash beside the WIDE BEAM lockup and the hero line, shot
+// from this page itself (stage 4, H.5). JSON-LD and the 153-character listing description wait for launch (step 5).
+// a phase the page can't back fails the build (src/data/widebeam.ts), and so does a Buy key the cart can't check out
+// (Cart.astro sells only plugins.ts slugs with a paddlePriceId, at introPriceUsd ?? regularPriceUsd)
+assertWidebeamConfig(widebeam, undefined, Object.fromEntries(plugins.map((p) => [p.slug, { paddlePriceId: p.paddlePriceId ?? null, priceUsd: p.introPriceUsd ?? p.regularPriceUsd }])));
+// the description follows the phase: a shared link never says "Coming soon" while the trial or the Buy key is live
+const description = `WIDE BEAM is a stereo-width plugin fronted by a pair of classic car headlights. Open the image with WIDTH, keep the bass centred with LOW FOCUS, spread a mono source with HIGH BEAM. ${askFor().metaTail}`;
+
+// filmstrips keep their full frame size (the grid maths needs every frame whole); only re-encoded
+// q72 strips / q80 plate: the same two numbers as WbDrive.astro's tiers (its full tier must be this same file)
+const webp = (src: ImageMetadata, quality = 72) => getImage({ src, format: 'webp', quality });
+const art = {
+  base: (await webp(baseImg, 80)).src,
+  width: (await webp(widthImg)).src,
+  focus: (await webp(focusImg)).src,
+  mix: (await webp(mixImg)).src,
+  toggle: (await webp(toggleImg)).src,
+  power: (await webp(powerImg)).src,
+  wheel: (await webp(wheelImg)).src,
+};
+---
+<BaseLayout
+  title="WIDE BEAM: stereo width you can see"
+  description={description}
+  ogImage="/og/widebeam.png"
+  index={widebeam.listed}
+>
+  <div class="wb-page" data-wb-page data-art={JSON.stringify(art)}>
+    <WbFlash />
+    <WbSound />
+    <WbHero />
+    <WbDrive />
+    <WbGet />
+    {/* cut by Dan 2026-11-22 from his page map (the glove box and the stereo road); bring back = these two lines:
+         <WbGlove />
+         <WbStory /> */}
+    <WbManual />
+    <WbCloser />
+    <WbStickyBar />
+    {/* the parts kit's below-the-fold art (parts.css, r-base-foldart) loads 3/4 of a screen ahead of the reader: each part
+         (and any [data-wb-defer] element) gets [data-wb-near] once it comes within 3/4 of a screen, and a deferred <img>
+         (the dash's face-still) gets its data-srcset / data-src at that moment (the same as face.ts showDeferred, which
+         the face's art loader also calls, sometimes sooner). Inline, not in the page's script chunk (r-base-artbare):
+         a late chunk (4-12 s on a slow line) or a failed one left the face a broken image and the parts bare.
+         3/4, not a full screen: at 1440x900 and 1728x1000 a full screen reached the face-still and the dash's road at
+         load, which put the first view over G11's 1.9 MB bar. The house footer is marked too: the house smoke's two photos
+         wait for it (base.css, r-cross-g11fv).
+         Since Dan's page map (2026-11-22) the dash sits right under the hero, so the 3/4 look-ahead reached the face-still
+         and the console's road at load (first view 1.88-1.89 MB at L1141 / L1440, 0.99 MB at P390, against 1.9 / 1.0).
+         So the look-ahead starts with the visitor's first scroll (a drive, a wheel, a restored scroll or a deep link
+         scroll too); until then only what is on screen is marked, so nothing in view is ever bare. */}
+    <script is:inline>
+      (function () {
+        var els = [].slice.call(document.querySelectorAll('.wb-part-lamp-l, .wb-part-lamp-r, .wb-part-road, .wb-part-meter, .wb-part-cap, [data-wb-defer]'));
+        var io = null;
+        // the house footer comes after this script in the document: watched once the parser has reached it
+        function foot() { var f = document.querySelector('.site-footer'); if (f) { els.push(f); if (io) io.observe(f); else near(f); } }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', foot); else setTimeout(foot);
+        function near(el) {
+          el.setAttribute('data-wb-near', '');
+          if (el.tagName === 'IMG' && el.dataset.src && !el.getAttribute('src')) {
+            el.fetchPriority = 'high';
+            if (el.dataset.srcset) el.srcset = el.dataset.srcset;
+            el.src = el.dataset.src;
+          }
+        }
+        if (!('IntersectionObserver' in window)) { els.forEach(near); return; }
+        function watch(margin) {
+          var o = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) { if (e.isIntersecting) { near(e.target); o.unobserve(e.target); } });
+          }, { rootMargin: margin });
+          els.forEach(function (el) { if (!el.hasAttribute('data-wb-near')) o.observe(el); });
+          return o;
+        }
+        var ahead = scrollY > 2;
+        io = watch(ahead ? '75% 0px' : '0px');
+        if (!ahead) addEventListener('scroll', function arm() {
+          removeEventListener('scroll', arm);
+          io.disconnect();
+          io = watch('75% 0px');
+        }, { passive: true });
+      })();
+    </script>
+  </div>
+</BaseLayout>
+
+<script>
+  import { initWideBeam } from '../lib/widebeam/init';
+  const el = document.querySelector<HTMLElement>('[data-wb-page]');
+  if (el) initWideBeam(JSON.parse(el.dataset.art || '{}'));
+</script>

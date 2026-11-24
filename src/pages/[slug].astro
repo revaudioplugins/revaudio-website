@@ -14,6 +14,7 @@ import AudioDemoRack from '../components/AudioDemoRack.astro';
 import MobileBuyBar from '../components/MobileBuyBar.astro';
 import HeroFacts from '../components/HeroFacts.astro';
 import { plugins, isBuyable } from '../data/plugins';
+import { widebeam, assertWidebeamConfig } from '../data/widebeam';
 import { pluginImage } from '../lib/images';
 import arrowBtn from '../assets/showcase/arrow-btn.png';
 import wallImg from '../assets/bg/wall-wood.png';
@@ -25,7 +26,9 @@ import railImg from '../assets/bg/wall-rail.png';
    emit the same URL. Any other plugin still gets this long-form layout. */
 export function getStaticPaths() {
   // inside the function: Astro runs getStaticPaths in its own scope (imports only)
-  const OWN_ROUTE = new Set(['gas', 'gas2', 'drift', 'revfx']);
+  const OWN_ROUTE = new Set(['gas', 'gas2', 'drift', 'revfx', 'widebeam']);
+  // the plugins.ts widebeam entry (Gil, 2026-11-19, for the cart) needs 'widebeam' above, or two pages claim /widebeam
+  assertWidebeamConfig(widebeam, { pluginSlugs: plugins.map((p) => p.slug), ownRoute: OWN_ROUTE });
   return plugins
     .filter((p) => !OWN_ROUTE.has(p.slug))
     .map((p) => ({ params: { slug: p.slug }, props: { plugin: p } }));

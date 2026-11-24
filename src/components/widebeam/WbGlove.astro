@@ -1,0 +1,45 @@
+---
+/** /widebeam glove box (lane S; demo-d01, art-10, D4 C): the sixteen factory presets as owner's cards in an open glove
+ *  box made of the plate's own materials (parts.css: leather, brass trim, steel, screws, and the strap as the lid folded
+ *  down). A card glides the dash's knobs once the page has driven up to it (src/lib/widebeam/presets.ts); the picked
+ *  card wears the plugin's own list selection, the #2894fa 25 % band (aria-pressed mirrors it). */
+import { PRESETS } from '../../lib/widebeam/state';
+import { GLOVE_SUB, GLOVE_SUB_NOJS } from '../../data/widebeam';
+
+// a preset card's little road, printed on the card: two beams opening with its WIDTH, the focus line, the mix as the
+// light's strength
+const beam = (w: number) => { const s = 6 + (w / 200) * 50; return `M58 74L${60 - s} 6L${60 - s + 14} 6Z M62 74L${60 + s - 14} 6L${60 + s} 6Z`; };
+const focusY = (f: number) => 74 - (Math.log(f / 20) / Math.log(50)) * 60;
+---
+{/* ============ THE GLOVE BOX: sixteen roads ============ */}
+<section class="wb-presets" id="wb-presets" aria-labelledby="wb-presets-h">
+  <header class="wb-head" data-reveal="fade">
+    <p class="wb-eyebrow">THE GLOVE BOX</p>
+    <h2 id="wb-presets-h">Sixteen roads to start on.</h2>
+    <p class="wb-headsub wb-glove-sub">{GLOVE_SUB}</p>
+    <noscript><p class="wb-headsub">{GLOVE_SUB_NOJS}</p></noscript>
+  </header>
+  <div class="wb-glove-wrap" data-reveal="fade">
+    <div class="wb-plate wb-plate--strap wb-glove">
+      <div class="wb-lane" data-wb-lane role="group" aria-labelledby="wb-presets-h">
+        {PRESETS.map((p, i) => {
+          const w = p.v.width ?? 136, f = p.v.focus ?? 120, m = p.v.mix ?? 100;
+          return (
+            <button type="button" class="wb-card" data-preset={i} data-wb-demo aria-pressed="false" style={`--m:${0.35 + (m / 100) * 0.65}`}>
+              <span class="wb-card-row"><span class="wb-card-n">{String(i + 1).padStart(2, '0')}</span><span class="wb-card-name">{p.name}</span></span>
+              <svg viewBox="0 0 120 80" aria-hidden="true">
+                <path d="M54 6H66L110 76H10Z" fill="#14161a" />
+                <path d={beam(w)} fill="url(#wbCardBeam)" class="wb-card-beam" />
+                <path d={`M${60 - (focusY(f) - 6) * 0.6} ${focusY(f)}H${60 + (focusY(f) - 6) * 0.6}`} stroke="#e8c878" stroke-dasharray="3 3" stroke-width="1.2" opacity={f > 21 ? 0.9 : 0} />
+                <path d="M60 10V76" stroke="#ecdfbd" stroke-width="1" stroke-dasharray="4 5" opacity=".5" />
+              </svg>
+              <span class="wb-card-vals"><span><small>WIDTH</small> {w}</span> <span><small>LOW FOCUS</small> {f} Hz</span> <span><small>MIX</small> {m}%</span></span>
+              <span class="wb-card-note">{p.note}</span>
+            </button>
+          );
+        })}
+        <svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs><linearGradient id="wbCardBeam" x1="0" y1="1" x2="0" y2="0"><stop stop-color="#fff1cb" stop-opacity=".85"/><stop offset="1" stop-color="#fff1cb" stop-opacity=".05"/></linearGradient></defs></svg>
+      </div>
+    </div>
+  </div>
+</section>
