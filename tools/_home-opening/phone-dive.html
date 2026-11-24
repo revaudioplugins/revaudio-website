@@ -19,7 +19,8 @@
        ?full       the whole room instead of its phone cut (room.html ?dive), to compare the two
        ?auto       the dive plays itself, down and back (?auto=14: seconds one way)
        ?debug      the scroll's numbers on the picture
-       ?look=shop  the phone's look: brass | shop | radio; ?looks = the three as buttons on the picture
+       ?look=today the room's look, as on the laptop's home page: vhs (the default, Dan's pick 2026-11-18) | today | vhs-more
+       ?body=shop  the phone's own look: brass | shop | radio; ?looks = the three as buttons on the picture
        ?abc        the three versions of the turn as buttons (Dan picked B) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -141,7 +142,9 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id) => document.getElementById(id);
 const frame = $('room'), box = $('box');
 // the room in its phone cut (room.html ?dive: only what this camera sees is loaded); ?full = the whole room, to compare
-frame.src = 'room.html?capture=0&expose' + (Q.has('full') ? '' : '&dive');
+// the room's look, as on the laptop's home page (?look=today | vhs | vhs-more; the room's default is VHS, Dan's pick 2026-11-18)
+const ROOM_LOOK = ['today', 'vhs', 'vhs-more'].includes(Q.get('look')) ? Q.get('look') : null;
+frame.src = 'room.html?capture=0&expose' + (Q.has('full') ? '' : '&dive') + (REC ? '' : '&live') + (ROOM_LOOK ? '&look=' + ROOM_LOOK : ''); // &live: the room runs live as on the laptop (grain, lights, dust, governor); a recording keeps it still
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 const easeIO = (t, k) => (t < 0.5 ? Math.pow(2 * t, k) / 2 : 1 - Math.pow(2 * (1 - t), k) / 2);
@@ -158,7 +161,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 // ---- the phone, its light, the guitar, the deck, the amp and the second fan are the ROOM's (assets/dive/set.js: the laptop walk has them too). This page aims its camera at the phone. ----
 const SETR = R.set, S = SETR.screen, phone = SETR.phone, fan2 = SETR.fan2; DIVE.phone = SETR.place;
 const setLook = (name) => { if (!SETR.looks.includes(name)) return; if (name !== SETR.look) SETR.setLook(name); DIVE.look = name; for (const b of document.querySelectorAll('[data-look]')) b.setAttribute('aria-pressed', String(b.dataset.look === name)); };
-setLook(SETR.looks.includes(Q.get('look')) ? Q.get('look') : SETR.look); // ?look=brass|shop|radio
+setLook(SETR.looks.includes(Q.get('body')) ? Q.get('body') : SETR.look); // ?body=brass|shop|radio (the phone's own look; ?look= is the room's, as on the home page)
 if (REC) R.modelAnims = (R.modelAnims || []).filter((a) => a.o !== SETR.platter && a.o !== fan2?.userData.rotor); // a recording turns the fan itself (set) and holds the record still
 w.__room.arrange(); // the shadows once more, with the phone in them
 
@@ -229,6 +232,7 @@ if (REC || !Q.has('abc')) $('abc').hidden = true; // Dan picked B: the buttons a
 const liveEl = $('live'), render0 = w.__room.composer.render.bind(w.__room.composer); let liveK = 0, liveSet = -1;
 w.__room.composer.render = (...a) => { if (liveK < 1) render0(...a); };
 function draw(p, dt = 0.016) {
+  if (R.lookP !== p) { R.lookP = p; R.lookMovedAt = performance.now(); } // the room's look follows the dive (VHS eases off before the screen fills the picture, as before the laptop's TV)
   const st = pose(p); shown = p;
   const landed = p >= 0.9995;
   liveK = !landed ? Math.max(0, liveK - dt / 0.1) : REC || hold > 0.35 ? 1 : Math.min(1, liveK + dt / 0.12); // (a fling through the hold: on at once, never caught half-way)
@@ -247,22 +251,51 @@ if (Q.has('auto')) { // ?auto (or ?auto=14: seconds one way): the page scrolls i
 if (Q.has('debug')) { $('dbg').hidden = false; setInterval(() => { $('dbg').textContent = `page scroll ${Math.round(scrollY)} of ${Math.round(walkPx())}\nframe scroll ${Math.round(w.scrollY)}\ndive ${Math.round(shown * 100)} %  camera ${camera.position.y.toFixed(2)} m\nscreen ${innerWidth} x ${innerHeight}`; }, 200); }
 readScroll(); draw(REC ? 0 : target);
 // A thumb's scroll is already smooth (the browser eases its momentum), so on touch the picture follows it almost directly; a mouse wheel comes in steps and gets more easing.
-// Either way the landing is exact: the nearer the scroll is to the end of the dive, the less the picture may trail it, and at the end not at all,
-// so the pinned picture never starts to slide away with the dive still on its way (measured before: up to 35 frames and a fifth of the dive).
+// THE WALK'S FEEL, from the laptop (HomeOpening.astro FEEL, Dan's numbers of 2026-11-23: "I scroll really fast. I want it to be like a limit", and at the
+// screen "it locks him up a little bit ... so he can stay on the main screen"). A phone's scroll is the browser's own momentum, which no page can slow,
+// so here the limit is the CAMERA's: it travels the dive at most FEEL.top screens a second, and the page waits for it at the phone's screen:
+// - the catch: a scroll that crosses the lock (the end of the dive) while the camera is still on its way, or faster than FEEL.holdOver screens a second,
+//   is stopped on the lock (the page's overflow held for that moment: that ends the browser's momentum) and let go once the camera has landed, and a fast
+//   one only FEEL.holdMs after the catch. A move back up lets go at once. Nothing else of the page's scroll changes.
+// - so the landing stays exact: the picture never slides away with the dive still on its way (measured before: up to 35 frames and a fifth of the dive).
+//   Where the hold can't take (the page already past the lock), the camera follows with no trailing, as before.
+// The laptop's numbers in screens: 2,400 px/s and 3,100 px/s over its 612-734 px windows. ?top= ?holdOver= ?holdMs= try others on a phone (no bench there).
+const FEEL = { top: 3.6, holdOver: 4.6, holdMs: 900 };
+for (const k of Object.keys(FEEL)) if (Q.has(k) && isFinite(+Q.get(k)) && +Q.get(k) > 0) FEEL[k] = +Q.get(k);
+const HTML = document.documentElement, scr = () => innerHeight; // (a screen: the window's height, as the laptop's px/s were)
+let vel = 0, vPeak = 0, lastY = scrollY, lastYAt = performance.now(), held = 0, heldFast = false, touchY = null, inputAt = -1e9;
+const byHand = (now) => touchY != null || now - inputAt < 3000; // a thumb on the glass, its momentum (up to ~3 s), or a wheel: never a link's or a script's jump (the laptop's hold is the wheel's alone)
+const release = () => { if (!held) return; held = 0; HTML.style.overflow = ''; };
+addEventListener('scroll', () => {
+  const now = performance.now(), y = scrollY, dy = y - lastY, dms = Math.max(8, now - lastYAt);
+  if (now - lastYAt > 150) vPeak = 0; // (a new scroll: its own top speed)
+  vel = 0.5 * vel + 0.5 * (dy / dms * 1000); vPeak = Math.max(vPeak, vel); lastY = y; lastYAt = now; // px a second, two events averaged; the top speed of this scroll (as the laptop's: how fast it came in, not how fast it is at the line)
+  if (held || REC || reduced || dy <= 0 || !byHand(now)) return;
+  if (y >= diveLen && y - dy < diveLen + 1) { // this scroll crossed the lock, going down
+    const fast = vPeak > FEEL.holdOver * scr();
+    if (fast || shown < 0.9995) { held = now; heldFast = fast; HTML.style.overflow = 'hidden'; scrollTo(0, diveLen); readScroll(); }
+  }
+}, { passive: true });
+addEventListener('touchstart', (ev) => { touchY = ev.touches[0]?.clientY ?? null; vPeak = 0; }, { passive: true });
+addEventListener('touchend', (ev) => { if (!ev.touches.length) { touchY = null; inputAt = performance.now(); } }, { passive: true });
+addEventListener('touchmove', (ev) => { const y = ev.touches[0]?.clientY; if (held && touchY != null && y > touchY + 6) release(); }, { passive: true }); // a thumb pulling the page back up
+addEventListener('wheel', (ev) => { inputAt = performance.now() - 2500; if (held && ev.deltaY < 0) release(); }, { passive: true }); // (a wheel's own scroll ends within 0.5 s)
 const TAU = matchMedia('(pointer: coarse)').matches ? 0.045 : 0.11; let lastT = 0;
 function raf(now) {
   const dt = clamp((now - lastT) / 1000, 0.004, 0.1); lastT = now;
   if (!REC) {
     let next = reduced || shown < 0 ? target : shown + (target - shown) * (1 - Math.exp(-dt / TAU));
-    if (next < target) next = Math.max(next, target - (1 - target) * 0.5);
+    if (!reduced && shown >= 0 && (held || scrollY <= diveLen + 1)) { const cap = FEEL.top * scr() * dt / diveLen; next = clamp(next, shown - cap, shown + cap); } // the speed limit, while the picture is pinned
+    else if (next < target) next = Math.max(next, target - (1 - target) * 0.5); // past the lock: no trailing
     draw(Math.abs(next - target) < 0.0004 ? target : next, dt);
+    if (held && shown >= 0.9995 && (!heldFast || now - held >= FEEL.holdMs)) release(); // landed (and, after a fast one, the short hold): the page is free
   }
   requestAnimationFrame(raf);
 }
 requestAnimationFrame(raf);
 // a recording places the camera itself, and the fans by the clock it gives (seconds)
 clearTimeout(giveUp);
-window.__dive = { DIVE, get p() { return shown; }, get t() { return target; }, get end() { return diveLen; }, look: (n) => { setLook(n); w.__room.arrange(); shown = -1; }, set: (p, sec) => { draw(clamp(p)); if (sec != null) for (const a of [...(R.modelAnims || [])]) if (a.o.name === 'fan_rotor') a.o.rotation.y = sec * 2; if (sec != null && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = sec * 2 + 0.6; }, ready: true };
+window.__dive = { DIVE, FEEL, get held() { return held; }, get p() { return shown; }, get t() { return target; }, get end() { return diveLen; }, look: (n) => { setLook(n); w.__room.arrange(); shown = -1; }, set: (p, sec) => { draw(clamp(p)); if (sec != null) for (const a of [...(R.modelAnims || [])]) if (a.o.name === 'fan_rotor') a.o.rotation.y = sec * 2; if (sec != null && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = sec * 2 + 0.6; }, ready: true };
 // the live room takes over from the first picture once it has drawn a few frames of its own, its fan where the picture has it
 if (!REC && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = 1.4; // (the picture was taken with set(0, 0.4): 0.4 s x 2 rad/s + 0.6)
 await new Promise((res) => { let n = 0; const tick = () => (++n > 12 ? res() : w.requestAnimationFrame(tick)); w.requestAnimationFrame(tick); });

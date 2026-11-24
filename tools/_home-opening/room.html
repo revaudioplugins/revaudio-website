@@ -409,6 +409,10 @@ const STREET_GRADE = 'G1';
 // `keep` (metres on the floor: x from..to, z from..to), the small texture set, one shadowed lamp, no mirror pass, no
 // multisampling, a 1.3 MP picture. Without ?dive nothing here runs: the laptop room is as it was.
 const DIVE = new URLSearchParams(location.search).has('dive') ? { keep: { x: [0.95, 3.9], z: [4.5, 10.5] }, always: ['N40'], pbr: 'assets/pbr/phone/', pic: 384, mp: 1.3e6, dpr: 2, lamps: [0.55, 0.2], shadow: 0.55 } : null;
+// ?dive&live (phone-dive.html, 2026-11-24): the phone's opening is a capture of the camera's place only; the room in it runs
+// live as on the laptop: the look's grain moves, the lights hum and flicker, the dust, the governor for weak machines.
+// Without &live (?rec recordings, stills) it stays the steady still it was
+const LIVE = !!DIVE && new URLSearchParams(location.search).has('live');
 const STREET = DIVE ? null : ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))(new URLSearchParams(location.search).get('street'));
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
@@ -461,7 +465,7 @@ if (LAYOUT && /^[\w-]+$/.test(LAYOUT)) {
     Object.assign(S, DEF, j, { moves: j.moves && typeof j.moves === 'object' ? j.moves : {}, ver: DEF.ver, bench: 0, edit: 0 });
   } catch (e) { console.warn('layout missing:', LAYOUT, e); }
 }
-if (CAPTURE != null) Object.assign(S, { sway: 0, labels: 0, readB: 0, dust: 0, bench: 0, edit: 0, paint: CAPTURE_PAINTED ? 1 : 0 }); // the set for the painter
+if (CAPTURE != null) Object.assign(S, { sway: 0, labels: 0, readB: 0, dust: LIVE ? S.dust : 0, bench: 0, edit: 0, paint: CAPTURE_PAINTED ? 1 : 0 }); // the set for the painter (LIVE: the phone's opening keeps the dust)
 // undo / redo: every saved change is one step (a whole slider or object drag, a toggle, a reset); view state is not
 const UNDO_SKIP = new Set(['bench', 'edit']);
 let hist = null, histAt = 0, restoring = false;
@@ -497,7 +501,7 @@ const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return
 const rng = (seed) => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const deg = THREE.MathUtils.degToRad;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches || LIGHTS != null; // (a light capture holds every moving thing still: its pictures differ by light only)
-const steady = reduced || CAPTURE != null; // the lights hold still in reduced motion and in a capture: a still never catches a flicker, a dip or a lamp mid-cycle
+const steady = reduced || (CAPTURE != null && !LIVE); // the lights hold still in reduced motion and in a capture: a still never catches a flicker, a dip or a lamp mid-cycle (LIVE: the phone's opening is no still)
 
 // ---------- renderer ----------
 const canvas = $('gl');
@@ -657,7 +661,8 @@ function lookFrame(now) {
   // resampled with the look fully off: softer at the lock on a 1440x900 screen)
   const lk = LOOK_ON, u = finishPass.uniforms, gl = renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
   const pr = renderer.getPixelRatio() * (LOOK_FLAT ? innerHeight / LOOK_FLAT[1] : 1); // (&flat: the picture's pixels per CSS px on its screen, object-fit cover)
-  const amt = 1 - smooth(lk.off[0], lk.off[1], progress);
+  const P = R.lookP ?? progress; // where the look is: the walk, or under ?dive the dive (phone-dive.html sets R.lookP): the look eases off before the phone's screen fills the picture, as before the TV
+  const amt = 1 - smooth(lk.off[0], lk.off[1], P);
   // under the governor (GOV.k < 1: a weak machine's smaller buffer) the room keeps the pixels per CSS px this screen
   // had before the step, up to the whole target (2026-11-20): a step shrinks the finish, not the room, or the sign went
   // back to mush on the very machines that step. No step, no change
@@ -665,17 +670,17 @@ function lookFrame(now) {
   const k0 = LOOK_FLAT ? lk.k * window.roomRatio(...LOOK_FLAT) / pr : lk.k;
   let kk = Math.min(1, Math.min(k0, lk.dpr * GOV.k / pr) / GOV.k);
   if (lk.move) { // the walk moving (it moved in the last 8 frames): softer, easing in and out over a few frames
-    LK.hold = LK.p != null && Math.abs(progress - LK.p) > 2e-4 && CAPTURE == null ? 8 : Math.max(0, (LK.hold || 0) - 1); LK.p = progress;
+    LK.hold = LK.p != null && Math.abs(P - LK.p) > 2e-4 && (CAPTURE == null || LIVE) ? 8 : Math.max(0, (LK.hold || 0) - 1); LK.p = P;
     LK.m += ((LK.hold > 0 ? 1 : 0) - LK.m) * 0.2;
     kk *= 1 - (1 - lk.move) * LK.m;
   }
-  const v = 1 + (kk - 1) * (lk.sharp ? 1 - smooth(lk.sharp[0], lk.sharp[1], progress) : amt); // the scale the softness asks for here
+  const v = 1 + (kk - 1) * (lk.sharp ? 1 - smooth(lk.sharp[0], lk.sharp[1], P) : amt); // the scale the softness asks for here
   const full = v >= (lk.sharp ? LOOK_SNAP : 1), k = full ? 1 : v; // (full: the whole target, exactly: uK (1, 1), today's own arithmetic)
   const w = full ? W : Math.max(1, Math.round(W * k)), h = full ? H : Math.max(1, Math.round(H * k));
   for (const t of [composer.renderTarget1, composer.renderTarget2]) t.viewport.set(0, 0, w, h);
   u.uK.value.set(w / W, h / H); u.uAmt.value = amt; u.uCss.value = pr;
   u.uSoft.value = full && lk.sharp ? lk.soft * (1 - v) / (1 - LOOK_SNAP) : 0;
-  u.uSeed.value = CAPTURE != null || reduced ? 1 : (LK.n = (LK.n + 1) % 8192); // a still (and reduced motion) holds one grain; the walk's grain moves every frame
+  u.uSeed.value = (CAPTURE != null && !LIVE) || reduced ? 1 : (LK.n = (LK.n + 1) % 8192); // a still (and reduced motion) holds one grain; the walk's grain moves every frame (the phone's live opening too)
   u.uLod.value = Math.log2(Math.max(1, lk.halo.px * pr * (h / H)));
   R.dust.mat.size = 0.02 * (h / H); // (a point's size follows the canvas, not the corner it is drawn in)
   R.wet.visible = false; // dropped: the floor keeps its own highlights
@@ -2450,7 +2455,7 @@ function setBuffer() {
 // Under a look (2026-11-20, lookFrame): a step makes the canvas and the finish smaller, never the room, which is drawn
 // small already and keeps its pixels per CSS px (the sign stays as readable). A step that then buys under 10 % is
 // taken back by the rule above
-const GOV = { k: 1, level: 0, on: CAPTURE == null && new URLSearchParams(location.search).get('governor') !== '0', iv: [], last: 0, from: 0, door: true, before: 0, beforeDoor: true, done: false, log: [] };
+const GOV = { k: 1, level: 0, on: (CAPTURE == null || LIVE) && new URLSearchParams(location.search).get('governor') !== '0', iv: [], last: 0, from: 0, door: true, before: 0, beforeDoor: true, done: false, log: [] };
 window.__gov = GOV;
 const GOV_STEPS = [1, 0.8, 0.64], GOV_SLOW = 1000 / 36, GOV_WALK_SLOW = 1000 / 25;
 function govern(now, drew) {
@@ -2459,7 +2464,7 @@ function govern(now, drew) {
   if (!drew || document.hidden || gap > 250) { GOV.iv.length = 0; return; } // a pause, a hidden tab or a hitch: start over
   if (!GOV.from) GOV.from = now + 1500; // the first frames after the hand-off settle (uploads, the first probe)
   if (now < GOV.from) return;
-  const door = progress < 0.02;
+  const door = (R.lookP ?? progress) < 0.02; // (?dive: the dive's place, which the page sets)
   if (GOV.iv.length && door !== GOV.door) GOV.iv.length = 0; // a window is all door or all walk
   GOV.door = door; GOV.iv.push(gap);
   const span = GOV.iv.reduce((a, b) => a + b, 0);
@@ -2473,7 +2478,7 @@ function govern(now, drew) {
   }
   if (mean <= (door ? GOV_SLOW : GOV_WALK_SLOW)) return; // it holds: nothing changes
   if (GOV.level >= GOV_STEPS.length - 1 || Math.min(devicePixelRatio || 1, 1.75) * GOV_STEPS[GOV.level + 1] < 0.75) { GOV.done = true; return; }
-  if (!door && now - lastScrollAt < 500) return; // mid-walk: only once the walk is at rest (no pop while it moves)
+  if (!door && now - Math.max(lastScrollAt, R.lookMovedAt || 0) < 500) return; // mid-walk: only once the walk is at rest (no pop while it moves; ?dive: the dive)
   GOV.level++; GOV.k = GOV_STEPS[GOV.level]; GOV.before = mean; GOV.beforeDoor = door; setBuffer();
   GOV.log.push({ at: Math.round(now), mean: +mean.toFixed(1), level: GOV.level, door });
 }
@@ -3444,7 +3449,7 @@ updateProbe(); R.probe.due = 0;
 // the loading screen lit the room bank by bank, the TV first: the live room opens with every bank on (the same picture),
 // takes over once the last bank has settled, and the big line comes in a beat later (lights/README.md)
 const LO = CAPTURE == null ? window.lightsOn : null;
-if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1];
+if (LO || DIVE) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1]; // (?dive: the page's first picture is the room lit; the live room takes over on it lit, never warming up under it)
 t0 = performance.now(); frame(t0); // one first frame (dark without the loading screen): the glow, the finish and the floor's mirror compile before the clock starts
 if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.read[0] + 400; LO.handoff(); lenis?.start(); }
 else t0 = performance.now();
