@@ -144,7 +144,8 @@
       k('cm-tool', 'cm-tool', 'NOTE') + k('cm-snap', 'cm-snap', 'SCALE') +
       k('cm-undo', 'cm-undo', 'UNDO') + k('cm-clear', 'cm-clear', 'CLEAR') + '</div></div>';
   };
-  O.customTile = function () { return '<span class="cm-tv"></span><br><span class="t-s cm-ts"></span>'; };
+  // the home tile (2026-11-24, Dan: "the live view of what happening inside the section"): a mini graph + the edit count
+  O.customTile = function () { return '<canvas class="cm-mini"></canvas><span class="t-s cm-ts"></span>'; };
 
   /* ---- the soft keys (OBD.NAV: wired by the object's build like every nav key) ---- */
   function pushUndo() { C.undo.push(new Float32Array(C.T)); if (C.undo.length > 40) C.undo.shift(); }
@@ -161,13 +162,54 @@
   };
   O.NAV['cm-clear'] = function () { ensure(); var any = false; for (var i = 0; i < C.n; i++) if (isFinite(C.T[i])) { any = true; break; }
     if (!any) return; pushUndo(); for (i = 0; i < C.n; i++) C.T[i] = NaN; changed(); };
-  // D-pad on the CUSTOM page: left / right scroll the time (1/4 of the view), up / down move the note lanes one note
+  // D-pad on the CUSTOM page. A MARKED note (a tap on it; Dan 2026-11-24: "when i mark note ... i can move it around with
+  // the arrows as well"): up / down = the next note of the scale (SNAP CHROM: a semitone), it sounds; left / right = mark
+  // the note before / after it (a sung note keeps its time: tuning moves pitch, never timing). Nothing marked: left / right
+  // scroll the time (1/4 of the view), up / down move the note lanes one note.
   O.customDpad = function (dir) {
-    var v = C.view; C.touched = Date.now();
+    var v = C.view; C.touched = Date.now(); ensure();
+    var b = markedBlob();
+    if (b && (dir === 'up' || dir === 'down')) {
+      var s = shown(b), n = stepNote(s, dir === 'up' ? 1 : -1);
+      if (n !== s) { pushUndo(); setBlob(b, n); changed(); blip(n); }
+      keepInView(b, n); return true;
+    }
+    if (b) {
+      var nb = neighbour(b, dir === 'right' ? 1 : -1);
+      if (nb) { C.mark = { i0: nb.i0, i1: nb.i1 }; blip(shown(nb)); keepInView(nb, shown(nb)); }
+      return true;
+    }
     if (dir === 'left' || dir === 'right') v.t0 += (dir === 'right' ? 1 : -1) * v.W / 4;
     else C.vlo += dir === 'up' ? 1 : -1;
     clampView(); return true;
   };
+  function stepNote(n, d) {   // the next legal note above (d 1) / below (d -1) n: the scale + the NOTES switches, or CHROM
+    if (C.snap === 'chrom') return n + d;
+    var legal = O.legalAbs();
+    for (var k = n + d; Math.abs(k - n) <= 12; k += d) if ((legal >> ((k % 12 + 12) % 12)) & 1) return k;
+    return n;
+  }
+  C.mark = null;   // the marked note {i0, i1}: blocks are rebuilt on every draw, so it is found again by its middle
+  function markedBlob() {
+    if (!C.mark) return null;
+    var mid = (C.mark.i0 + C.mark.i1) >> 1, list = blobsIn(mid, mid);
+    for (var k = 0; k < list.length; k++) if (list[k].i0 <= mid && list[k].i1 >= mid) return list[k];
+    C.mark = null; return null;
+  }
+  function neighbour(b, d) {   // the next (d 1) / previous (d -1) played note, up to 30 s away
+    var list = d > 0 ? blobsIn(b.i1 + 1, Math.min(C.n - 1, b.i1 + 30 * C.hz)) : blobsIn(Math.max(0, b.i0 - 30 * C.hz), Math.max(0, b.i0 - 1)), k;
+    if (d > 0) { for (k = 0; k < list.length; k++) if (list[k].i0 > b.i1) return list[k]; }
+    else for (k = list.length - 1; k >= 0; k--) if (list[k].i1 < b.i0) return list[k];
+    return null;
+  }
+  function keepInView(b, note) {   // the marked note stays on the graph: the time and the lanes follow it
+    var v = C.view, t0 = b.i0 / C.hz, t1 = (b.i1 + 1) / C.hz;
+    if (t0 < v.t0 || t1 > v.t0 + v.W) v.t0 = (t0 + t1) / 2 - v.W / 2;
+    if (note <= C.vlo || note >= C.vlo + V_SPAN) C.vlo = note - (V_SPAN >> 1);
+    clampView();
+  }
+  var blipT = 0;
+  function blip(n) { auditionOn(n); clearTimeout(blipT); blipT = setTimeout(auditionOff, 350); }   // a D-pad move sounds briefly
   function dur() { return C.n / C.hz; }
   function clampView() {
     var v = C.view; v.W = O.clamp(v.W, W_MIN, Math.max(W_MIN, Math.min(W_MAX, dur()))); v.t0 = O.clamp(v.t0, 0, Math.max(0, dur() - v.W));
@@ -289,7 +331,7 @@
         if (p.y < G.y) { d = { ruler: true, p: p }; C.hover = p; return; }   // the time ruler: a click there = locate
         if (C.tool === 'note') {
           var b = blobAt(p);
-          if (b) { pushUndo(); var s = shown(b); d = { blob: b, from: s, cur: s, off: s - p.m, pushed: true }; C.sel = b; auditionOn(s); }
+          if (b) { pushUndo(); var s = shown(b); d = { blob: b, from: s, cur: s, off: s - p.m, pushed: true }; C.mark = { i0: b.i0, i1: b.i1 }; auditionOn(s); }
           else d = { pan: true, cx: e.clientX, cy: e.clientY, t0: C.view.t0, vlo: C.vlo, p: p };
         } else { pushUndo(); d = { last: p, pushed: true }; if (C.tool === 'draw') auditionOn(snapNote(p.m)); }
         C.hover = p;
@@ -314,6 +356,7 @@
       press: function () {
         if (d && d.pushed && !d.blob) C.undo.pop();
         if (d && (d.ruler || d.pan)) locate(d.p.i);
+        if (d && d.pan) C.mark = null;   // a tap on empty space lets the marked note go
       },
       end: function () {
         auditionOff();
@@ -363,15 +406,22 @@
     for (var s = Math.ceil(v.t0); s <= v.t0 + v.W; s++) { var xs = gx + (s - v.t0) * pps; ctx.beginPath(); ctx.moveTo(xs, gy - 4); ctx.lineTo(xs, gy); ctx.stroke(); ctx.fillText(s + 's', xs, 10); }
     ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip();
     // the sung notes as blocks: on their own note (outline), or moved (filled accent); the one under the hand lit
-    var blocks = blobsIn(i0, i1), any = false;
+    var blocks = blobsIn(i0, i1), any = false, mid = C.mark ? (C.mark.i0 + C.mark.i1) >> 1 : -1, mk = null;
     blocks.forEach(function (b) {
       var sh = shown(b), mv = moved(b), x0 = X(b.i0), x1 = X(b.i1 + 1), y = Y(sh), bh = Math.max(8, lh * 0.66);
-      var hot = C.hoverBlob && C.hoverBlob.i0 === b.i0 && C.hoverBlob.i1 === b.i1;
-      ctx.globalAlpha = mv ? 0.45 : 0.16; ctx.fillStyle = mv ? COL.acc : COL.dim;
+      var hot = C.hoverBlob && C.hoverBlob.i0 === b.i0 && C.hoverBlob.i1 === b.i1, on = mid >= b.i0 && mid <= b.i1;
+      if (on) mk = { x: x0, y: y - bh / 2, n: sh };
+      ctx.globalAlpha = on ? 0.6 : mv ? 0.45 : 0.16; ctx.fillStyle = on || mv ? COL.acc : COL.dim;
       rr(ctx, x0, y - bh / 2, Math.max(3, x1 - x0), bh, Math.min(5, bh / 2)); ctx.fill();
-      ctx.globalAlpha = hot ? 1 : mv ? 0.9 : 0.5; ctx.strokeStyle = hot ? COL.ink : mv ? COL.acc : COL.dim; ctx.lineWidth = hot ? 2 : 1.2;
+      ctx.globalAlpha = hot || on ? 1 : mv ? 0.9 : 0.5; ctx.strokeStyle = hot || on ? COL.ink : mv ? COL.acc : COL.dim;
+      ctx.lineWidth = on ? 2.5 : hot ? 2 : 1.2;
       ctx.stroke(); ctx.globalAlpha = 1;
     });
+    if (mk) {   // the marked note's name rides above it (the D-pad moves it: up / down = its note, left / right = the next)
+      ctx.font = '20px VT323, Consolas, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillStyle = COL.ink; ctx.fillText(noteName(mk.n), Math.max(gx + 2, mk.x), Math.max(gy + 18, mk.y - 2));
+      ctx.textBaseline = 'middle';
+    }
     function trace(col, wid, alpha, val) {
       ctx.strokeStyle = col; ctx.lineWidth = wid; ctx.globalAlpha = alpha; ctx.beginPath();
       var pen = false, py = 0;
@@ -420,6 +470,47 @@
       ctx.fillText(C.capN > 0 ? 'NOTHING PLAYED HERE YET' : 'PLAY THE TRACK TO CAPTURE', gx + gw / 2, gy + gh / 2);
     }
   }
+  // the home tile's live view (2026-11-24): the last ~4 s up to the marker, what was sung (dim), what the tune does (ink),
+  // YOUR line (accent), the marker; the lanes fit what was sung there
+  var MINI_S = 4;
+  function drawMini() {
+    var R = O.root, cv = R && R.querySelector('.pg-home.on .cm-mini'); if (!cv || !cv.offsetWidth) return;
+    ensure();
+    var rect = cv.getBoundingClientRect(), w = cv.offsetWidth, h = cv.offsetHeight;
+    var k = rect.width / w * (window.devicePixelRatio || 1), Wp = Math.round(w * k), Hp = Math.round(h * k);
+    if (cv.width !== Wp || cv.height !== Hp) { cv.width = Wp; cv.height = Hp; }
+    var ctx = cv.getContext('2d'), COL = O.COL, N = MINI_S * C.hz, ph = playhead();
+    ctx.setTransform(k, 0, 0, k, 0, 0); ctx.clearRect(0, 0, w, h);
+    var end = ph >= 0 ? ph + N * 0.15 : C.lastI >= 0 ? C.lastI : N, i0 = Math.max(0, Math.round(end - N)), i1 = Math.min(C.n - 1, Math.round(end));
+    var lo = 1e9, hi = -1e9, i;
+    for (i = i0; i <= i1; i++) if (C.cap[i]) { var f = C.source(i); if (f.f0 > 0 && f.voiced) { var m = midi(f.f0); if (m < lo) lo = m; if (m > hi) hi = m; } }
+    if (hi < lo) { lo = 57; hi = 64; }
+    var c = (lo + hi) / 2, half = Math.max(3, (hi - lo) / 2 + 1); lo = c - half; hi = c + half;
+    function X(j) { return (j - (end - N)) / N * w; }
+    function Y(m) { return h - 2 - (m - lo) / (hi - lo) * (h - 4); }
+    var legal = O.legalAbs();   // the legal note lanes, faint
+    ctx.strokeStyle = COL.grid; ctx.lineWidth = 1; ctx.globalAlpha = 0.45; ctx.beginPath();
+    for (var n = Math.ceil(lo); n <= hi; n++) if ((legal >> ((n % 12 + 12) % 12)) & 1) { var yn = Math.round(Y(n)) + 0.5; ctx.moveTo(0, yn); ctx.lineTo(w, yn); }
+    ctx.stroke();
+    function trace(col, wid, alpha, val) {
+      ctx.strokeStyle = col; ctx.lineWidth = wid; ctx.globalAlpha = alpha; ctx.beginPath();
+      var pen = false;
+      for (var j = i0; j <= i1; j++) {
+        var y = C.cap[j] ? val(j) : null;
+        if (y === null) { pen = false; continue; }
+        if (pen) ctx.lineTo(X(j), y); else ctx.moveTo(X(j), y);
+        pen = true;
+      }
+      ctx.stroke();
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    trace(COL.acc, 3, O.P.CM_ON ? 0.9 : 0.4, function (j) { var t = C.Tg[j]; return isFinite(t) ? Y(t) : null; });
+    trace(COL.dim, 1, 0.8, function (j) { var f = C.source(j); return f.f0 > 0 ? Y(midi(f.f0)) : null; });
+    trace(COL.ink, 1.5, 1, function (j) { var f = C.source(j); return f.f0 > 0 && f.resV ? Y(midi(f.f0) + f.res) : null; });
+    if (ph >= 0) { var xp = Math.round(X(ph)) + 0.5; ctx.strokeStyle = COL.acc; ctx.globalAlpha = 0.9; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xp, 0); ctx.lineTo(xp, h); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    if (C.capN <= 0) { ctx.fillStyle = COL.dim; ctx.font = '16px VT323, Consolas, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('PLAY TO CAPTURE', w / 2, h / 2); }
+  }
   function rr(ctx, x, y, w, h, r) {
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
     ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h);
@@ -446,7 +537,7 @@
 
   /* ---- hooks into the object: draw, render, build ---- */
   var draw0 = O.draw;
-  O.draw = function () { draw0(); capture(); if (O.ui.page === 'custom') { follow(); drawCustom(); } };
+  O.draw = function () { draw0(); capture(); if (O.ui.page === 'custom') { follow(); drawCustom(); } else if (O.ui.page === 'home') drawMini(); };
   // 10-12 (L4-05): the page moves on its own while the marker glides between the engine's 30 Hz positions (playing) and
   // while a hint is up (it leaves at its time): then the draw runs every frame, as it always did
   var anim0 = O.animating;
@@ -460,9 +551,9 @@
     set('[data-part="cm-tool"]', function (el) { el.classList.toggle('sel', C.tool !== 'note'); txt(el.querySelector('.cm-kl'), TOOL_LABEL[C.tool]); });
     set('[data-part="cm-snap"]', function (el) { txt(el.querySelector('.cm-kl'), C.snap === 'scale' ? 'SCALE' : 'CHROM'); });
     set('[data-part="cm-undo"]', function (el) { el.classList.toggle('dim', !C.undo.length); });
-    set('.cm-tv', function (el) { txt(el, O.P.CM_ON ? 'ON' : 'OFF'); });
-    set('.cm-ts', function (el) { txt(el, C.edits ? C.edits + (C.edits === 1 ? ' EDIT' : ' EDITS') : C.capN <= 0 ? 'PLAY TO CAPTURE' : 'NO EDITS'); });
-    if (O.ui.page === 'custom') drawCustom();
+    // the tile's line: ON / OFF + the edit count, 12 cells at most (the mini graph says PLAY TO CAPTURE)
+    set('.cm-ts', function (el) { txt(el, (O.P.CM_ON ? 'ON ' : 'OFF ') + (C.edits ? C.edits + (C.edits === 1 ? ' EDIT' : ' EDITS') : 'NO EDITS')); });
+    if (O.ui.page === 'custom') drawCustom(); else if (O.ui.page === 'home') drawMini();
   };
   O.ext = O.ext || [];
   O.ext.push(function (root, L) { if (L === 'A') { ensure(); wireGraph(root); } });

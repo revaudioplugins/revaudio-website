@@ -334,7 +334,7 @@
   var PAGE_LABEL = { home: 'HOME', tune: 'TUNE', notes: 'NOTES', voice: 'VOICE', harm: 'HARMONY', live: 'LIVE DATA',
                      setup: 'SETUP', service: 'SERVICE', custom: 'CUSTOM',
                      fx: 'FX', 'fx-echo': 'ECHO', 'fx-verb': 'REVERB', 'fx-eq': 'EQ', 'fx-sqz': 'SQUEEZE',
-                     'harm-pos': 'POSITION' };
+                     'harm-pos': 'POSITION', codes: 'CODES', licence: 'LICENCE' };
   var ROWS = ['AT_RETUNE', 'AT_HUMANIZE', 'AT_FLEX', 'AT_VOICE']; // B / C: the screen list the D-pad picks from
   var MODE_MS = 3000, TONE_MS = 450;
   var T = { arm: 0, step: 0, tone: 0, detect: 0, scan: 0, unplug: 0 };
@@ -345,6 +345,9 @@
              // the TUNE page's KEY / SCALE combos (Yoni 2026-11-16): the open one ('AT_KEY' | 'AT_SCALE' | null) + its
              // D-pad highlight
              combo: null, chl: 0,
+             // CHECK ENGINE (10-13): kbd = the D-pad is in use (its outline shows; a press on the screen hides it again),
+             // codesFrom = the page the CODES page was opened from (its BACK), msg = the code the LIVE strip shows now
+             kbd: false, codesFrom: 'home', msg: null,
              // the NOTES page view (Yoni 2026-11-12): 'grid' (the 4 x 3 cells) or 'kb' (a piano octave); remembered
              notesView: (function () { try { return window.localStorage.getItem('revtune.notesview') === 'kb' ? 'kb' : 'grid'; } catch (e) { return 'grid'; } })() };
   OBD.PAGE_LABEL = PAGE_LABEL;
@@ -370,7 +373,120 @@
     clearTimeout(T.arm); clearTimeout(T.step); clearTimeout(T.tone); clearTimeout(T.detect); clearInterval(T.scan);
     var u = OBD.ui;
     u.page = 'home'; u.hl = 0; u.listen = false; u.armed = false; u.step = null; u.pick = 0; u.setup = false; u.detect = false; u.plugListen = false; u.detectProgress = 0;
+    u.kbd = false; u.codesFrom = 'home'; u.msg = null; clearTimeout(T.msg);
   };
+
+  /* =================================================================================================================
+   * CHECK ENGINE (10-13, Yoni 2026-11-23: "it is not really intuitive with the menues and the back button ... indications
+   * where needed - maybe things that are important to flash"). The scanner's own job, reading fault codes, is the
+   * indication layer: BACK goes one level up and the LCD names where; four telltale lamps (T H F C) in the header; a
+   * CODES page; a flash only when a change MAKES a fault (never at open, never repeating).
+   * ================================================================================================================= */
+  // BACK = one level up (an FX unit -> FX, POSITION -> HARMONY, CODES -> where it was opened, a page -> HOME); an open
+  // KEY / SCALE list closes first (the page stays). The header's crumb shows backTo() before BACK is pressed.
+  function parentOf(p) {
+    if (p === 'home') return null;
+    if (p.indexOf('fx-') === 0) return 'fx';
+    if (p === 'harm-pos') return 'harm';
+    if (p === 'licence') return OBD.licLocked && OBD.licLocked() ? null : 'service';   // 10-16 (obdtune-licence.js)
+    if (p === 'codes') return OBD.ui.codesFrom && OBD.ui.codesFrom !== 'codes' ? OBD.ui.codesFrom : 'home';
+    return 'home';
+  }
+  function backTo() { var u = OBD.ui; return u.combo ? u.page : parentOf(u.page); }
+  OBD.backTo = backTo;
+  // The codes. FAULT = a part you switched on that cannot sound (its lamp turns amber and flashes when it appears);
+  // INFO = a state that changes what you hear and is easy to forget (listed, steady). sys = its telltale; go / cell =
+  // where the fix is (a press on the code jumps there, the cell flashes). Faults first: the page lists in this order.
+  var CODES = [
+    { id: 'H01', sys: 'H', fault: true, txt: 'HARM: NO VOICE', go: 'harm', cell: ['tog-HM_1_ON', 'tog-HM_2_ON'],
+      on: function (P) { return P.HM_ON && !P.HM_1_ON && !P.HM_2_ON; } },
+    { id: 'H02', sys: 'H', fault: true, txt: 'HARM MIX 0 %', go: 'harm', cell: ['val-HM_MIX'],          // MIX 0 = the voices silent (HarmonyVoices.h)
+      on: function (P) { return P.HM_ON && (P.HM_1_ON || P.HM_2_ON) && P.HM_MIX <= 0; } },
+    { id: 'F01', sys: 'F', fault: true, txt: 'FX MIX 0 %', go: 'fx', cell: ['val-FX_MIX'],
+      on: function (P) { return !P.BYP_FX && P.FX_MIX <= 0; } },
+    { id: 'P01', sys: 'P', txt: 'PLUGIN BYPASSED', go: 'home', cell: ['.h-on'], on: function (P) { return !P.AT_ON; } },   // the header's OFF word flashes
+    { id: 'T01', sys: 'T', txt: 'AUTOTUNE OFF', go: 'tune', cell: ['tog-AT_TUNE'], on: function (P) { return !P.AT_TUNE; } },
+    { id: 'N01', sys: 'T', txt: 'NOTES EDITED', go: 'notes', on: function () { return OBD.legalAbs() !== OBD.scaleAbs(); } },
+    { id: 'H03', sys: 'H', txt: 'POSITION +' + POS_LA + ' ms', go: 'harm-pos', cell: ['tog-HM_POS_ON'],   // its lookahead = latency
+      on: function (P) { return P.HM_POS_ON; } },
+    { id: 'C01', sys: 'C', txt: 'CUSTOM LINE ON', go: 'custom', on: function (P) { return P.CM_ON && !!(OBD.custom && OBD.custom.edits); } }
+  ];
+  OBD.CODES = CODES;
+  OBD.codes = function () { var P = OBD.P, a = []; CODES.forEach(function (c) { if (c.on(P)) a.push(c); }); return a; };
+  // a telltale: 'warn' = it has a fault, 'lit' = it sounds, 'off' = ghost
+  function sysState(s, P, warn) {
+    if (warn[s]) return 'warn';
+    if (!P.AT_ON) return 'off';
+    if (s === 'T') return P.AT_TUNE ? 'lit' : 'off';
+    if (s === 'H') return P.HM_ON && (P.HM_1_ON || P.HM_2_ON) && P.HM_MIX > 0 ? 'lit' : 'off';
+    if (s === 'F') return fxOn('eq') || fxOn('sqz') || fxOn('echo') || fxOn('verb') ? 'lit' : 'off';
+    return P.CM_ON && OBD.custom && OBD.custom.edits ? 'lit' : 'off';
+  }
+  OBD.sysState = function (s) { var w = {}; OBD.codes().forEach(function (c) { if (c.fault) w[c.sys] = true; }); return sysState(s, OBD.P, w); };
+  // THE flash (DESIGN §6, 10-13): 3 pulses at 2 Hz (under the 3 Hz limit), amber lit from inside, then the part's steady
+  // state. Only for a change the hand or the engine made: render() starts it for a NEW fault, and never in the first
+  // OPEN_QUIET_MS after a build (a reopen, the session's values arriving from the host).
+  var FLAG_MS = 1500, MSG_MS = 3000, OPEN_QUIET_MS = 1500, CE = { seen: null, built: 0, ans: false, bl: {} };
+  // the MAIN switches (round 3): [part, its parameter]; backlit while ON
+  var MASTERS = [['tog-AT_TUNE', 'AT_TUNE'], ['tog-HM_ON', 'HM_ON'], ['tog-HM_1_ON', 'HM_1_ON'], ['tog-HM_2_ON', 'HM_2_ON'],
+                 ['tog-BYP_FX', 'BYP_FX'], ['cm-on', 'CM_ON']];
+  var STRIKE_MS = 420;
+  function strike(el) {   // the backlight comes on: one bright flicker, then steady (feedback of the press, never repeating)
+    el.classList.remove('strike'); void el.offsetWidth; el.classList.add('strike');
+    clearTimeout(el.strikeT); el.strikeT = setTimeout(function () { el.classList.remove('strike'); }, STRIKE_MS);
+  }
+  // ok = a GOOD change (DETECT's answer): the same 3 pulses in the screen's own ink, never the warning amber
+  function flag(el, ok) {
+    if (!el) return;
+    var c = ok ? 'flag-ok' : 'flag';
+    el.classList.remove('flag', 'flag-ok'); void el.offsetWidth;   // restart the animation
+    el.classList.add(c);
+    clearTimeout(el.flagT); el.flagT = setTimeout(function () { el.classList.remove(c); }, FLAG_MS);
+  }
+  function flagParts(names, ok) {   // the shown page's cells by data-part ('.x' = a selector: a header word)
+    (names || []).forEach(function (n) {
+      each(n.charAt(0) === '.' ? n : '[data-part="' + n + '"]', function (el) { var pg = el.closest('.page'); if (!pg || pg.classList.contains('on')) flag(el, ok); });
+    });
+  }
+  OBD.flagParts = flagParts;
+  function announce(c) {   // a NEW fault: its lamp flashes, the LIVE strip says it, the fix flashes when it is on this page
+    var u = OBD.ui;
+    each('[data-tt="' + c.sys + '"]', flag);
+    u.msg = c; clearTimeout(T.msg);
+    T.msg = setTimeout(function () { u.msg = null; OBD.render(); }, MSG_MS);
+    if (c.go === u.page) flagParts(c.cell);
+  }
+  function watchCodes(codes) {
+    var ids = codes.map(function (c) { return c.id; });
+    if (CE.seen && Date.now() - CE.built > OPEN_QUIET_MS)
+      codes.forEach(function (c) { if (c.fault && CE.seen.indexOf(c.id) < 0) announce(c); });
+    CE.seen = ids;
+    if (OBD.ui.msg && ids.indexOf(OBD.ui.msg.id) < 0) { OBD.ui.msg = null; clearTimeout(T.msg); }   // fixed: the strip is LIVE again
+  }
+  // a code pressed on the CODES page: its page, the fix in the D-pad's hand (outline shown) and flashing
+  function jump(id) {
+    var c = null; CODES.forEach(function (x) { if (x.id === id) c = x; });
+    if (!c) return;
+    go(c.go);
+    var u = OBD.ui, first = c.cell && c.cell[0];
+    if (first) {
+      OBD.render();   // the page is shown: its D-pad list is the right one
+      var list = items();
+      for (var i = 0; i < list.length; i++) if (list[i].getAttribute('data-part') === first) u.hl = i;
+      u.kbd = true;
+      flagParts(c.cell);
+    }
+  }
+  OBD.jump = jump;
+  // U7: a press that switches a part ON while something else keeps it silent flashes the cell that fixes it, right
+  // there (not a code: ECHO / REVERB at MIX 0 is the open state). Faults (HARM with no voice, FX MIX 0) do it through
+  // announce().
+  var NUDGE_MIX = { BYP_DLY: 'DLY_MIX', BYP_VERB: 'VERB_MIX', BYP_SQZ: 'SQZ_MIX' };
+  function nudgeAfter(id) {
+    var P = OBD.P;
+    if (NUDGE_MIX[id] && !P[id] && P[NUDGE_MIX[id]] <= 0) flagParts(['val-' + NUDGE_MIX[id]]);
+    if ((id === 'HM_1_ON' || id === 'HM_2_ON') && P[id] && !P.HM_ON) flagParts(['tog-HM_ON']);
+  }
 
   // DETECT (Dan 2026-11-05, replaces LISTEN on A): finds the vocal's key + scale and sets them. BENCH STAND-IN: a
   // pitch-class histogram of the feed's voiced frames against the Krumhansl-Kessler major / minor profiles; the real
@@ -609,7 +725,7 @@
     OBD.gesture(el, { press: function () {
       select(el);
       if (id.indexOf('AT_NOTE_') === 0) noteToggle(+id.slice(8));
-      else OBD.write(id, !OBD.P[id]);
+      else { OBD.write(id, !OBD.P[id]); nudgeAfter(id); }
     } });
   }
   function wireOpt(el, id, v) {
@@ -626,11 +742,16 @@
     var list = items();
     for (var i = 0; i < list.length; i++) if (list[i] === el) OBD.ui.hl = i;
   }
-  function go(page) { OBD.ui.page = page; OBD.ui.hl = 0; OBD.ui.combo = null; }
+  function go(page) {
+    if (OBD.licLocked && OBD.licLocked()) page = 'licence';   // 10-16: a trial that is over holds the screen on LICENCE
+    OBD.ui.page = page; OBD.ui.hl = 0; OBD.ui.combo = null;
+  }
+  OBD.go = go;   // obdtune-licence.js
   function activate(el) { // OK on an A item
     var k = el.getAttribute('data-kind'), id = el.getAttribute('data-param');
     if (k === 'tile') go(el.getAttribute('data-go'));
-    else if (k === 'tog') { if (id.indexOf('AT_NOTE_') === 0) noteToggle(+id.slice(8)); else OBD.write(id, !OBD.P[id]); }
+    else if (k === 'tog') { if (id.indexOf('AT_NOTE_') === 0) noteToggle(+id.slice(8)); else { OBD.write(id, !OBD.P[id]); nudgeAfter(id); } }
+    else if (k === 'code') jump(el.getAttribute('data-code'));
     else if (k === 'opt') { if (id === 'BACKGROUND') setBackground(el.getAttribute('data-v')); else OBD.write(id, +el.getAttribute('data-v')); }
     else if (k === 'cyc') cycle(id);
     else if (k === 'val' && COMBO[id]) openCombo(id);
@@ -663,7 +784,8 @@
     esc: function () {
       var u = OBD.ui;
       if (u.layout === 'A' && u.combo) { closeCombo(); return; }   // BACK first closes an open KEY / SCALE list
-      if (u.layout === 'A') { go(u.page.indexOf('fx-') === 0 ? 'fx' : u.page === 'harm-pos' ? 'harm' : 'home'); return; } // ESC goes home in A (an FX unit: to FX; POSITION: to HARMONY)
+      if (u.layout === 'A' && u.page === 'custom' && OBD.custom && OBD.custom.mark) { OBD.custom.mark = null; return; }   // ... and lets a marked note go (10-14)
+      if (u.layout === 'A') { var t = parentOf(u.page); if (t) go(t); return; }   // 10-13: ONE level up (the crumb names it)
       if (u.armed) arm(false); else if (u.step) stepMode(null); else u.setup = false;
     },
     ok: function () {
@@ -680,14 +802,34 @@
     setup: function () { OBD.ui.setup = !OBD.ui.setup; },
     // the side-wall screw (A, Yoni 2026-11-11: "indicate that's for the info like all our other plugins"): the SERVICE page
     info: function () { go(OBD.ui.page === 'service' ? 'home' : 'service'); },
+    // the telltale lamps (10-13) = the CODES page; pressed again it goes back to where it was opened
+    codes: function () {
+      var u = OBD.ui;
+      if (u.page === 'codes') { go(parentOf('codes')); return; }
+      u.codesFrom = u.page; go('codes');
+    },
     'nv-grid': function () { setNotesView('grid'); },
     eqsel: function () { OBD.ui.eqSel = (OBD.ui.eqSel + 1) % 4; },   // 10-11: the next EQ node
     'nv-kb': function () { setNotesView('kb'); }
   };
   OBD.NAV = NAV;   // the CUSTOM page adds its soft keys here (obdtune-custom.js)
+  var HOLD_HOME_MS = 600;
   function wireNav(el, what) {
     if (what === 'up' || what === 'down' || what === 'left' || what === 'right')
-      OBD.gesture(el, { hold: function () { if (OBD.ui.layout === 'A') dpadA(what); else dpadBC(what); } });
+      OBD.gesture(el, { hold: function () { if (OBD.ui.layout === 'A') { OBD.ui.kbd = true; dpadA(what); } else dpadBC(what); } });
+    else if (what === 'ok') OBD.gesture(el, { press: function () { OBD.ui.kbd = true; NAV.ok(); } });
+    // A's BACK (10-13): a press = one level up; HELD 0.6 s = HOME at once (the press on release is then skipped)
+    else if (what === 'esc' && OBD.ui.layout === 'A') {
+      var holdT = 0, homed = false;
+      OBD.gesture(el, {
+        start: function () {
+          homed = false; clearTimeout(holdT);
+          holdT = setTimeout(function () { homed = true; go('home'); OBD.render(); }, HOLD_HOME_MS);
+        },
+        press: function () { clearTimeout(holdT); if (!homed) NAV.esc(); },
+        end: function () { clearTimeout(holdT); }
+      });
+    }
     // SERVICE page: a link opens the browser (native openUrl); SIZE steps the window (native uiSize, the plugin maps it)
     else if (what === 'url') OBD.gesture(el, { press: function () { OBD.NATIVE('openUrl', [el.getAttribute('data-url')]); } });
     else if (what === 'sizedn' || what === 'sizeup') OBD.gesture(el, { press: function () { OBD.NATIVE('uiSize', [what === 'sizeup' ? 1 : -1]); } });
@@ -705,6 +847,7 @@
   OBD.setText = setText;
   OBD.render = function () {
     var R = OBD.root; if (!R) return;
+    if (OBD.renderLicence) OBD.renderLicence();   // 10-16 (obdtune-licence.js): first, so a held screen is on LICENCE
     var P = OBD.P, u = OBD.ui, legal = OBD.legalAbs(), sAbs = OBD.scaleAbs();
     OBD.dirty = true;   // the screen's canvas draws on the next animation frame (tick)
     eqSync();
@@ -803,12 +946,74 @@
     each('.cpo', function (el) {
       var id = el.getAttribute('data-param'), v = +el.getAttribute('data-v');
       el.classList.toggle('sel', v === P[id]);
-      el.classList.toggle('hl', id === u.combo && v === u.chl);
+      el.classList.toggle('hl', id === u.combo && v === u.chl && (u.layout !== 'A' || u.kbd));
     });
     each('.val.combo', function (el) { el.classList.toggle('open', el.getAttribute('data-param') === u.combo); });
-    // the highlight: A's D-pad item, B / C's row; one write each (a [data-row] cell takes the row rule, as it always did)
+    // CHECK ENGINE (10-13): the crumb (where BACK goes), the telltales, the CODES page, the LIVE strip's message, the
+    // honest dims (a part that cannot sound reads dim, never bright)
+    if (u.layout === 'A') {
+      var codes = OBD.codes(), warn = {}, on = {};
+      codes.forEach(function (c) { on[c.id] = true; if (c.fault) warn[c.sys] = true; });
+      watchCodes(codes);
+      var bt = backTo();
+      each('.h-back', function (el) { setText(el, bt ? '◂ ' + PAGE_LABEL[bt] : '▸'); el.classList.toggle('up', !!bt); });
+      each('[data-tt]', function (el) {
+        var st = sysState(el.getAttribute('data-tt'), P, warn);
+        el.classList.toggle('lit', st === 'lit'); el.classList.toggle('warn', st === 'warn');
+      });
+      each('.cd', function (el) {
+        var a = !!on[el.getAttribute('data-code')];
+        el.classList.toggle('gone', !a);
+        if (a) setAttr(el, 'data-item', ''); else el.removeAttribute('data-item');
+      });
+      each('.cd-none', function (el) { el.classList.toggle('gone', codes.length > 0); });
+      each('.msgbar .mb-t', function (el) { if (u.msg) setText(el, 'CODE ' + u.msg.id + '  ' + u.msg.txt); });
+      each('.glass', function (el) { el.classList.toggle('msg', !!u.msg); });
+      each('[data-part="tile-harm"]', function (el) { el.classList.toggle('toff', !P.HM_ON); });
+      each('[data-part="tile-custom"]', function (el) { el.classList.toggle('toff', !(P.CM_ON && OBD.custom && OBD.custom.edits)); });
+      // round 2 (Yoni 2026-11-23: "go also on the existing items"): the BACK key's lamp = BACK has a level to go up to;
+      // a home tile lit (frame + dot) while its part sounds = its telltale; an ON switch is lit like a backlit key
+      each('[data-part="back"]', function (el) { el.classList.toggle('lit', !!bt); });
+      each('.kl-back', function (el) { el.classList.toggle('on', !!bt); });
+      each('.kl-power', function (el) { el.classList.toggle('on', !!P.AT_ON); });
+      [['tune', 'T'], ['harm', 'H'], ['fx', 'F'], ['custom', 'C']].forEach(function (t) {
+        each('[data-part="tile-' + t[0] + '"]', function (el) { el.classList.toggle('lit', sysState(t[1], P, warn) === 'lit'); });
+      });
+      each('.val.tog[data-param]', function (el) {
+        var id = el.getAttribute('data-param');
+        el.classList.toggle('on', id.indexOf('BYP_') === 0 ? !P[id] : !!P[id]);
+      });
+      // round 3 (Yoni 2026-11-23: HARM "needs to be way more clear when its on and off - like really bold move", V1 / V2
+      // "more flashiness", then AUTOTUNE / FX POWER / CUSTOM "same", the light "like old casio digital watches"): the
+      // MAIN switches are backlit panels - ON = the whole cell glows, the letters dark on the light (a watch's display
+      // with its light on), OFF = dark. Switched ON by the hand: the light STRIKES (a short bright flicker, then steady).
+      var quiet = Date.now() - CE.built < OPEN_QUIET_MS;
+      MASTERS.forEach(function (m) {
+        var on = m[1].indexOf('BYP_') === 0 ? !P[m[1]] : !!P[m[1]];
+        each('[data-part="' + m[0] + '"]', function (el) {
+          el.classList.add('master'); el.classList.toggle('bl', on);
+          if (on && CE.bl[m[0]] === false && !quiet) strike(el);
+        });
+        CE.bl[m[0]] = on;
+      });
+      // DETECT's answer (the bench: detect(); the plugin: the engine's answer, shown 3 s): KEY + SCALE flash in the
+      // screen's own ink on TUNE, the TUNE tile on HOME (a NO KEY / UNDO answer changes nothing: no flash)
+      var ans = !!u.detect && !u.plugListen && u.detectTag !== 'NO KEY' && u.detectTag !== 'UNDO?';
+      if (ans && !CE.ans) flagParts(['val-AT_KEY', 'val-AT_SCALE', 'tile-tune'], true);
+      CE.ans = ans;
+      each('[data-part="tile-fx"]', function (el) { el.classList.toggle('toff', !(fxOn('eq') || fxOn('sqz') || fxOn('echo') || fxOn('verb'))); });
+      each('.fxt', function (el) { el.classList.toggle('toff', !fxOn(el.getAttribute('data-fxu'))); });
+      each('.pg-harm', function (el) { el.classList.toggle('hoff', !P.HM_ON); });
+      each('.pg-fx', function (el) { el.classList.toggle('fxoff', !!P.BYP_FX); });
+      each('.pg-fxu', function (el) {   // a unit page dims below its switch while the unit (or FX POWER) is off
+        var t = el.querySelector('.tog'), id = t && t.getAttribute('data-param');
+        el.classList.toggle('uoff', !!(P.BYP_FX || (id && P[id])));
+      });
+    }
+    // the highlight: A's D-pad item (10-13: drawn only while the D-pad is in use), B / C's row; one write each (a
+    // [data-row] cell takes the row rule, as it always did)
     var hl = null;
-    if (u.layout === 'A') { var list = items(); if (list.length) hl = list[Math.min(u.hl, list.length - 1)]; }
+    if (u.layout === 'A') { var list = items(); if (list.length && u.kbd) hl = list[Math.min(u.hl, list.length - 1)]; }
     each('[data-item]', function (el) { if (!el.hasAttribute('data-row')) el.classList.toggle('hl', el === hl); });
     each('[data-row]', function (el) { el.classList.toggle('hl', u.layout !== 'A' && !u.setup && el.getAttribute('data-row') === ROWS[u.pick]); });
     R.classList.toggle('armed', u.armed); // the header's mode text blinks while KEY is armed
@@ -971,11 +1176,24 @@
     return '<div class="hero"><canvas class="cv"></canvas><div class="g-gauge"><div class="lv-note">--</div>' +
       '<div class="lv-cents"></div></div><div class="g-graph"></div></div>';
   }
-  function header() {
+  // a = layout A (10-13): row 2 = the crumb (◂ where BACK goes, dim) + the page (lit); HARM's word -> the TELLTALES, a
+  // 2 x 2 lamp block over both rows on the right (one press zone, >= 50 design px tall: the CODES page)
+  function header(a) {
     return '<div class="hdr"><div class="h1"><span class="h-on" data-read="AT_ON"></span><span class="h-ks">' +
       '<span data-read="AT_KEY"></span> <span data-read="AT_SCALE"></span></span><span class="lv-voiced"></span>' +
-      '<span class="h-hm" data-read="HM_ON" data-show="hm"></span></div><div class="h2"><span class="h-arrow">▸</span>' +
-      '<span class="h-mode" data-mode></span></div></div>';
+      (a ? '' : '<span class="h-hm" data-read="HM_ON" data-show="hm"></span>') + '</div><div class="h2">' +
+      (a ? '<span class="h-back">▸</span>' : '<span class="h-arrow">▸</span>') + '<span class="h-mode" data-mode></span></div>' +
+      (a ? '<div class="tt" data-part="codes" data-kind="nav" data-nav="codes"><i data-tt="T">T</i><i data-tt="H">H</i>' +
+        '<i data-tt="F">F</i><i data-tt="C">C</i></div>' : '') + '</div>';
+  }
+  // the CODES page (10-13, the scanner's READ CODES): one cell per code, shown while it is on; a press = its fix
+  function codesPage() {
+    var h = '<div class="page pg-codes" data-page="codes"><div class="cd-none">NO CODES<span>ALL SYSTEMS OK</span></div><div class="cd-list">';
+    CODES.forEach(function (c) {
+      h += '<div class="val cd' + (c.fault ? ' cd-f' : '') + '"' + attrs({ 'data-part': 'code-' + c.id, 'data-kind': 'code',
+        'data-code': c.id, 'data-item': '' }) + '><span class="v-n">' + c.id + '</span><span class="v-v">' + c.txt + '</span></div>';
+    });
+    return h + '</div></div>';
   }
   function setupPage() {
     return '<div class="page pg-setup" data-page="setup"><div class="s-t">BACKGROUND <span data-read="BACKGROUND"></span></div>' +
@@ -1175,6 +1393,7 @@
         opt('sv-bg-1', 'BACKGROUND', 'ROOM', 'ROOM') + '</div>' +
       '<div class="sv-row"><span class="sv-n">SIZE</span>' + k('sv-size-dn', '−', 'sizedn') + '<span class="sv-size"></span>' +
         k('sv-size-up', '+', 'sizeup') + '</div>' +
+      (OBD.licencePage ? '<div class="sv-row"><span class="sv-n">LICENCE</span>' + k('sv-lic', '--', 'licence') + '</div>' : '') +   // 10-16
       '<div class="sv-row sv-follow"><span class="sv-n">FOLLOW</span><span class="sv-at">@revaudioplugins</span></div>' +
       '<div class="sv-soc">' + soc + '</div>' +
       '<div class="sv-row sv-foot"><span class="sv-ver" data-read="info"></span>' + k('sv-site', 'revaudio.net', 'url', 'https://revaudio.net') + '</div>' +
@@ -1183,7 +1402,9 @@
   var POWER = function () { return key('power', 'POWER', { 'data-param': 'AT_ON', 'data-kind': 'tog' }, 'AT_ON'); };
   var LISTEN = function () { return key('listen', 'LISTEN', { 'data-param': 'LISTEN', 'data-kind': 'nav', 'data-nav': 'listen' }, 'LISTEN'); };
   var ESC = function () { return key('esc', 'ESC', { 'data-kind': 'nav', 'data-nav': 'esc' }); };
-  var BACK = function () { return key('back', '← BACK', { 'data-kind': 'nav', 'data-nav': 'esc' }); }; // A: ESC renamed
+  // A: ESC renamed; 10-13: the whole key BACKLIT while BACK has a level to go up to (round 3, Yoni: "not the line
+  // indication like in power - i want the button itself to feel backlit"; obdtune.css)
+  var BACK = function () { return key('back', '← BACK', { 'data-kind': 'nav', 'data-nav': 'esc' }); };
 
   /* A in 3D (Yoni 2026-11-11: "a bit 3d like revamp", then "instead of up and down, go left and right"): RevAmp's recipe
    * (its DESIGN 26) - a one-point camera, here off to the LEFT at the device's middle height; the FRONT face (every
@@ -1241,7 +1462,9 @@
         'px;width:' + r[2] + 'px;height:' + r[3] + 'px"></div>';
     });
     return '<div class="plug" style="left:' + PLUG.x + 'px;top:' + PLUG.y + 'px;width:' + PLUG.w + 'px;height:' + PLUG.h + 'px">' +
-      z + '<i class="plug-img cab"></i><i class="plug-img con"></i><i class="plug-glow">' + g + '</i>' +
+      // .det-red = the engraved DETECT lit red from inside (Dan 2026-11-24: "make the detect reading blink with red so user
+      // can see it"; assets/photo/make-detect-red.py); obdtune.css blinks it
+      z + '<i class="plug-img cab"></i><i class="plug-img con"></i><i class="det-red"></i><i class="plug-glow">' + g + '</i>' +
       // the measurement mic on its OBD adapter (Yoni 2026-11-11: plugs onto the connector while DETECT listens, glides
       // away after; assets/photo/mic-A.png): CSS shows it on .plug.listening
       // 0.3.8 (Yoni 2026-11-12): it waits below the window's bottom edge and RISES into the slot; .mic-head = its
@@ -1254,8 +1477,12 @@
     // + 20 on the right for the CLOSE side key, + 90 below for the cable's U under the device
     // + 32 right of the device: the CLOSE side key, 34 px wide since 0.4.0 (was + 25)
     A: { W: 520 + DEV_LEFT + 32, H: 900, open: 0.9, views: ['home', 'tune', 'notes', 'harm', 'harm-pos', 'live', 'custom', 'service',
-                                                          'fx', 'fx-eq', 'fx-sqz', 'fx-echo', 'fx-verb'], html: function () {
-      var lamps = ''; for (var i = 0; i < 12; i++) lamps += '<i class="tl" data-read="AT_NOTE_' + i + '" data-show="lamp"></i>';
+                                                          'fx', 'fx-eq', 'fx-sqz', 'fx-echo', 'fx-verb', 'codes', 'licence'], html: function () {
+      // the NOTES tile = the NOTES page's KEYBOARD, one octave (Dan 2026-11-24: "change to the piano we have in the section,
+      // i want to see the piano layout over here"): the page's key spacing in %, a key lit = the note sounds, the root ringed
+      var KX = [0, 9.96, 14.43, 24.41, 28.87, 43.3, 53.27, 57.74, 67.69, 72.17, 82.12, 86.6];
+      var lamps = ''; for (var i = 0; i < 12; i++) lamps += '<i class="pk ' + ([1, 3, 6, 8, 10].indexOf(i) >= 0 ? 'b' : 'w') +
+        '" data-read="AT_NOTE_' + i + '" data-show="lamp" style="left:' + KX[i] + '%"></i>';
       var notes = ''; for (var j = 0; j < 12; j++) notes += noteCell(j);
       function tile(go, name, inner, cyc, st) { // cyc = the id one click steps (VOICE, SETUP); otherwise the tile opens a page
         var a = cyc ? { 'data-part': 'tile-' + go, 'data-kind': 'cyc', 'data-param': cyc, 'data-item': '' }
@@ -1265,14 +1492,14 @@
           (st ? '<span class="t-st" data-read="' + st + '"></span>' : '') + '<span class="t-v">' + inner + '</span></div>';
       }
       return plug() + '<div class="dev">' + extrude() + frame('BACK · OK ENTER · DRAG A VALUE') +
-        '<div class="bezel surf"><div class="glass surf">' + header() + '<div class="content">' +
+        '<div class="bezel surf"><div class="glass surf">' + header(true) + '<div class="content">' +
         '<div class="page pg-home" data-page="home">' +
           // 10-10 (Yoni 2026-11-18: "the scale of the place for the texts is messed up"): 0.5.2's ON / OFF line + "KEY SCALE"
           // wrapping on 8 of 13 scales made 4-5 lines that climbed into the title. AUTOTUNE now sits in the title row; the
           // values are three lines that never wrap: KEY / SCALE / SPEED (AUTOTUNE off dims them, as a voice card that is off)
           tile('tune', 'TUNE', '<span class="t-l" data-read="AT_KEY"></span><span class="t-l t-sc" data-read="AT_SCALE"></span>' +
             '<span class="t-l" data-read="AT_RETUNE"></span>', null, 'AT_TUNE') +
-          tile('notes', 'NOTES', '<span class="tls">' + lamps + '</span>') +
+          tile('notes', 'NOTES', '<span class="tpiano">' + lamps + '</span>') +
           // FX (Yoni 2026-11-16) where VOICE was (VOICE is a TUNE row now): FX POWER + a lamp per unit (lit = it sounds)
           // 10-11: the lamps in the chain's order: EQ, SQUEEZE, ECHO, REVERB
           tile('fx', 'FX', '<span data-read="BYP_FX" data-show="fxp"></span><br><span class="fxl"><i data-fxu="eq">Q</i>' +
@@ -1280,6 +1507,8 @@
           tile('harm', 'HARMONY', '<span data-read="HM_ON"></span><br><span data-read="HM_1_INTERVAL" data-show="hv"></span><br><span data-read="HM_2_INTERVAL" data-show="hv"></span>') +
           tile('live', 'LIVE DATA', '<span class="lv-note">--</span>') +
           // CUSTOM (Yoni 2026-11-12) where SETUP was: BACKGROUND + the version live on the INFO screw's SERVICE page
+          // 2026-11-24 (Dan: "on custom i want to see the live view of what happening inside the section"): the body = a
+          // live mini graph + one line, ON / OFF and the edit count (obdtune-custom.js)
           tile('custom', 'CUSTOM', OBD.customTile ? OBD.customTile() : '') + '</div>' +
         // TUNE (Yoni 2026-11-16: "the voice selection screen, move it to 1 parameter in the tune section menu"): VOICE = a
         // row (a press steps SOPRANO / ALTO / TENOR); HUMAN + FLEX share a row so the five rows still fit. 0.5.2 (Yoni
@@ -1295,13 +1524,17 @@
         // 10-10 (Yoni 2026-11-18): + POS, a fifth cell that opens the POSITION page (BACK returns here)
         '<div class="page pg-harm" data-page="harm">' + tog('HM_ON', 'HARM') + tog('HM_1_ON', 'V1') + tog('HM_2_ON', 'V2') + val('HM_MIX', 'MIX') +
           opener('harm-pos', 'POS ▸', 'HM_POS_ON') + voiceCards() + '</div>' + posPage() +
-        '<div class="page pg-live" data-page="live">' + hero() + '</div>' + (OBD.customPage ? OBD.customPage() : '') + servicePage() +
-        fxPages() + '</div>' +
+        '<div class="page pg-live" data-page="live">' + hero() + '</div>' + (OBD.customPage ? OBD.customPage() : '') + servicePage() + (OBD.licencePage ? OBD.licencePage() : '') +
+        fxPages() + codesPage() + '</div>' +
         '<div class="mini"><span class="m-l">LIVE</span><span class="lv-note"></span><span class="lv-cents"></span>' +
         '<span class="m-bar"><i class="m-0"></i><i class="m-in"></i></span></div>' +
         // DETECT's scan bar (Yoni 2026-11-11): takes the LIVE strip's place while the connector listens
         '<div class="scanbar"><span class="sb-l">SCANNING KEY</span><span class="sb-bar"><i class="sb-fill"></i></span>' +
-        '<span class="sb-p"></span></div></div></div>' +
+        '<span class="sb-p"></span></div>' +
+        // a NEW fault (10-13): the strip says it for 3 s, the scan bar's idiom
+        '<div class="msgbar"><span class="mb-t"></span></div></div></div>' +
+        // 10-13 round 7: the photographed light around BACK + POWER (assets/photo/make-keylight.py), under the keys
+        '<i class="keylight kl-back"></i><i class="keylight kl-power"></i>' +
         BACK() + POWER() + dpad() + frameTop(true) + '</div>'; // DETECT = the OBD connector (plug(), under the device)
     } },
     B: { W: 500, H: 920, views: ['rest', 'setup'], html: function () {
@@ -1427,7 +1660,11 @@
       else if (k === 'cyc') OBD.gesture(el, { press: function () { select(el); cycle(id); } });
       else if (k === 'nav') wireNav(el, el.getAttribute('data-nav'));
       else if (k === 'cpo') wireCpo(el);
+      else if (k === 'code') OBD.gesture(el, { press: function () { jump(el.getAttribute('data-code')); } });
     });
+    // 10-13: a press on the screen = the pointer is the hand again; the D-pad's outline goes until the D-pad is used
+    each('.glass', function (el) { el.addEventListener('pointerdown', function () { OBD.ui.kbd = false; }, true); });
+    CE.seen = null; CE.built = Date.now(); CE.bl = {};   // the first render after a build sets the codes + lights without a flash
     (OBD.ext || []).forEach(function (f) { f(root, L); });   // object extensions (obdtune-custom.js)
     LANES = laneRange();
     OBD.readColors();

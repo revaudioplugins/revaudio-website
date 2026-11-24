@@ -1,6 +1,6 @@
 /**
  * /obdtune commerce config: the one place the page reads its trial and buy state from (the src/data/widebeam.ts
- * pattern). OBDTUNE = the OBDTune repo (~/RevTune, branch obdtune-fx, 0.8.0), not released yet.
+ * pattern). OBDTUNE = the OBDTune repo (~/RevTune, main, 0.9.5), not released yet.
  *
  * Commerce (Gil 2026-11-19, Paddle product pro_01m7vhdsxv3arw74gkb1fe9fxp):
  *   - gateWired true: the trial form posts {email, plugin, marketing} to the worker's /download/register first, which
@@ -21,8 +21,8 @@ export const obdtune = {
   paddlePriceId: 'pri_01m7vhe769c8s1rsqs3c0f0xvm' as string | null, // keep equal to plugins.ts obdtune
   gateWired: true,
   gateId: 'obdtune',
-  /** the Mac pkg ships AAX (Gil, 2026-11-19), same as WIDE BEAM */
-  formats: 'Mac VST3 · AU · AAX · Windows VST3',
+  /** packaging/README.md (0.9.5): the Mac pkg = VST3 + AU + AAX (no ARA yet); the Windows installer = VST3 + AAX + OBDTUNE ARA (VST3) */
+  formats: 'Mac VST3 · AU · AAX · Windows VST3 · AAX · ARA',
 };
 
 /** BUY NOW adds to the cart only when Paddle has a price for it */

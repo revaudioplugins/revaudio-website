@@ -4,14 +4,14 @@
 # ref of the plugin repo (no checkout needed) into public/obdtune/ui/ and writes src/data/obdtune-ui.json (ref, commit,
 # version for the INFO page). The copies are never edited by hand: re-run this when Yoni / Dan change the UI.
 #
-#   tools/obdtune-ui/sync.sh [repo=~/RevTune] [ref=origin/obdtune-fx]
+#   tools/obdtune-ui/sync.sh [repo=~/RevTune] [ref=origin/main]
 #
 # Two changes on the way, nothing else:
 #   - the PNG photos become WebP (plate-A2 2.1 MB -> a few hundred KB), the CSS urls follow;
 #   - the CSS's @font-face (a bench-relative path) is dropped: the page declares "OBD Pixel" on the site's VT323.
 set -euo pipefail
 REPO="${1:-$HOME/RevTune}"
-REF="${2:-origin/obdtune-fx}"
+REF="${2:-origin/main}"
 SITE="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$SITE/public/obdtune/ui"
 SRC="Source/ui/public"

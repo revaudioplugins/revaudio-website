@@ -585,7 +585,7 @@
    (assets/photo/PROMPTS.md), cut to the object's silhouette. The keys are cut from the same photo, so they share its
    light; a press sinks the cap 2 px and opens the dark slot above it (Law 3: down by depth, never by light).
    Text, the screen content and the lamps stay live. The LCD wears a real scratched-glass layer (assets/photo/glass-A.jpg,
-   screen blend): heavy at the edges, nearly clean over the middle, under the smooth glare (Law 5). Other layouts fall
+   baked to glass-A-lit.png): heavy at the edges, nearly clean over the middle, under the smooth glare (Law 5). Other layouts fall
    back to the FACTORY look.
    LIGHT LAB (Yoni 2026-11-16: "the reflection of the light ... especially on the top left its a bit too much"; his
    recipe bench/obdtune/light-recipe-2026-11-16.json): assets/photo/plate-A2.webp = plate-A.png with the lamp light
@@ -621,11 +621,14 @@
 .skin-photo.L-A [data-part="down"] .cap { background-position: -368px -732px; }
 /* legends silk-screened onto the rubber: flat ink, no bevel */
 .skin-photo.L-A .key .lg { color: rgba(236, 226, 204, .9); text-shadow: 0 0 1px rgba(12, 9, 6, .5); }
-/* the LCD glass: real scratches, edge-heavy, screen blend over the content; the glare (::after) stays on top.
+/* the LCD glass: real scratches, edge-heavy, lightening the content; the glare (::after) stays on top.
    LIGHT LAB (Yoni 2026-11-16): the scratches at .79 but calmed in the screen's top-left corner (to .58 inside 25 % of a
-   67 % ellipse from the corner, full by its edge); the glare 164 deg, .11 -> .0306 at 36.47 % -> 0 at 62 %. */
+   67 % ellipse from the corner, full by its edge); the glare 164 deg, .11 -> .0306 at 36.47 % -> 0 at 62 %.
+   Mac (2026-11-24): glass-A-lit.png = glass-A.jpg baked to white with alpha = its grey (make-glass-lit.py), drawn with
+   NORMAL blending = the same picture as the jpg with mix-blend-mode: screen. The Mac WebView's compositor dropped that
+   screen blend and drew the near-black jpg at .79 over the LCD: the screen went dark on Mac only. */
 .skin-photo.L-A .glass::before { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;
-  background: url(assets/photo/glass-A.jpg) 0 0 / 100% 100% no-repeat; mix-blend-mode: screen; opacity: .79;
+  background: url(assets/photo/glass-A-lit.webp) 0 0 / 100% 100% no-repeat; opacity: .79;
   -webkit-mask-image: radial-gradient(67% 67% at 0 0, rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .58) 25%, #000 100%);
   mask-image: radial-gradient(67% 67% at 0 0, rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .58) 25%, #000 100%); }
 .skin-photo.L-A .glass::after { z-index: 3;
@@ -851,3 +854,323 @@
 .L-A .pg-custom .cm-k:last-child { margin-right: 0; }
 .L-A .pg-custom .cm-k span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -12px; text-align: center; font-size: 21px; font-weight: 700; }
 .L-A .pg-custom .cm-k.dim { opacity: .45; }
+
+/* ---------------------------------------------------------------- A: CHECK ENGINE (10-13, Yoni 2026-11-23: "it is not
+   really intuitive with the menues and the back button ... indications where needed - maybe things that are important
+   to flash"). The scanner reads codes: amber = a code (a backlit warning segment, lit from inside, its light blooms);
+   the FX tile's letter lamps become the header's telltales; one flash = 3 pulses at 2 Hz, only when a change makes a
+   fault (DESIGN §6). */
+.obd.skin-factory, .obd.skin-photo, .obd.skin-shop { --lcd-warn: #f2a23c; --lcd-warn-lo: #a8621c; --lcd-warn-glow: rgba(242, 162, 60, .55); }
+.obd.skin-vintage { --lcd-warn: #ff7a4a; --lcd-warn-lo: #a8401f; --lcd-warn-glow: rgba(255, 122, 74, .55); } /* its LCD is amber already */
+/* the header: row 2 = the crumb (where BACK goes, dim) + the page (lit); the telltales over both rows on the right */
+.L-A .hdr { position: relative; }
+.L-A .hdr .h1, .L-A .hdr .h2 { max-width: calc(100% - 108px); overflow: hidden; }
+.L-A .h-back { display: inline-block; vertical-align: top; margin-right: 1ch; color: var(--lcd-dim); }
+.L-A .tt { position: absolute; right: 4px; top: 3px; width: 100px; height: 60px; font-size: 0; line-height: 0; white-space: normal; cursor: pointer; }
+.L-A .tt i { display: inline-block; vertical-align: top; width: 48px; height: 28px; margin: 0 4px 4px 0; border-radius: 2px;
+  border: 1px solid var(--lcd-grid); font-size: 22px; line-height: 26px; text-align: center; color: var(--lcd-dim); text-shadow: none;
+  background: linear-gradient(180deg, rgba(120, 150, 160, .16), rgba(120, 150, 160, .08) 60%, rgba(120, 150, 160, .12)); }
+.L-A .tt i:nth-child(2n) { margin-right: 0; }
+.L-A .tt:hover i { border-color: var(--lcd-dim); }   /* light answers the hand: the block reads as one key */
+.L-A .tt i.lit { color: var(--lcd-bg, #10140f); border-color: var(--lcd-acc);
+  background: linear-gradient(180deg, var(--lcd-acc), var(--lcd-acc) 60%, var(--lcd-dim)); }
+.L-A .tt i.warn { color: #1c1208; border-color: var(--lcd-warn); box-shadow: 0 0 8px var(--lcd-warn-glow);
+  background: linear-gradient(180deg, var(--lcd-warn), var(--lcd-warn) 60%, var(--lcd-warn-lo)); }
+/* the CODES page: one cell per code (a door: ▸), faults amber; none = NO CODES */
+.L-A .pg-codes .cd-none { padding-top: 92px; text-align: center; font-size: 36px; line-height: 40px; color: var(--lcd-acc); }
+.L-A .pg-codes .cd-none span { display: block; font-size: 20px; color: var(--lcd-dim); }
+.L-A .pg-codes .cd-list { margin-right: -6px; font-size: 0; }
+.L-A .pg-codes .cd { width: calc(50% - 6px); height: 58px; margin: 0 6px 6px 0; cursor: pointer; }
+.L-A .pg-codes .cd .v-n { font-size: 18px; }
+.L-A .pg-codes .cd .v-v { font-size: 22px; }
+.L-A .pg-codes .cd::after { content: '\25B8'; position: absolute; right: 8px; top: 3px; font-size: 18px; line-height: 20px; color: var(--lcd-dim); pointer-events: none; }
+.L-A .pg-codes .cd-f { border-color: var(--lcd-warn); }
+.L-A .pg-codes .cd-f .v-n, .L-A .pg-codes .cd-f .v-v, .L-A .pg-codes .cd-f::after { color: var(--lcd-warn); text-shadow: 0 0 4px var(--lcd-warn-glow); }
+/* a NEW fault: the LIVE strip says it for 3 s (the scan bar's idiom; a scan wins the strip) */
+.msgbar { display: none; }
+.L-A .glass.msg .mini { visibility: hidden; }
+.L-A .glass.msg .msgbar { display: block; position: absolute; left: 10px; right: 10px; bottom: 6px; height: 46px; padding: 0 4px;
+  border-top: 1px solid var(--lcd-grid); line-height: 44px; font-size: 22px; white-space: nowrap; overflow: hidden; pointer-events: none;
+  color: var(--lcd-warn); text-shadow: 0 0 4px var(--lcd-warn-glow); }
+.L-A .glass.scanning .msgbar { display: none; }
+/* honest dims: what cannot sound reads dim (HARM off, FX POWER off, a unit off); the page's own switch stays bright */
+.L-A .pg-harm.hoff > .val:not([data-param="HM_ON"]), .L-A .pg-harm.hoff .card { opacity: .4; }
+.L-A .pg-fx.fxoff > .val:not(.tog) { opacity: .4; }
+.L-A .pg-fxu.uoff > .val:not(.tog), .L-A .pg-fxu.uoff .card, .L-A .pg-fxu.uoff .eq-graph, .L-A .pg-fxu.uoff .eq-read { opacity: .4; }
+/* THE flash: 3 pulses at 2 Hz, amber, then the part's steady state (reduced motion = the steady amber only) */
+@-webkit-keyframes obd-flag { 0%, 100% { box-shadow: inset 0 0 0 1px var(--lcd-warn); } 50% { box-shadow: inset 0 0 0 2px var(--lcd-warn), 0 0 14px 2px var(--lcd-warn-glow); } }
+@keyframes obd-flag { 0%, 100% { box-shadow: inset 0 0 0 1px var(--lcd-warn); } 50% { box-shadow: inset 0 0 0 2px var(--lcd-warn), 0 0 14px 2px var(--lcd-warn-glow); } }
+@-webkit-keyframes obd-flag-lamp { 0%, 100% { box-shadow: 0 0 4px var(--lcd-warn-glow); } 50% { box-shadow: 0 0 16px 4px var(--lcd-warn-glow); } }
+@keyframes obd-flag-lamp { 0%, 100% { box-shadow: 0 0 4px var(--lcd-warn-glow); } 50% { box-shadow: 0 0 16px 4px var(--lcd-warn-glow); } }
+@-webkit-keyframes obd-flag-ink { 0%, 100% { color: inherit; } 50% { color: var(--lcd-warn); text-shadow: 0 0 8px var(--lcd-warn-glow); } }
+@keyframes obd-flag-ink { 0%, 100% { color: inherit; } 50% { color: var(--lcd-warn); text-shadow: 0 0 8px var(--lcd-warn-glow); } }
+.L-A .val.flag, .L-A .tile.flag, .L-A .opt.flag { border-color: var(--lcd-warn); box-shadow: inset 0 0 0 1px var(--lcd-warn);
+  -webkit-animation: obd-flag 500ms ease-in-out 3; animation: obd-flag 500ms ease-in-out 3; }
+.L-A .tt i.flag { -webkit-animation: obd-flag-lamp 500ms ease-in-out 3; animation: obd-flag-lamp 500ms ease-in-out 3; }
+.L-A .h-on.flag { -webkit-animation: obd-flag-ink 500ms steps(2, start) 3; animation: obd-flag-ink 500ms steps(2, start) 3; }
+@media (prefers-reduced-motion: reduce) { .obd .flag, .obd .flag-ok { -webkit-animation: none !important; animation: none !important; } }
+
+/* ---------------------------------------------------------------- A: CHECK ENGINE round 2 (10-13 V1-V5, Yoni 2026-11-23:
+   "go also on the existing items - like maybe the back to lit when ur in a menu, or the key to pop more in the autotune
+   section ... indications on the main features", then "also detect to signal somehow with light"). Every light here
+   reports a state (Law 4: lit from inside; §3: no idle animation). */
+.obd.skin-factory, .obd.skin-photo { --lcd-acc-glow: rgba(108, 198, 230, .2); --lcd-acc-fill: rgba(108, 198, 230, .1); }
+.obd.skin-shop { --lcd-acc-glow: rgba(143, 210, 192, .2); --lcd-acc-fill: rgba(143, 210, 192, .1); }
+.obd.skin-vintage { --lcd-acc-glow: rgba(240, 188, 98, .2); --lcd-acc-fill: rgba(240, 188, 98, .1); }
+/* V1 BACK: round 3 replaced the lamp line with the whole key backlit (the round-3 block below) */
+/* V2 TUNE: KEY + SCALE = the hero row, two lit cells side by side, one taller row, the big values; both lists open over it */
+.L-A .pg-tune .val.combo { display: inline-block; vertical-align: top; width: calc(50% - 3px); height: 92px; margin-right: 6px;
+  border-color: var(--lcd-acc); box-shadow: inset 0 0 18px var(--lcd-acc-glow); }
+.L-A .pg-tune .val.combo[data-param="AT_SCALE"] { margin-right: 0; }
+.L-A .pg-tune .val.combo .v-n { top: 6px; margin-top: 0; font-size: 22px; }
+.L-A .pg-tune .val.combo .v-v { top: auto; bottom: 10px; margin-top: 0; right: 38px; font-size: 30px; }
+.L-A .pg-tune .val.combo[data-param="AT_KEY"] .v-v { bottom: 4px; font-size: 52px; }
+.L-A .pg-tune .val.combo::after { top: auto; bottom: 20px; margin-top: 0; }
+.L-A .pg-tune .val.combo.open { box-shadow: inset 0 0 0 1px var(--lcd-acc), inset 0 0 18px var(--lcd-acc-glow); }
+.L-A .cpick[data-combo="AT_SCALE"] { top: 62px; }
+.L-A .cp-3c .cpo { height: 40px; }
+.L-A .cp-3c .cpo span { font-size: 23px; margin-top: -12px; line-height: 24px; }
+/* V3 an ON switch = a backlit key (frame + an even inner light); a home tile lit (frame + dot) while its part sounds */
+.L-A .val.tog.on { border-color: var(--lcd-acc); box-shadow: inset 0 0 14px var(--lcd-acc-glow), inset 0 0 0 100px var(--lcd-acc-fill); }
+.L-A .val.tog.on.hl { box-shadow: inset 0 0 0 1px var(--lcd-acc), inset 0 0 14px var(--lcd-acc-glow), inset 0 0 0 100px var(--lcd-acc-fill); }
+.L-A .tile.lit { border-color: var(--lcd-acc); box-shadow: inset 0 0 18px var(--lcd-acc-glow); }
+.L-A .tile.lit.hl { box-shadow: inset 0 0 0 1px var(--lcd-acc), inset 0 0 18px var(--lcd-acc-glow); }
+.L-A .pg-home .tile.lit > .t-n::after { content: ' \25CF'; font-size: 18px; vertical-align: 3px; }
+/* V4 light answers the hand: a part under the mouse lights its frame; held / dragged it is lit until let go */
+@media (hover: hover) {
+  .L-A .glass .val:not(.fx-gr):not(.pos-lat):hover, .L-A .glass .tile:hover, .L-A .glass .opt:not(.sel):hover,
+  .L-A .glass .note:hover { border-color: var(--lcd-ink); }
+}
+.L-A .glass .val.down, .L-A .glass .tile.down, .L-A .glass .opt.down, .L-A .glass .pos-lane.down {
+  border-color: var(--lcd-acc); box-shadow: inset 0 0 0 1px var(--lcd-acc), inset 0 0 18px var(--lcd-acc-glow); }
+/* V5 DETECT: the connector's pin recess = a pilot light, faint and steady while DETECT is ready (it IS the key); under
+   the hand brighter, the 12 note pins on (it reads notes); the scan + the answer keep their own light (above); dark
+   while the plugin is bypassed */
+.plug-glow::before { content: ''; position: absolute; left: 20px; top: 92px; width: 108px; height: 48px; border-radius: 10px; opacity: .35;
+  background: radial-gradient(60% 70% at 50% 50%, rgba(240, 176, 80, .32), rgba(240, 176, 80, .1) 60%, rgba(240, 176, 80, 0) 100%);
+  transition: opacity 140ms; }
+.hot-detect:hover ~ .plug-glow::before { opacity: .9; }
+.hot-detect:hover ~ .plug-glow b[data-pc]:not(.ans):not(.fill) { opacity: .5; }
+.pwr-off .plug:not(.listening) .plug-glow::before { opacity: 0; }
+/* the flashes win over every lit state (same weight as the lit rules, later): amber = a fault, the ink = a good change */
+@-webkit-keyframes obd-flag-ok { 0%, 100% { box-shadow: inset 0 0 0 1px var(--lcd-acc); } 50% { box-shadow: inset 0 0 0 2px var(--lcd-ink), 0 0 14px 2px var(--lcd-acc-glow), inset 0 0 0 100px var(--lcd-acc-fill); } }
+@keyframes obd-flag-ok { 0%, 100% { box-shadow: inset 0 0 0 1px var(--lcd-acc); } 50% { box-shadow: inset 0 0 0 2px var(--lcd-ink), 0 0 14px 2px var(--lcd-acc-glow), inset 0 0 0 100px var(--lcd-acc-fill); } }
+.L-A .glass .val.flag, .L-A .glass .tile.flag, .L-A .glass .opt.flag { border-color: var(--lcd-warn); }
+.L-A .glass .val.flag-ok, .L-A .glass .tile.flag-ok { border-color: var(--lcd-ink);
+  -webkit-animation: obd-flag-ok 500ms ease-in-out 3; animation: obd-flag-ok 500ms ease-in-out 3; }
+
+/* ---------------------------------------------------------------- A: CHECK ENGINE round 3 (10-13, Yoni 2026-11-23):
+   "harmony on off main switch - needs to be way more clear ... really bold move", "on off for v1 v2 needs more
+   flashiness", "back ... i want the button itself to feel backlit when in a menu - glow in analog style light like old
+   casio digital watches kind of light", "same for autotune / fx power / custom on off". THE BACKLIGHT: a watch's
+   illuminator - light from inside the part, brighter at the side the bulb sits (left), falling off across it, a little
+   of it leaking past the edges. On the LCD a MAIN switch that is ON = its whole cell lit, the letters dark ON the light
+   (the watch's digits stay black); OFF = dark. Three colours on the bench bar (GLOW); the default = GREEN EL. */
+.obd { --bl-hot: rgba(176, 255, 196, .95); --bl-mid: rgba(96, 222, 150, .72); --bl-low: rgba(40, 150, 98, .5);
+  --bl-halo: rgba(110, 240, 160, .5); --bl-ink: #0e2a1a; --bl-legend: #c8ffd8; }
+.obd[data-glow="bulb"] { --bl-hot: rgba(250, 255, 190, .95); --bl-mid: rgba(214, 232, 120, .72); --bl-low: rgba(150, 160, 60, .5);
+  --bl-halo: rgba(226, 240, 130, .5); --bl-ink: #2a2a0c; --bl-legend: #f4ffc4; }
+.obd[data-glow="aqua"] { --bl-hot: rgba(190, 255, 250, .95); --bl-mid: rgba(96, 214, 226, .72); --bl-low: rgba(36, 132, 156, .5);
+  --bl-halo: rgba(110, 226, 240, .5); --bl-ink: #0c2430; --bl-legend: #ccfbff; }
+/* the MAIN switches on the LCD: ON = the lit panel, OFF = a dark cell with a dim word */
+.L-A .glass .val.tog.master:not(.bl) .v-v, .L-A .glass .opt.master:not(.bl) span { color: var(--lcd-dim); }
+.L-A .glass .val.tog.master.bl, .L-A .glass .opt.master.bl { border-color: var(--bl-hot);   /* a flash rides on the light (its glow animates over it) */
+  background: radial-gradient(150% 190% at 0% 55%, var(--bl-hot) 0%, var(--bl-mid) 42%, var(--bl-low) 100%);
+  box-shadow: 0 0 14px 2px var(--bl-halo), inset 0 0 8px var(--bl-halo); }
+.L-A .glass .val.tog.master.bl .v-n, .L-A .glass .val.tog.master.bl .v-v, .L-A .glass .opt.master.bl span { color: var(--bl-ink); text-shadow: none; }
+/* HARMONY: the boldest - the voices under a dark HARM go darker than any other off part */
+.L-A .pg-harm.hoff > .val:not([data-param="HM_ON"]), .L-A .pg-harm.hoff .card { opacity: .28; }
+/* BACK + POWER = the rubber key a little translucent with a warm bulb UNDER it (Yoni 2026-11-23, after green: "it
+   shouldnt be green it should be vintage orange brownish vibe and not overdone - it should feel like the button is a bit
+   transparent and then light beneath it makes it glow a bit", then "exactly and ditch the line light": no lamp strip on
+   any key of A). Its own colour, never the switches' GLOW: an old dash bulb, orange-brown. The light comes up through
+   the middle of the cap (thicker rubber at the rim stays darker), the legend - the thinnest rubber - glows a touch more,
+   a breath of it escapes at the gap. BACK lit = it has a level to go up to; POWER lit = the plugin is ON. */
+.L-A [data-part="power"] .lamp { display: none; }
+.L-A [data-part="power"] .lg { margin-top: -12px; }   /* centred again: no lamp under it */
+.L-A [data-part="back"] .lg, .L-A [data-part="power"] .lg { z-index: 1; }   /* the legend over the lit veil */
+.L-A [data-part="back"] .cap::after, .L-A [data-part="power"] .cap::after { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  border-radius: inherit; opacity: 0; pointer-events: none; mix-blend-mode: screen; transition: opacity 160ms;
+  background: radial-gradient(78% 100% at 50% 60%, rgba(240, 150, 70, .8) 0%, rgba(180, 100, 42, .5) 50%, rgba(96, 52, 22, 0) 100%); }
+.L-A [data-part="back"]::before, .L-A [data-part="power"]::before { content: ''; position: absolute; left: 4px; top: 4px; right: 4px; bottom: 6px;
+  border-radius: var(--kr); opacity: 0; pointer-events: none; box-shadow: 0 0 8px 1px rgba(220, 128, 52, .38); transition: opacity 160ms; }
+.L-A [data-part="back"].lit .cap::after, .L-A [data-part="power"].lit .cap::after { opacity: .78; }
+.L-A [data-part="back"].lit::before, .L-A [data-part="power"].lit::before { opacity: 1; }
+.L-A [data-part="back"].lit .lg, .L-A [data-part="power"].lit .lg { color: #ffcf96; text-shadow: 0 0 6px rgba(240, 150, 66, .6); }
+/* the STRIKE: switched on by the hand, the backlight flickers bright once and settles (feedback, never idle) */
+@-webkit-keyframes obd-strike { 0% { -webkit-filter: brightness(1.9); filter: brightness(1.9); } 30% { -webkit-filter: brightness(1.15); filter: brightness(1.15); }
+  45% { -webkit-filter: brightness(1.6); filter: brightness(1.6); } 100% { -webkit-filter: brightness(1); filter: brightness(1); } }
+@keyframes obd-strike { 0% { filter: brightness(1.9); } 30% { filter: brightness(1.15); } 45% { filter: brightness(1.6); } 100% { filter: brightness(1); } }
+.L-A .glass .master.strike { -webkit-animation: obd-strike 400ms ease-out 1; animation: obd-strike 400ms ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .obd .strike { -webkit-animation: none !important; animation: none !important; } }
+
+/* ---------------------------------------------------------------- A: round 5 (10-13, Yoni 2026-11-23: "when harm is off -
+   it needs also to glow fade glow fade in transition like telling the user you need to press me to start playing with
+   the harmonies"). HARM off, on its own page = its backlight BREATHES at half strength (a preview of the light it gets
+   when ON), slow, asking for the press. The object's ONE idle motion (DESIGN §6): an invitation tied to a state, never
+   decoration - it stops the moment HARM is on, it never runs on another page; reduced motion = a steady half light. */
+.L-A .pg-harm.hoff [data-part="tog-HM_ON"]::before { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: inherit;
+  pointer-events: none; opacity: .3; box-shadow: 0 0 12px 2px var(--bl-halo), inset 0 0 0 1px var(--bl-hot);
+  background: radial-gradient(150% 190% at 0% 55%, var(--bl-hot) 0%, var(--bl-mid) 42%, var(--bl-low) 100%);
+  -webkit-animation: obd-breathe 1200ms ease-in-out infinite alternate; animation: obd-breathe 1200ms ease-in-out infinite alternate; }
+@-webkit-keyframes obd-breathe { from { opacity: .06; } to { opacity: .55; } }
+@keyframes obd-breathe { from { opacity: .06; } to { opacity: .55; } }
+.L-A .glass .pg-harm.hoff [data-part="tog-HM_ON"] .v-n, .L-A .glass .pg-harm.hoff [data-part="tog-HM_ON"] .v-v { color: var(--lcd-ink); }
+@media (prefers-reduced-motion: reduce) { .L-A .pg-harm.hoff [data-part="tog-HM_ON"]::before { -webkit-animation: none; animation: none; } }
+/* ... and under a dark HARM the voices' own switches lose their light (they cannot sound): HARM is the ONE light on the
+   row, so the eye goes to it, not to a V1 that looks lit */
+.L-A .glass .pg-harm.hoff .val.tog.master.bl:not([data-param="HM_ON"]) { border-color: var(--lcd-grid); background: none; box-shadow: none; }
+.L-A .glass .pg-harm.hoff .val.tog.master.bl:not([data-param="HM_ON"]) .v-n,
+.L-A .glass .pg-harm.hoff .val.tog.master.bl:not([data-param="HM_ON"]) .v-v { color: var(--lcd-dim); }
+
+/* ---------------------------------------------------------------- A: round 6 (10-13, Yoni 2026-11-23: "i need all titles
+   to be brighter then the values, so brighten the titles - and makes little less bright the values - the titles are the
+   heros, the values are information still needs to be seen"). Two ink levels on the LCD: TITLE (a cell's name, a
+   tile's / card's name, the SERVICE labels, LIVE) = the brightest ink with a little bloom; VALUE = one step down, still
+   clear at 100 %. Kept as they were: the main switches' backlight words, the amber codes, a secondary switch's lit ON
+   (its state word), the LIVE DATA page's big note (the plugin's hero readout). */
+.obd.skin-factory, .obd.skin-photo { --lcd-title: #f2f8f8; --lcd-title-acc: #a6e2f6; --lcd-val: #b3c3ca; }
+.obd.skin-shop { --lcd-title: #f4f0de; --lcd-title-acc: #b8eadc; --lcd-val: #bdb9a6; }
+.obd.skin-vintage { --lcd-title: #ffd894; --lcd-title-acc: #ffd389; --lcd-val: #b98a3c; }
+.L-A .glass .v-n, .L-A .glass .sv-n, .L-A .glass .mini .m-l { color: var(--lcd-title); text-shadow: 0 0 5px var(--lcd-acc-glow); }
+.L-A .glass .t-n, .L-A .glass .c-n { color: var(--lcd-title-acc); text-shadow: 0 0 6px var(--lcd-acc-glow); }
+.L-A .glass .v-v, .L-A .glass .t-v, .L-A .glass .t-v .lv-note, .L-A .glass .mini .lv-note { color: var(--lcd-val); }
+.L-A .glass .val.tog.on:not(.master) .v-v { color: var(--lcd-acc); }
+
+/* ---------------------------------------------------------------- A: round 7 (10-13, Yoni 2026-11-23, a crop of MIX / POS:
+   "those texts are too close to each other make some room"): HARMONY's top row 56 -> 66 px, its names 18 px at the top,
+   its values at the bottom (~14 px of air between them); the 10 px come from the two voice cards (118 -> 113, their
+   cells 88 -> 83), so the page's height is the same. */
+.L-A .pg-harm .tog, .L-A .pg-harm > .val[data-param="HM_MIX"] { height: 66px; }
+.L-A .pg-harm .tog .v-n, .L-A .pg-harm > .val[data-param="HM_MIX"] .v-n { top: 4px; font-size: 18px; }
+.L-A .pg-harm .tog .v-v, .L-A .pg-harm > .val[data-param="HM_MIX"] .v-v { bottom: 4px; }
+.L-A .pg-harm .card { height: 113px; }
+.L-A .pg-harm .card .val { height: 83px; }
+
+/* ---------------------------------------------------------------- A, PHOTO: round 7 (10-13, Yoni 2026-11-23: "the power and
+   back button - the light dosent look real. make it 100% relistic. create new assets if needed"). The light is now
+   PHOTOGRAPHED: a Higgsfield edit of the plate lit both keys from beneath (keylit-2.png, PROMPTS.md 13);
+   make-keylight.py keeps only the light it added (registered, the regrade undone, the inverse of screen) ->
+   keylight-back / -power.png (2x of 232 x 90 design px at 18 / 610 and 18 / 690). It goes back over the plate with
+   screen: the light AROUND the key (the gap, the spill on the red plastic) = a static layer under the key, the light IN
+   the cap = the cap's own layer, so it sinks with the cap. The CSS veil + halo are off in PHOTO; the legend keeps a
+   warm glow (it is the CSS text, not the photo). */
+.keylight { display: none; }
+.skin-photo.L-A .keylight { display: block; position: absolute; left: 18px; width: 232px; height: 90px; pointer-events: none; opacity: 0;
+  mix-blend-mode: screen; transition: opacity 180ms; background: no-repeat 0 0 / 232px 90px; }
+.skin-photo.L-A .kl-back { top: 610px; background-image: url(assets/photo/keylight-back.webp); }
+.skin-photo.L-A .kl-power { top: 690px; background-image: url(assets/photo/keylight-power.webp); }
+.skin-photo.L-A .keylight.on { opacity: 1; }
+.skin-photo.L-A [data-part="back"] .cap::after, .skin-photo.L-A [data-part="power"] .cap::after {
+  background: no-repeat -21px -21px / 232px 90px; transition: opacity 180ms; }   /* the cap at 39 / 631 (711) in the 18 / 610 (690) box */
+.skin-photo.L-A [data-part="back"] .cap::after { background-image: url(assets/photo/keylight-back.webp); }
+.skin-photo.L-A [data-part="power"] .cap::after { background-image: url(assets/photo/keylight-power.webp); }
+.skin-photo.L-A [data-part="back"].lit .cap::after, .skin-photo.L-A [data-part="power"].lit .cap::after { opacity: 1; }
+.skin-photo.L-A [data-part="back"]::before, .skin-photo.L-A [data-part="power"]::before { display: none; }   /* the photo has the gap light */
+.skin-photo.L-A [data-part="back"].lit .lg, .skin-photo.L-A [data-part="power"].lit .lg { color: #ffdcae;
+  text-shadow: 0 0 3px rgba(255, 176, 96, .55), 0 0 9px rgba(232, 132, 56, .32); }
+
+/* ================================================================ 2026-11-24 HOME TILES (Dan, on 0.9.2 in Live; session
+   danavivi-d7, branch obdtune-home-tiles; dev 0.9.3). */
+
+/* HEADLINES (Dan: "make all the headlines bigger and bolder, i want to notice them more, give some ideas"). VT323 has no
+   bold (faux bold smears it, the 400 rule above), so "bolder" = size, light and structure. Every tile title (home + the FX
+   page's unit tiles). 28 px (was 24) is the most a 140 px tile holds: LIVE DATA measures 126 px at 28 with no tracking
+   (133.6 with the old .03em), so the titles lose their tracking and never wrap.
+   Dan's pick (2026-11-24, "rule"): the brightest title ink + a lit rule under it across the tile, a scan tool's menu
+   header. Also shown on the bench: a triple bloom, and Bebas Neue 34 px (a real bold face). */
+.L-A .glass .t-n { font-size: 28px; line-height: 30px; letter-spacing: 0; white-space: nowrap; top: 5px; right: 6px; color: var(--lcd-title);
+  text-shadow: 0 0 6px var(--lcd-acc-glow), 0 0 12px var(--lcd-acc-glow);
+  border-bottom: 2px solid var(--lcd-title-acc); padding-bottom: 3px; box-shadow: 0 6px 8px -6px var(--lcd-acc-glow); }
+.L-A .glass .t-st { font-size: 28px; line-height: 30px; letter-spacing: 0; top: 5px; }
+.L-A .pg-home .tile.lit > .t-n::after, .L-A .fxt.lit .t-n::after { font-size: 20px; vertical-align: 3px; }
+.L-A .glass .pg-fx .fxt .t-n { font-size: 28px; }   /* the FX page's unit tiles: the home titles' size (was 26) */
+
+/* NOTES tile = the NOTES page's KEYBOARD, one octave (Dan: "change to the piano we have in the section") */
+.L-A .tpiano { position: relative; display: block; height: 78px; margin-bottom: 2px; }
+.L-A .tpiano .pk { position: absolute; top: 0; border-radius: 0 0 3px 3px; }
+.L-A .tpiano .pk.w { width: 13.39%; height: 100%; border: 1px solid var(--lcd-dim); box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(200, 225, 235, .2), rgba(200, 225, 235, .1) 70%, rgba(200, 225, 235, .16)); }
+.L-A .tpiano .pk.b { width: 8.93%; height: 58%; z-index: 2; border: 1px solid var(--lcd-grid); box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(6, 12, 16, .97), rgba(12, 22, 28, .97) 75%, rgba(6, 12, 16, .97));
+  box-shadow: 1px 2px 3px rgba(4, 8, 10, .7); }
+.L-A .tpiano .pk.lit { border-color: var(--lcd-acc); background: linear-gradient(180deg, var(--lcd-acc), var(--lcd-acc) 65%, var(--lcd-dim));
+  box-shadow: 0 0 6px var(--lcd-acc-glow); }
+.L-A .tpiano .pk.b.lit { box-shadow: 1px 2px 3px rgba(4, 8, 10, .7), 0 0 6px var(--lcd-acc-glow); }
+.L-A .tpiano .pk.root { box-shadow: inset 0 0 0 2px var(--lcd-ink), 0 0 6px var(--lcd-acc-glow); }
+
+/* CUSTOM tile: the body = the live mini graph (obdtune-custom.js drawMini) + one line, ON / OFF + the edit count (CUSTOM
+   is too long a title to share its row with a switch slot at 28 px); off dims the line only, the live view stays readable
+   (its YOUR line is drawn faint while off) */
+.L-A .t-v .cm-mini { display: block; width: 100%; height: 66px; margin-bottom: 2px; border-bottom: 1px solid var(--lcd-grid); }
+.L-A .tile[data-part="tile-custom"] .t-v { line-height: 22px; white-space: nowrap; }
+.L-A .tile[data-part="tile-custom"].toff .t-v { opacity: 1; }
+.L-A .tile[data-part="tile-custom"].toff .cm-ts { opacity: .4; }
+
+/* DETECT lit red (Dan: "make the detect reading blink with red so user can see it"). The engraved word in the connector
+   photo, lit from inside (assets/photo/detect-red.webp, plain alpha: no blend mode, the Mac WebView can drop one). It rides
+   the connector when it is pulled. A lamp's blink, 1 Hz (0.5 s lit, ~80 ms edges; the flash law's ceiling is 3 Hz) while
+   DETECT waits to be pressed; out while it listens (the mic adapter covers the word then, so a blink there was never
+   seen: the bench tried it); dark while the plugin is bypassed; reduced motion = steady. Red here is LIGHT (an
+   indicator), not the race-red key, and not a fault (amber). */
+.det-red { position: absolute; left: 31px; top: 58px; width: 79.5px; height: 28.5px; pointer-events: none; opacity: 0;
+  background: url(assets/photo/detect-red.webp) 0 0 / 100% 100% no-repeat;
+  -webkit-transform-origin: 39px 32px; transform-origin: 39px 32px; transition: transform 320ms cubic-bezier(.22, 1.5, .42, 1); }
+.plug.pulled .det-red { -webkit-transform: translate(-5px, -6px) scale(1.07); transform: translate(-5px, -6px) scale(1.07); transition-duration: 90ms; }
+@-webkit-keyframes obd-det-blink { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes obd-det-blink { 0%, 42% { opacity: 1; } 50%, 92% { opacity: 0; } 100% { opacity: 1; } }
+.obd:not(.pwr-off) .plug:not(.listening) .det-red { -webkit-animation: obd-det-blink 1000ms linear infinite; animation: obd-det-blink 1000ms linear infinite; }
+@media (prefers-reduced-motion: reduce) { .obd:not(.pwr-off) .plug:not(.listening) .det-red { -webkit-animation: none; animation: none; opacity: 1; } }
+/* ================================================================ end 2026-11-24 HOME TILES */
+/* ================================================================ 10-16 LICENCE (2026-11-24, obdtune-licence.js)
+   The house licence on the scanner's own LCD (design-language Law 6: no window over the object). The SERVICE page's
+   metrics and the LCD's own tokens: titles in the title ink, values one step down, amber (--lcd-warn) = TRIAL OVER and
+   an error, the key field = a sunk LCD entry box (the scan tool's VIN entry).
+   Round 2 (Yoni, the plugin 0.9.5: "its all scramblled there, things going on other things. arrange it neatly"): the
+   screen's page area is 312 px tall. The LICENCE row made the SERVICE card 340 px (its foot sat on the LIVE strip) and
+   the LICENCE key kept the 56 px -/+ size (the state spilled out of it); the LICENCE page used all 312 px, so a long
+   server message or a pasted key ran into the next part. Now: the SERVICE rhythm 48 px rows / 46 px keys (300 px), the
+   LICENCE page five FIXED slots (295 px: the key box shows 3 lines and scrolls, a message gets 2), nothing grows. */
+.L-A .pg-service .sv-row { height: 48px; margin-bottom: 4px; }
+.L-A .pg-service .sv-n, .L-A .pg-service .sv-size, .L-A .pg-service .sv-ver { line-height: 48px; }
+.L-A .pg-service .opt { height: 46px; }
+.L-A .pg-service .sv-follow { height: 30px; }
+.L-A .pg-service .sv-follow .sv-n, .L-A .pg-service .sv-at { line-height: 30px; }
+.L-A .pg-service .sv-soc { height: 58px; margin-bottom: 4px; }
+.L-A .pg-service .sv-soc-k { height: 54px; }
+.L-A .pg-service .sv-k[data-part="sv-lic"] { width: 250px; }
+.L-A .pg-service .sv-k[data-part="sv-lic"] span { font-size: 20px; margin-top: -11px; }
+.L-A .pg-service .sv-k[data-part="sv-lic"].lc-warn { border-color: var(--lcd-warn); }
+.L-A .pg-service .sv-k[data-part="sv-lic"].lc-warn span { color: var(--lcd-warn); text-shadow: 0 0 4px var(--lcd-warn-glow); }
+
+.L-A .pg-lic { height: 312px; overflow: hidden; }
+.L-A .pg-lic .lc-row { position: relative; white-space: nowrap; }
+.L-A .pg-lic .lc-row:first-child { height: 44px; margin-bottom: 6px; }
+.L-A .pg-lic .sv-n { display: inline-block; width: 150px; vertical-align: top; line-height: 44px; font-size: 22px; color: var(--lcd-dim); }
+.L-A .pg-lic .lc-st { display: inline-block; vertical-align: top; line-height: 44px; font-size: 26px; color: var(--lcd-val, var(--lcd-ink)); }
+.L-A .pg-lic.lc-over .lc-st { color: var(--lcd-warn); text-shadow: 0 0 4px var(--lcd-warn-glow); }
+.L-A .pg-lic .lc-field { height: 89px; margin-bottom: 6px; }
+.L-A .pg-lic .lc-in { box-sizing: border-box; display: block; width: 100%; height: 89px; margin: 0; padding: 5px 10px; resize: none;
+  overflow-x: hidden; overflow-y: auto; border: 2px solid var(--lcd-grid); border-radius: 2px; background: var(--lcd-bg-lo);
+  color: var(--lcd-ink); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .45); font: inherit; font-size: 20px; line-height: 25px;
+  letter-spacing: .02em; word-break: break-all; outline: none; -webkit-user-select: text; user-select: text; }
+.L-A .pg-lic .lc-in:focus { border-color: var(--lcd-acc); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .45), 0 0 6px var(--lcd-acc-glow); }
+.L-A .pg-lic .lc-in::placeholder { color: var(--lcd-dim); opacity: 1; }
+.L-A .pg-lic .lc-in:disabled { opacity: .6; }
+.L-A .pg-lic .lc-keys { height: 48px; margin-bottom: 6px; font-size: 0; }
+.L-A .pg-lic .lc-k { height: 46px; margin: 1px 0 0 0; }
+.L-A .pg-lic .lc-act { width: calc(50% - 4px); margin-right: 8px; }
+.L-A .pg-lic .lc-buy { width: calc(50% - 4px); }
+.L-A .pg-lic .lc-k span { position: absolute; left: 0; right: 0; top: 50%; margin-top: -12px; text-align: center; font-size: 20px; }
+.L-A .pg-lic .lc-buy.lc-offer { border-color: var(--lcd-warn); }
+.L-A .pg-lic .lc-buy.lc-offer span { color: var(--lcd-warn); text-shadow: 0 0 4px var(--lcd-warn-glow); }
+.L-A .pg-lic .lc-msg { height: 48px; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; font-size: 17px; line-height: 24px; white-space: normal; color: var(--lcd-acc); }
+.L-A .pg-lic .lc-msg.lc-err { color: var(--lcd-warn); text-shadow: 0 0 4px var(--lcd-warn-glow); }
+.L-A .pg-lic .lc-foot { height: 44px; font-size: 0; }
+.L-A .pg-lic .lc-id { display: inline-block; width: calc(100% - 170px); vertical-align: top; overflow: hidden; text-overflow: ellipsis;
+  line-height: 44px; font-size: 16px; color: var(--lcd-dim); }
+.L-A .pg-lic .lc-rep { width: 170px; height: 42px; margin: 1px 0 0 0; }
+.L-A .pg-lic.lc-done .lc-field, .L-A .pg-lic.lc-done .lc-keys { display: none; }
+.L-A .pg-lic.lc-busy .lc-k { opacity: .5; pointer-events: none; }
+/* ================================================================ end 10-16 LICENCE */
