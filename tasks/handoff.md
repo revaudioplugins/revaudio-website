@@ -51,7 +51,14 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   "The redline is the threshold.") is in `src/data/plugins.ts`, shown by `white-space: pre-line` on the TV only.
   Checked in Chromium at 1312x734 and 1141x636: all six plugins, Try / price / keys at the same spots, nothing
   overlaps, the price stays in the column (Drift's widest: 410 of 416 px), no blurb cut, the TV still fits; the phone
-  (390) unchanged, no sideways scroll; `npm run build` passes. Files added to the claim: `src/data/plugins.ts`.
+  (390) keeps its list view, no sideways scroll; `npm run build` passes. Files added to the claim: `src/data/plugins.ts`.
+  Then checked against the export itself (Dan's moves replayed on the old layout: Try/Product page at x 5, the
+  price glyphs at ~253, 8 px between Product page and Add to cart): the 8 px gap had been lost to the scoped 1rem
+  (higher specificity), now `column-gap: .5rem !important` in B's block. Try / Product page sit at x 0, not 5 (flush with
+  the name and blurb; the 5 is where 8 px snap steps landed). The price is ~23 px right of Dan's spot because Try is
+  16rem for every plugin. WebKit (Safari's engine) at 1141x636 and 1312x734 measures the same as Chromium; "In your
+  cart" fits row 2 and Product page does not move. Pre-line and the small "Free beta" are laptop-only rules; the
+  blurb's `\n` only reaches the TV (home + /plugins), where phones show it as a space.
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
