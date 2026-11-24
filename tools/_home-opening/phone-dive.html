@@ -249,7 +249,7 @@ for (const b of document.querySelectorAll('[data-look]')) b.addEventListener('cl
 $('looks').hidden = REC || !Q.has('looks'); // ?looks: the three looks as buttons on the picture
 if (REC || !Q.has('abc')) $('abc').hidden = true; // Dan picked B: the buttons are off the picture, ?abc brings them back to compare
 // the page on the phone, and the same page after the landing: the three on buttons until Dan picks (?page= opens on one; ?pages=0 hides the buttons)
-const pageDir = (n) => (n === 'today' ? 'assets/' : `assets/dive/page-${n}/`);
+const pageDir = (n) => `assets/dive/page-${n}/`;
 const showPage = (n) => { for (const im of document.querySelectorAll('img[data-pic]')) { const src = pageDir(n) + im.dataset.pic + '.webp'; if (!im.src.endsWith(src)) im.src = src; }
   for (const b of document.querySelectorAll('[data-page]')) b.setAttribute('aria-pressed', String(b.dataset.page === n)); };
 showPage(PAGE0);

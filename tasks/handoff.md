@@ -53,6 +53,12 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
   (my pick, Dan's pick pending), three buttons on the picture: Today, A Glass, B Plain (`?page=`, `?pages=0` hides them).
   The reveal with Plain: 0.95 of 255 (3D vs page). ONLY PICTURES: the real phone page still has its frame; making it so
   is part of the home-page step (a garage-on-phones style on the real page, never every phone visitor without Dan's word).
+- **The page below the phone, refreshed** (same day): the home page's phone sections changed on `feat/home-phone-sections`
+  (the DAW strip a lot smaller, "Join the pit crew" as the sign, Dan's pick B), so the pictures of the page under the
+  screen (`assets/dive/page-<today|plain|glass>/below-390.webp`) are re-captured from that branch's dev server. The
+  screen itself keeps the plugin list (the 11-20 capture, copied into `page-today/`): main's TV now opens on Gil's
+  temporary "Built like cars. Step inside." screen, which the garage on phones would replace (to decide at the home-page
+  step). Checked in Simulator Safari past the landing: whole rows, the small DAW strip, the sign, the footer.
 - **Not checked:** a real phone (iOS momentum and the hold under a real thumb, Safari's bars, the frame rate on a phone's
   GPU). Synthetic mouse drags on the Simulator were not used: it runs full screen on another Space, so they would land on
   Dan's open windows. The governor never fired here (fast Mac).

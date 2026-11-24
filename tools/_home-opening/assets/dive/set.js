@@ -38,7 +38,7 @@ export async function dress({ R, scene, liveScreen, shiny, glowOf, model }) {
     const navH = S.h * S.nav;
     // the page on the screen: today's phone home page (assets/), or one of the frameless versions (assets/dive/page-<name>/, Dan 2026-11-24: "there is a
     // frame inside the frame ... keep it like a regular phone", then "same background, same everything"); ?page=plain|glass, setPage(name) on the open page
-    const PAGES = ['today', 'plain', 'glass'], dirOf = (n) => (n === 'today' ? 'assets/' : `assets/dive/page-${n}/`);
+    const PAGES = ['today', 'plain', 'glass'], dirOf = (n) => `assets/dive/page-${n}/`; // (today: copies of the room's own nav-390 / tv-390x844, with the page below as it is now)
     let page = PAGES.includes(new URLSearchParams(location.search).get('page')) ? new URLSearchParams(location.search).get('page') : 'today';
     const navFace = face(await tex(dirOf(page) + 'nav-390.webp'), navH, -S.h / 2 + navH / 2), tvFace = face(await tex(dirOf(page) + 'tv-390x844.webp'), S.h - navH, navH / 2);
     phone.add(shell, navFace, tvFace);
