@@ -14,7 +14,8 @@ Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller
   bar). All three: a mono kicker "Newsletter", the field and the key as one part (48 px, the key's corner), "Unsubscribe
   anytime." as fine print under it. Section height on a 390 phone: today 453, A 378, B 311, C 452 px; no part past the
   edge at 360, 390, 402 (WebKit). Laptops unchanged (checked at 1312: kicker and fine print hidden, centred as before).
-  Dan's pick pending; then his stays, the other two and the buttons go.
+  **Dan picked B, the sign** (2026-11-24: "B"): it is now the phone layout; A, C and the dev buttons are gone. Checked: 311 px
+  at 360, 390 and 402 (WebKit), the same picture as B on the pick buttons; laptop 1312 unchanged, no buttons.
 - To ship: Dan's push word (a push to main is a live deploy).
 
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
