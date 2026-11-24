@@ -1814,8 +1814,8 @@ const first = items[0]?.slug ?? '';
   /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here. On the screen they
      are light on the glass instead (Dan 2026-11-04, option A of /__wwkeys: the Try key "is not fitting the LCD screen,
      I want it to feel like it's part of the LCD screen"): inverse video, the lit ALL key's language. Try = a block of
-     the channel's phosphor with dark words, Product page = a phosphor outline; no plate, depth or lift. Hover
-     brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
+     the channel's phosphor with dark words (Product page + Add to cart: Fastext, below); no plate, depth or lift.
+     Hover brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy { gap: 0.6rem 1rem; }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart) {
     min-height: 0;
@@ -1862,24 +1862,55 @@ const first = items[0]?.slug ?? '';
     box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow);
     transition-duration: 60ms;
   }
+  /* Product page + Add to cart on the screen: FASTEXT (Dan 2026-11-24, /__wwcart: "make them special and not just like
+     a regular button"; picked option 1 of five, then icon 1b of three). The coloured page keys along the bottom of a
+     teletext page, one colour per key on the remote: each key is a dark band with a teletext pixel picture in its
+     colour, brass for Product page (a magnifier: look closer), oxide for Add to cart (a cart). Hover fills the band
+     with the colour, the words and picture go dark (the lit key's inverse video); a key whose plugin is in the cart
+     stays filled ("In your cart", Cart.astro). One pixel = 0.125rem. Not color-mix (older Safari): the glows are rgb. */
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart) {
-    padding: 0.6rem 0.9rem 0.5rem;
-    border-radius: 3px;
-    color: var(--ww-ink);
+    --fx: var(--brass-bright);
+    --fx-glow: rgb(232 200 120 / 0.45);
+    gap: 0.6rem;
+    padding: 0.42rem 0.85rem 0.36rem 0.6rem;
+    border-radius: 0;
+    background-color: hsl(var(--ww-ch-h) 35% 5% / 0.82);
+    box-shadow: inset 0 0 0 1px hsl(var(--ww-ch-h) 30% 30% / 0.35);
+    color: var(--fx);
     font-family: var(--font-display);
-    font-size: 1.32rem;
+    font-size: 1.22rem;
     line-height: 0.9;
-    letter-spacing: 0.06em;
-    text-shadow: 0 0 9px var(--ww-glow);
-    box-shadow: inset 0 0 0 1.5px var(--ww-ink), inset 0 0 14px var(--ww-glow-faint), 0 0 14px var(--ww-glow-soft);
+    letter-spacing: 0.07em;
+    text-shadow: 0 0 8px var(--fx-glow);
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { font-family: var(--font-body); font-weight: 700; font-size: 0.72em; vertical-align: 0.08em; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):hover {
-    color: var(--ww-ink-hot);
-    background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
-    box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-cart { --fx: var(--oxide-text); --fx-glow: rgb(212 98 42 / 0.45); }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { display: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart)::before {
+    content: '';
+    flex: none;
+    background: var(--fx);
+    -webkit-mask: var(--fx-icon) center / contain no-repeat;
+    mask: var(--fx-icon) center / contain no-repeat;
+    filter: drop-shadow(0 0 4px var(--fx-glow));
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more::before {
+    --fx-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Crect x='2' y='0' width='1.02' height='1.02'/%3E%3Crect x='3' y='0' width='1.02' height='1.02'/%3E%3Crect x='4' y='0' width='1.02' height='1.02'/%3E%3Crect x='5' y='0' width='1.02' height='1.02'/%3E%3Crect x='1' y='1' width='1.02' height='1.02'/%3E%3Crect x='6' y='1' width='1.02' height='1.02'/%3E%3Crect x='0' y='2' width='1.02' height='1.02'/%3E%3Crect x='3' y='2' width='1.02' height='1.02'/%3E%3Crect x='7' y='2' width='1.02' height='1.02'/%3E%3Crect x='0' y='3' width='1.02' height='1.02'/%3E%3Crect x='2' y='3' width='1.02' height='1.02'/%3E%3Crect x='7' y='3' width='1.02' height='1.02'/%3E%3Crect x='0' y='4' width='1.02' height='1.02'/%3E%3Crect x='7' y='4' width='1.02' height='1.02'/%3E%3Crect x='0' y='5' width='1.02' height='1.02'/%3E%3Crect x='7' y='5' width='1.02' height='1.02'/%3E%3Crect x='1' y='6' width='1.02' height='1.02'/%3E%3Crect x='6' y='6' width='1.02' height='1.02'/%3E%3Crect x='7' y='6' width='1.02' height='1.02'/%3E%3Crect x='2' y='7' width='1.02' height='1.02'/%3E%3Crect x='3' y='7' width='1.02' height='1.02'/%3E%3Crect x='4' y='7' width='1.02' height='1.02'/%3E%3Crect x='5' y='7' width='1.02' height='1.02'/%3E%3Crect x='7' y='7' width='1.02' height='1.02'/%3E%3Crect x='8' y='7' width='1.02' height='1.02'/%3E%3Crect x='7' y='8' width='1.02' height='1.02'/%3E%3Crect x='8' y='8' width='1.02' height='1.02'/%3E%3Crect x='9' y='8' width='1.02' height='1.02'/%3E%3Crect x='8' y='9' width='1.02' height='1.02'/%3E%3Crect x='9' y='9' width='1.02' height='1.02'/%3E%3C/svg%3E");
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-cart::before {
+    --fx-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='1.02' height='1.02'/%3E%3Crect x='1' y='0' width='1.02' height='1.02'/%3E%3Crect x='1' y='1' width='1.02' height='1.02'/%3E%3Crect x='1' y='2' width='1.02' height='1.02'/%3E%3Crect x='2' y='2' width='1.02' height='1.02'/%3E%3Crect x='3' y='2' width='1.02' height='1.02'/%3E%3Crect x='4' y='2' width='1.02' height='1.02'/%3E%3Crect x='5' y='2' width='1.02' height='1.02'/%3E%3Crect x='6' y='2' width='1.02' height='1.02'/%3E%3Crect x='7' y='2' width='1.02' height='1.02'/%3E%3Crect x='8' y='2' width='1.02' height='1.02'/%3E%3Crect x='9' y='2' width='1.02' height='1.02'/%3E%3Crect x='10' y='2' width='1.02' height='1.02'/%3E%3Crect x='11' y='2' width='1.02' height='1.02'/%3E%3Crect x='2' y='3' width='1.02' height='1.02'/%3E%3Crect x='3' y='3' width='1.02' height='1.02'/%3E%3Crect x='4' y='3' width='1.02' height='1.02'/%3E%3Crect x='5' y='3' width='1.02' height='1.02'/%3E%3Crect x='6' y='3' width='1.02' height='1.02'/%3E%3Crect x='7' y='3' width='1.02' height='1.02'/%3E%3Crect x='8' y='3' width='1.02' height='1.02'/%3E%3Crect x='9' y='3' width='1.02' height='1.02'/%3E%3Crect x='10' y='3' width='1.02' height='1.02'/%3E%3Crect x='11' y='3' width='1.02' height='1.02'/%3E%3Crect x='2' y='4' width='1.02' height='1.02'/%3E%3Crect x='3' y='4' width='1.02' height='1.02'/%3E%3Crect x='4' y='4' width='1.02' height='1.02'/%3E%3Crect x='5' y='4' width='1.02' height='1.02'/%3E%3Crect x='6' y='4' width='1.02' height='1.02'/%3E%3Crect x='7' y='4' width='1.02' height='1.02'/%3E%3Crect x='8' y='4' width='1.02' height='1.02'/%3E%3Crect x='9' y='4' width='1.02' height='1.02'/%3E%3Crect x='10' y='4' width='1.02' height='1.02'/%3E%3Crect x='2' y='5' width='1.02' height='1.02'/%3E%3Crect x='3' y='5' width='1.02' height='1.02'/%3E%3Crect x='4' y='5' width='1.02' height='1.02'/%3E%3Crect x='5' y='5' width='1.02' height='1.02'/%3E%3Crect x='6' y='5' width='1.02' height='1.02'/%3E%3Crect x='7' y='5' width='1.02' height='1.02'/%3E%3Crect x='8' y='5' width='1.02' height='1.02'/%3E%3Crect x='9' y='5' width='1.02' height='1.02'/%3E%3Crect x='2' y='6' width='1.02' height='1.02'/%3E%3Crect x='2' y='7' width='1.02' height='1.02'/%3E%3Crect x='3' y='7' width='1.02' height='1.02'/%3E%3Crect x='4' y='7' width='1.02' height='1.02'/%3E%3Crect x='5' y='7' width='1.02' height='1.02'/%3E%3Crect x='6' y='7' width='1.02' height='1.02'/%3E%3Crect x='7' y='7' width='1.02' height='1.02'/%3E%3Crect x='8' y='7' width='1.02' height='1.02'/%3E%3Crect x='9' y='7' width='1.02' height='1.02'/%3E%3Crect x='10' y='7' width='1.02' height='1.02'/%3E%3Crect x='3' y='8' width='1.02' height='1.02'/%3E%3Crect x='4' y='8' width='1.02' height='1.02'/%3E%3Crect x='8' y='8' width='1.02' height='1.02'/%3E%3Crect x='9' y='8' width='1.02' height='1.02'/%3E%3Crect x='3' y='9' width='1.02' height='1.02'/%3E%3Crect x='4' y='9' width='1.02' height='1.02'/%3E%3Crect x='8' y='9' width='1.02' height='1.02'/%3E%3Crect x='9' y='9' width='1.02' height='1.02'/%3E%3C/svg%3E");
+    width: 1.5rem;
+    height: 1.25rem;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:hover, .is-in-cart) {
+    background-color: var(--fx);
+    color: var(--ww-ink-on);
+    text-shadow: none;
+    box-shadow: 0 0 18px var(--fx-glow);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:hover, .is-in-cart)::before { background: var(--ww-ink-on); filter: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:active, .is-pressed) { filter: brightness(0.8); transition-duration: 60ms; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the

@@ -137,12 +137,24 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. On the screen both keys are
     light on the glass, inverse video like the lit ALL key (the user's pick 2026-11-04, option A of three on
     `/__wwkeys`: the Try key "is not fitting the LCD screen, I want it to feel like it's part of the LCD
-    screen"): Try = a block of the channel's phosphor with dark words, two lines; Product page = a phosphor
-    outline; no plate, depth or lift. That replaces D9 on the TV only; off the screen (high contrast, or
+    screen"): Try = a block of the channel's phosphor with dark words, two lines; no plate, depth or lift.
+    Product page and Add to cart (on paid plugins, Gil 2026-11-11) are FASTEXT (Dan 2026-11-24 on `/__wwcart`: "make
+    them special and not just like a regular button"; option 1 of five, then icon 1b of three): the coloured page keys
+    along the bottom of a teletext page, one colour per key on the remote. Each is a dark band with a teletext pixel
+    picture and its words in its colour: brass for Product page (a magnifier), oxide for Add to cart (a cart). Hover
+    fills the band with the colour, words and picture going dark; a plugin in the cart keeps its key filled ("In your
+    cart"). The runner-up, a worn manila parts tag and index card that fall off the glass when pressed, is saved for a
+    later update: `docs/worn-paper.md`. All of that replaces D9 on the TV only; off the screen (high contrast, or
     `WALL_BG = 'wood'`) they
     stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
-    stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
-    home: buying stays on the product page.
+    stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop).
+  - Laptop layout B, "the channel strip" (Dan 2026-11-23, picked on `/__wwlayout` over two others; branch
+    `feat/home-tv-layout`, being tuned on the live bench `/?bench`): from plugin to plugin the words jumped up to 356 px
+    and the picture swung from 130 to 419 px tall. Now the plugins are one row of channels under the categories, the lit
+    plugin's words sit in a fixed column on the left (one-line name, three blurb lines, one line of words, the keys on a
+    grid) and never move, and the picture changes in a fixed stage on the right. The words change in place (they fade,
+    never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
+    it on laptops.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
       comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
       2.7rem; the type word and the five words in Oswald 600; the blurb in Inter 500 at

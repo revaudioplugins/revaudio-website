@@ -1,7 +1,7 @@
 ## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
 
 Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
-`/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), `tools/wwbench/wwcart.html` (new, dev only), this entry.
+`/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), `tools/wwbench/wwcart.html` (new, dev only), `DESIGN.md` (§4 TV), `docs/worn-paper.md` (new), this entry.
 - Dan: on the live TV, from plugin to plugin "the gap is really big", and "the words will stay in the same place and
   just the plugin will change". Asked: brainstorm + bench; composition, placements, fonts, not a full redesign.
 - Measured on revaudio.net (Chromium): across the 6 plugins the lit name moves up to 356 px (1312x734) / 223 px
@@ -33,6 +33,11 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   cart and three Product page icons (1a page, 1b magnifier, 1c tiny plugin, Claude's pick). Checked in Chromium: the
   fall, the re-stick, the held link, no layer left behind. To bake: the fall needs the clone-in-a-layer code in the
   TV's script and Product page navigating after the fall (a modified click still opens at once).
+- 2026-11-24, Dan: "I like the wearing text and the wearing tag ... save it for future updates in the website. And
+  let's take 1B for now. And commit". Fastext with the magnifier (1b) and the cart is now the TV's Product page / Add
+  to cart in `WordWall.astro` (scoped CSS, the screen wall only; html.hc and the wood wall keep the button family; rgb
+  glows, no color-mix). The worn paper is saved as a recipe: `docs/worn-paper.md` (what Dan liked, the CSS with generic
+  classes, the fall as a function), pointed to from `DESIGN.md` §4, which also has layout B and Fastext now.
 
 ## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
 
