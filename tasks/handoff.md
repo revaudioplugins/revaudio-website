@@ -152,8 +152,14 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
     - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
       in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
       (fast-forward to `a58715c`).
-    - State 2026-11-24 (Dan's Mac, this session; committed on `feat/widebeam-page`, NOT pushed, and NOT in
-      `qa/widebeam-page-1121`):
+    - State 2026-11-24 (Dan's Mac, this session; committed on `feat/widebeam-page` as `a7d16f2`; this branch itself is
+      NOT pushed):
+      - PUSHED 2026-11-24 to `qa/widebeam-page-1121` on Dan's word "push": `d23b0f5`, a fast-forward from `ccec62b`.
+        It merges `a7d16f2` on top of Gil's 2026-11-23 work (`d362c8c` WIDE BEAM on sale; `ccec62b` the look opens in the
+        sale phase, AAX in the formats line). No conflicts; `npm run build` passed (35 pages). main (`ccec62b`) and Gil's
+        `feat/widebeam-page` (`3c91404`) were not touched.
+      - The look link (KLqSaDnV6Y9nb8p1xSQyge) now matches the qa copy (it opens on sale). This branch does NOT have
+        Gil's 3 lines yet: merge `origin/qa/widebeam-page-1121` in before the next change to the look.
       - Link: the look moved to https://claude.ai/artifact/KLqSaDnV6Y9nb8p1xSQyge (private).
         `4oWMU9NiWGPcZniDsHee3Y` stopped taking updates on 2026-11-24, not by this session.
       - Phone pass: "make what we did on the laptop work on the phone". The laptop layout did not move (checked part
