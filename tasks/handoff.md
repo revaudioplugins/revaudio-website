@@ -1,12 +1,20 @@
 ## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/daw-strip-phone-small` (worktree `.claude/worktrees/daw-small`, from main `ccec62b`); NOT pushed, NOT on main
 
-Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `src/components/DAWStrip.astro` (one phone block), this entry.
+Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `src/components/DAWStrip.astro` (one phone block), `src/components/EmailCapture.astro`, this entry. (Branch renamed from `feat/daw-strip-phone-small`.)
 Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller".
 - Phones (<= 860 px) only: the section's padding, heading, formats line and note smaller; the seven plates are small chips,
   mark and name side by side (wordmarks 62x16). Laptops keep the stage as it is.
 - Measured (Chrome phone emulation, the section's height): 390 px wide 555 -> 202 px (2 rows of chips), 402 and 430: 202,
   360: 254 (3 rows), 860: 164 (1 row); no chip past the edge at any of them; 1312x734 unchanged (338 px, chips 139x68).
   iOS Safari in the Simulator (402 wide): 199 px, 2 rows.
+- **Then "Join the pit crew" (EmailCapture), phones only** (Dan, same day: "need to be redesigned as well. It's supposed to
+  be like way polished composition"). Three compositions, same words and form, on dev-only buttons over the section
+  (`?pit=today|a|b|c`; never in a build): A Clipboard (DESIGN.md's map: the pit-crew clipboard; a board with a brass clip,
+  words set left), B Sign (centred, the title between brass rules), C Ledger (left, the title big on two lines over a brass
+  bar). All three: a mono kicker "Newsletter", the field and the key as one part (48 px, the key's corner), "Unsubscribe
+  anytime." as fine print under it. Section height on a 390 phone: today 453, A 378, B 311, C 452 px; no part past the
+  edge at 360, 390, 402 (WebKit). Laptops unchanged (checked at 1312: kicker and fine print hidden, centred as before).
+  Dan's pick pending; then his stays, the other two and the buttons go.
 - To ship: Dan's push word (a push to main is a live deploy).
 
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
