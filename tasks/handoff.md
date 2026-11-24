@@ -113,7 +113,8 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       plugin's face, presented, with the gate again under it. Why WIDE BEAM exists (Dan's pick A, same day): the cheap
       first purchase that brings new customers in.
     - The look: `bench/widebeam-projector/` (README there), published at
-      https://claude.ai/artifact/4oWMU9NiWGPcZniDsHee3Y (private; db `pick/dan` = {look, flip, note}, empty so far).
+      https://claude.ai/artifact/KLqSaDnV6Y9nb8p1xSQyge since 2026-11-24 (private; db `pick/dan` = {look, flip, note});
+      before that at `4oWMU9NiWGPcZniDsHee3Y`.
       The first link (`6bbysbnKpcaGSKtCZu7hLL`) was deleted or lost its write access on 2026-11-23 (not by this
       session); its db held no pick.
     - The open, Dan 2026-11-23 ("the film just snaps" on reload): the screen starts black, the words rise in, and the
@@ -142,14 +143,36 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
       frame line, one faint splice frame. The held card does not move (0 px over 12 s, both engines). Watch again runs
       it back. On phones the film frame grows to hold the card (the film letterboxes in it). The flips (F1-F3), the
       latches and the pivots stay in the code, switched off; the Look controls lost the flip and hardware rows.
-    - Open for Dan: the projector look (P1-P3; my pick P1 "Beam in the dark", not saved yet); section 3's face still or
-      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for section
-      3's plate too (still leather + brass).
+    - Open for Dan: section 3's face still or moving a little (my pick: a little, silent); "vintage 30s" = a 1930s
+      look or about 30 seconds; glass for section 3's plate too (still leather + brass). DECIDED 2026-11-24: the
+      projector look is P1 "Beam in the dark", with the title-card gate (Dan saved the pick; db `pick/dan`
+      look p1, flip f0, no note).
     - For Gil: the film as 16:9 (laptop) + 9:16 (phone); the captions as a cue file (VTT / SRT), not burned in; the $9
       shown before launch (reverses P1 A's "Price at launch").
     - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
       in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
       (fast-forward to `a58715c`).
+    - State 2026-11-24 (Dan's Mac, this session; committed on `feat/widebeam-page`, NOT pushed, and NOT in
+      `qa/widebeam-page-1121`):
+      - Link: the look moved to https://claude.ai/artifact/KLqSaDnV6Y9nb8p1xSQyge (private).
+        `4oWMU9NiWGPcZniDsHee3Y` stopped taking updates on 2026-11-24, not by this session.
+      - Phone pass: "make what we did on the laptop work on the phone". The laptop layout did not move (checked part
+        by part in WebKit 1141 and Chrome 1312).
+      - The opening car film now calls play() at once, without waiting for 'canplay'. An iPhone loads no film before
+        play(), so the open sat on a still road forever. 🔴 The qa branch Gil has still carries that bug.
+      - Email gate: "much more precise", the same card sizes. The README in the bench has the rules. Two Opus
+        reviewers, plus a skeptic per reviewer, confirmed 14 points; all are fixed. Re-check: 360 cases (4 sizes ×
+        2 phases × 3 cards × 15 addresses), 0 faults.
+      - Sound on by default (Dan, twice). No browser plays sound before the visitor's first click, tap or key, so the
+        voice starts at that first touch, anywhere. Proof in real iPhone Safari: no touch = refused, "Tap for sound";
+        one tap on the email field = the voice plays with the film, in step.
+      - Dan's pick A: a first touch mid-film cuts the film back to the top with the voice, the first time only.
+      - Fixed a bug of mine: a human-speed click on "Tap for sound" turned the voice on with the press and off with the
+        click. Fast scripted clicks missed it; the old version failed the slow click.
+      - Not seen: the sound by ear (no tool can tap the Simulator or hear audio). Chrome's carry-over of a click from
+        another page of our own site to this page is from Chrome's docs, not tested.
+      - The Pit Wall script (`~/.claude/scripts/pitwall_workflow.py`, Dan's machine) got 4 end-state fixes; the old
+        one is saved as `.bak-2026-11-24`.
     - QA for Gil, PUSHED 2026-11-23 on Dan's word ("send to gil for qa lets push the branch to gil"):
       `qa/widebeam-page-1121` = `05dab5e` (was `7b3e9ba`, a fast-forward) = this branch at `9660b65` + `origin/main`
       `22bdd2e` (the temp home hero, the BF strip on every page; only `tasks/handoff.md` clashed, both sides kept).
