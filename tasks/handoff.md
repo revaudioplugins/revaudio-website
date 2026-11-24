@@ -1,6 +1,6 @@
-## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
+## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), LIVE on main `4471496` since 2026-11-24
 
-Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
+Claim: CLOSED 2026-11-24 (shipped; the phone layout and the garage's TV captures are still open, unclaimed). Opened 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
 `/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), `tools/wwbench/wwcart.html` (new, dev only), `DESIGN.md` (§4 TV), `docs/worn-paper.md` (new), this entry.
 - Dan: on the live TV, from plugin to plugin "the gap is really big", and "the words will stay in the same place and
   just the plugin will change". Asked: brainstorm + bench; composition, placements, fonts, not a full redesign.
@@ -71,6 +71,12 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   the domain); on revaudio.net the overlay opened with WIDE BEAM $9.00 (one abandoned checkout, no email entered).
   Not tested: a real trial email and a real purchase (Dan's). Noticed, not ours: the worker has a RevFX Windows build
   while revfx.ts says winReady false; Meta's pixel calls a Conversions API gateway the site's CSP blocks.
+- 2026-11-24, SHIPPED: Dan "ship it", then "Push to main (live)" when asked. `npm test` before: 86 passed, 3 failed,
+  the same 3 that fail on main `ccec62b` (run in a throwaway worktree): /drift console errors in WebKit (its video
+  control icons) and the WIDE BEAM listing test (timeout); main's own Smoke test run was already red. Pushed as a fast-
+  forward, `ccec62b..4471496`; the Pages deploy run succeeded. Checked on revaudio.net in Chromium at 1312x734 and
+  1141x636: all seven plugins, Try / price / keys on one set of spots, nothing cut, the TV fits; the phone list has
+  seven rows, no sideways scroll. Left open: the phone version of layout B; the garage's TV captures (`tvcap.mjs`).
 
 ## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page` (the branch itself NOT pushed); PUSHED for team QA as `qa/widebeam-page-1121` on 2026-11-21 (Dan's word), NOT on main
 
