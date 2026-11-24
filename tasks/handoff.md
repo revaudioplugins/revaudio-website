@@ -59,6 +59,18 @@ Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `t
   16rem for every plugin. WebKit (Safari's engine) at 1141x636 and 1312x734 measures the same as Chromium; "In your
   cart" fits row 2 and Product page does not move. Pre-line and the small "Free beta" are laptop-only rules; the
   blurb's `\n` only reaches the TV (home + /plugins), where phones show it as a space.
+- 2026-11-24: Dan: "check the backend, that everything is aligned and working" + "test it". Merged origin/main in
+  (73 commits: WIDE BEAM on sale and on the TV, the temporary home hero in the TV's `<slot />`, the Black Friday strip;
+  only this file clashed, both sides kept). The TV now has seven plugins; WIDE BEAM sits on the same spots (Chromium +
+  WebKit, 1312x734 + 1141x636), the hero's one scroll tick shows the menu in B, the phone list has 7 rows and no
+  sideways scroll. Backend, checked: every key's wiring (gate id, register URL, cart slug + price, links) is identical
+  to live revaudio.net; the licence worker is on its repo's deploy stamp (e00c984), knows every gate id the TV sends,
+  /health/builds ok, CORS from revaudio.net 204, and a bad email is refused for all six ids (nothing sent); Paddle's
+  PricePreview (public token) gives $49 / $19 / $19 / $9, all active, = the TV and the cart ($96 for all four); the
+  cart's terms box blocks checkout until ticked. Paddle refuses checkout on localhost ("blocked for this vendor", 403:
+  the domain); on revaudio.net the overlay opened with WIDE BEAM $9.00 (one abandoned checkout, no email entered).
+  Not tested: a real trial email and a real purchase (Dan's). Noticed, not ours: the worker has a RevFX Windows build
+  while revfx.ts says winReady false; Meta's pixel calls a Conversions API gateway the site's CSP blocks.
 
 ## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page` (the branch itself NOT pushed); PUSHED for team QA as `qa/widebeam-page-1121` on 2026-11-21 (Dan's word), NOT on main
 
