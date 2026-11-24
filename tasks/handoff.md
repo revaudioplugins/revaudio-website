@@ -1,3 +1,14 @@
+## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/daw-strip-phone-small` (worktree `.claude/worktrees/daw-small`, from main `ccec62b`); NOT pushed, NOT on main
+
+Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `src/components/DAWStrip.astro` (one phone block), this entry.
+Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller".
+- Phones (<= 860 px) only: the section's padding, heading, formats line and note smaller; the seven plates are small chips,
+  mark and name side by side (wordmarks 62x16). Laptops keep the stage as it is.
+- Measured (Chrome phone emulation, the section's height): 390 px wide 555 -> 202 px (2 rows of chips), 402 and 430: 202,
+  360: 254 (3 rows), 860: 164 (1 row); no chip past the edge at any of them; 1312x734 unchanged (338 px, chips 139x68).
+  iOS Safari in the Simulator (402 wide): 199 px, 2 rows.
+- To ship: Dan's push word (a push to main is a live deploy).
+
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
 
 Claim: CLOSED 2026-11-26 `revaudio-52`. Files: `src/components/TempHero.astro`, this entry.
