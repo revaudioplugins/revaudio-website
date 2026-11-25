@@ -1,4 +1,4 @@
-## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/daw-strip-phone-small` (worktree `.claude/worktrees/daw-small`, from main `ccec62b`); NOT pushed, NOT on main
+## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/home-phone-sections` (worktree `.claude/worktrees/daw-small`, from main `ccec62b`); on GitHub, NOT on main
 
 Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `src/components/DAWStrip.astro` (one phone block), `src/components/EmailCapture.astro`, this entry. (Branch renamed from `feat/daw-strip-phone-small`.)
 Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller".
@@ -16,7 +16,10 @@ Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller
   edge at 360, 390, 402 (WebKit). Laptops unchanged (checked at 1312: kicker and fine print hidden, centred as before).
   **Dan picked B, the sign** (2026-11-24: "B"): it is now the phone layout; A, C and the dev buttons are gone. Checked: 311 px
   at 360, 390 and 402 (WebKit), the same picture as B on the pick buttons; laptop 1312 unchanged, no buttons.
-- To ship: Dan's push word (a push to main is a live deploy).
+- **State (2026-11-25, rv close):** `369d4fe` = `origin/feat/home-phone-sections` (pushed 2026-11-25 13:26; that push is not in
+  this session's transcript). Main has moved since `ccec62b`: merge it in first. Not run yet on this branch: `npm run build` and
+  `astro check` (the check started 11-24 hung for a day and was stopped). Left running: `astro dev` on 127.0.0.1:4697.
+- To ship: build green, then Dan's push word (a push to main is a live deploy).
 
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
 
