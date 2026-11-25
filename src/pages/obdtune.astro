@@ -1,0 +1,237 @@
+---
+/**
+ * /obdtune: the OBDTUNE page (branch feat/obdtune-page, 2026-11-10; the new UI 2026-11-18). OBDTUNE = RevTune renamed
+ * (OBDTune repo): vocal pitch correction as a handheld scan tool, layout A in Yoni's PHOTO skin. The hero scanner IS the
+ * plugin's own UI (Source/ui/public, synced by tools/obdtune-ui/sync.sh into public/obdtune/ui, mounted by
+ * src/lib/obdtune/unit.ts): tiles TUNE / NOTES / FX / HARMONY / LIVE DATA / CUSTOM, D-pad + OK, BACK + POWER, DETECT on
+ * the OBD connector, the INFO lamp. Re-sync when the plugin's UI changes.
+ *
+ * Everything moving on the page runs the plugin's correction law (src/lib/obdtune/engine.ts, ported from
+ * AtCorrector.h) on one shared state. Order: hero (the live scanner) · #obd-story (six readings, sticky screen) ·
+ * #obd-bench (play / sing, every control) · #obd-data (the parameter list) · #obd-get (free trial + BUY NOW, src/data/obdtune.ts).
+ * Unlisted (noindex, not in plugins.ts) until the plugin ships.
+ */
+import { getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { obdtune, buyable, registerUrl, onceUrl as formOnceUrl, fmtUsd } from '../data/obdtune';
+import stillSrc from '../assets/obdtune/unit-still.png';
+import '../styles/obdtune.css';
+
+const onceUrl = formOnceUrl();
+const trialRegister = registerUrl();
+const canBuy = buyable();
+// the scanner's still (the plugin's home screen, as the page opens): shows until unit.ts mounts the live UI
+const still = await getImage({ src: stillSrc, format: 'webp', width: 1080, quality: 82 });
+
+const STEPS = [
+  { id: 'detect', n: '01', label: 'DETECT', h: "Don't know the key? Ask it.",
+    p: 'Plug in the connector and sing a few bars: the measurement mic docks, the scan bar fills, and OBDTUNE sets KEY and SCALE by itself (major or minor) with every note switched back on. Wrong answer? For 8 seconds the screen reads UNDO? and one more press puts it all back.' },
+  { id: 'speed', n: '02', label: 'SPEED', h: 'From hard snap to no trace.',
+    p: 'At 1 ms the voice jumps note to note: the sound everybody knows. Up near 200 ms it glides home so gently nobody hears a tuner. Everything in between is yours.' },
+  { id: 'human', n: '03', label: 'HUMANIZE + FLEX', h: 'Keep the life in it.',
+    p: 'HUMANIZE lets held notes breathe: the longer a note lasts, the softer the pull, so vibrato survives. FLEX leaves small, musical intonation alone and only pulls the notes that are really off.' },
+  { id: 'notes', n: '04', label: 'NOTES', h: 'Cut a note out.',
+    p: 'Twelve switches, one per note. Turn one off and OBDTUNE never lands there: the voice goes to the nearest note you kept. Great for a melody that keeps tripping over the same one.' },
+  { id: 'harmony', n: '05', label: 'HARMONY', h: 'Stack the harmonies.',
+    p: 'Two voices that follow your key and scale, anywhere from an octave down to an octave up, each with its own level, pan and formant. MIX blends them against the lead, and POSITION pulls a voice early or pushes it late, in ms or locked to your tempo.' },
+  { id: 'power', n: '06', label: 'POWER', h: 'One switch, the whole plugin.',
+    p: 'POWER bypasses everything (tuning, harmony and FX) at the same latency, so before and after line up. Only want the harmonies and FX? Switch AUTOTUNE off on the TUNE page and the voice goes through untuned.' },
+];
+
+const DATA = [
+  ['POWER', 'On / off', 'The whole plugin (tuning, harmony, FX), same latency'],
+  ['AUTOTUNE', 'On / off', 'Off = untuned, HARMONY and FX keep working'],
+  ['KEY', 'C to B', '12 keys'],
+  ['SCALE', '13 scales', 'Chromatic, Major, Minor, Harmonic minor, Pentatonic major + minor, Dorian, Phrygian, Lydian, Mixolydian, Melodic minor, Blues, Whole tone'],
+  ['SPEED', '1 – 200 ms', 'Hard snap to transparent'],
+  ['HUMANIZE', '0 – 100 %', 'Held notes keep their movement'],
+  ['FLEX', 'Off – ±100 ¢', 'Small intonation left alone'],
+  ['VOICE', 'Soprano · Alto · Tenor', 'Sets the range it listens in'],
+  ['NOTES', '12 switches', 'Cut any note from the scale'],
+  ['DETECT', 'Key + scale', 'Plug in the connector; 8-second UNDO'],
+  ['HARMONY', '2 voices', '12 intervals, level, pan, formant; MIX against the lead'],
+  ['POSITION', '−250 ms – +2 s', 'Each voice early or late, free or synced to tempo'],
+  ['FX', 'EQ · SQUEEZE · ECHO · REVERB', 'Low / high cut + 2 bells, a FET-style parallel comp, synced echo, room / plate / hall'],
+  ['CUSTOM', 'Your own line', 'Capture a take, then drag each note where you want it'],
+  ['LATENCY', '48 ms', 'Constant, reported to your DAW (+250 ms with POSITION on)'],
+  ['CHECK ENGINE', 'Lamps · codes', 'T H F C lamps show what sounds; a code names what is off and opens its page'],
+  ['WINDOW', 'Floating · Room', 'Hovers over your session or sits on the bench; drag the corner to resize'],
+];
+---
+<BaseLayout
+  title="OBDTUNE: plug in, read the note, tune it"
+  description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Free 30-day trial."
+  index={true}
+>
+  <div class="obd-page" data-obd-page>
+    <!-- ============ HERO ============ -->
+    <section class="obd-hero" aria-labelledby="obd-title">
+      <div class="obd-hero-copy" data-obd-reveal>
+        <p class="obd-kicker"><span class="obd-dot" aria-hidden="true"></span>NEW FROM REVAUDIO · FREE 30-DAY TRIAL</p>
+        <h1 id="obd-title" class="obd-wordmark"><span class="sr-only">OBDTUNE: </span><span aria-hidden="true">OBD<b>TUNE</b></span></h1>
+        <p class="obd-tag">Plug in. Read the note. Tune it.</p>
+        <p class="obd-lede">Vocal pitch correction built like a shop scan tool. It reads every note you sing, finds the key by itself, and puts each note where it belongs, as hard or as human as you set it. Then it stacks the harmonies and finishes the vocal with its own EQ, compression, echo and reverb.</p>
+        <div class="obd-ctas">
+          <a class="obd-btn" href="#obd-bench">Play with it ↓</a>
+          <a class="obd-btn obd-btn--hot" href="#obd-get">Try it free</a>
+          {canBuy && (
+            <button
+              type="button" class="obd-btn obd-btn--buy"
+              data-add-to-cart data-cart-open
+              data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+            >Buy now<span class="obd-btn-price">{fmtUsd(obdtune.priceUsd!)}</span></button>
+          )}
+        </div>
+        <ul class="obd-chips" aria-label="At a glance">
+          <li>DETECT finds the key</li><li>1–200 ms SPEED</li><li>13 scales</li><li>2 harmony voices</li><li>EQ · SQUEEZE · ECHO · REVERB</li>
+        </ul>
+      </div>
+
+      <div class="obd-stage" data-obd-stage data-bg="floating">
+        <div class="obd-unit" data-obd-unit role="group" aria-label="OBDTUNE, the plugin's own screen, live. Tap a tile, drag a value, use the D-pad; plug in the connector (or press D) to DETECT the key, P for power.">
+          <img class="obd-unit-still" src={still.src} width={still.attributes.width} height={still.attributes.height} alt="" decoding="async" />
+        </div>
+        <p class="obd-try">It's live: the plugin's own screen. Tap a tile, drag a value, or plug in the connector (<kbd>D</kbd>) to DETECT.</p>
+      </div>
+    </section>
+
+    <!-- ============ STORY ============ -->
+    <section class="obd-story" id="obd-story" data-obd-story aria-labelledby="obd-story-h">
+      <header class="obd-sec-head" data-obd-reveal>
+        <p class="obd-eyebrow">HOW IT READS YOU</p>
+        <h2 id="obd-story-h">Six readings. One scanner.</h2>
+      </header>
+      <div class="obd-story-grid">
+        <div class="obd-story-sticky">
+          <div class="obd-monitor">
+            <div class="obd-monitor-bar"><span data-story-label>DETECT</span><span data-story-note>--</span></div>
+            <canvas class="obd-monitor-graph" data-story-graph aria-hidden="true"></canvas>
+            <div class="obd-monitor-read"><span class="obd-blink" aria-hidden="true">▮</span><span data-story-readout></span></div>
+            <div class="obd-monitor-legend"><span class="is-raw">SUNG</span><span class="is-out">OBDTUNE</span><span class="is-harm">HARMONY</span></div>
+          </div>
+        </div>
+        <ol class="obd-steps">
+          {STEPS.map((s) => (
+            <li class="obd-step" data-step={s.id} data-label={s.label}>
+              <span class="obd-step-n">{s.n}</span>
+              <p class="obd-step-l">{s.label}</p>
+              <h3>{s.h}</h3>
+              <p>{s.p}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ BENCH ============ -->
+    <section class="obd-bench" id="obd-bench" data-obd-bench aria-labelledby="obd-bench-h">
+      <header class="obd-sec-head" data-obd-reveal>
+        <p class="obd-eyebrow">ON THE LIFT</p>
+        <h2 id="obd-bench-h">Hear it snap. Or sing to it.</h2>
+        <p class="obd-sec-sub">Every control here runs OBDTUNE's own correction math in your browser. Turn SPEED all the way down, then all the way up.</p>
+      </header>
+
+      <div class="obd-rig" data-obd-reveal>
+        <div class="obd-rig-screen">
+          <div class="obd-rig-top">
+            <div class="obd-rig-note"><span data-bench-note>--</span><em data-bench-cents></em></div>
+            <canvas class="obd-rig-gauge" data-bench-gauge aria-hidden="true"></canvas>
+            <div class="obd-rig-key"><small>KEY</small><span data-bench-key>C MAJOR</span></div>
+          </div>
+          <canvas class="obd-rig-graph" data-bench-graph aria-hidden="true"></canvas>
+          <p class="obd-rig-msg" data-bench-msg role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="obd-rig-panel">
+          <div class="obd-rig-row obd-rig-src">
+            <button type="button" class="obd-rk obd-rk--go" data-bench-play aria-pressed="false"><span data-face>PLAY</span></button>
+            <button type="button" class="obd-rk" data-bench-mic aria-pressed="false"><span data-face>SING</span></button>
+            <button type="button" class="obd-rk" data-bench-detect><span data-face>DETECT</span></button>
+            <button type="button" class="obd-rk obd-rk--power is-lit" data-bench-power aria-pressed="true"><span data-face>POWER ON</span></button>
+          </div>
+          <div class="obd-rig-row obd-rig-knobs">
+            {[['speed', 'SPEED', 'FAST', 'SLOW'], ['human', 'HUMANIZE', '0', '100'], ['flex', 'FLEX', 'OFF', '100¢']].map(([id, name, a, b]) => (
+              <div class="obd-knob-wrap">
+                <div class="obd-knob" data-knob={id} role="slider" tabindex="0" aria-label={name} aria-valuemin="0" aria-valuemax="100">
+                  <i class="obd-knob-ring" aria-hidden="true"></i>
+                  <i class="obd-knob-cap" aria-hidden="true"><b data-knob-ptr></b></i>
+                </div>
+                <p class="obd-knob-name">{name}</p>
+                <p class="obd-knob-val" data-knob-val>–</p>
+                <p class="obd-knob-ends" aria-hidden="true"><span>{a}</span><span>{b}</span></p>
+              </div>
+            ))}
+          </div>
+          <div class="obd-rig-row obd-rig-sel">
+            <label><span>KEY</span><select data-bench-keysel></select></label>
+            <label><span>SCALE</span><select data-bench-scalesel></select></label>
+            <label><span>VOICE</span><select data-bench-voicesel></select></label>
+            <button type="button" class="obd-rk obd-rk--sm" data-bench-harm aria-pressed="false"><span data-face>HARMONY</span></button>
+          </div>
+          <p class="obd-fine">The voice is a synth stand-in so you can hear the tuning, not the plugin's audio. Your mic stays in your browser and is never played back.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DATA ============ -->
+    <section class="obd-data" id="obd-data" aria-labelledby="obd-data-h">
+      <header class="obd-sec-head" data-obd-reveal>
+        <p class="obd-eyebrow">FULL READOUT</p>
+        <h2 id="obd-data-h">Everything on the scanner.</h2>
+      </header>
+      <div class="obd-readout" data-obd-reveal>
+        <div class="obd-readout-bar"><span>LIVE DATA · PARAMETERS</span><span>{DATA.length} ITEMS</span></div>
+        <dl>
+          {DATA.map(([k, v, d]) => (
+            <div class="obd-dr"><dt>{k}</dt><dd><b>{v}</b><span>{d}</span></dd></div>
+          ))}
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============ GET IT: the free trial + BUY NOW (src/data/obdtune.ts) ============ -->
+    <section class="obd-notify" id="obd-get" aria-labelledby="obd-get-h">
+      <div class="obd-notify-card obd-get-card" data-obd-reveal>
+        <p class="obd-eyebrow">GET IT</p>
+        <h2 id="obd-get-h">Plug it in for {obdtune.trialDays} days.</h2>
+        <div class="obd-get-grid">
+          <div class="obd-get-trial">
+            <p>The full OBDTUNE, free for {obdtune.trialDays} days. No credit card, no key.</p>
+            <form
+              class="obd-form" data-obd-form novalidate
+              data-once-url={onceUrl}
+              data-register-url={trialRegister ?? undefined}
+              data-plugin={obdtune.gateId}
+              data-msg-ok={trialRegister ? 'Check your inbox: your OBDTUNE download link is on its way.' : "You're in. We'll email your OBDTUNE download link the day the trial opens."}
+              data-msg-already={trialRegister ? "You're already signed up. Check your inbox (and spam) for the download link." : "You're already on the list. The download link comes the day the trial opens."}
+            >
+              <label class="sr-only" for="obd-email">Email</label>
+              <input id="obd-email" type="email" name="email" placeholder="you@studio.com" required autocomplete="email" aria-label="Your email, we send the OBDTUNE download link here" />
+              <input type="hidden" name="source" value="obdtune-trial" />
+              <input type="text" name="_gotcha" class="obd-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+              <button type="submit" class="obd-btn obd-btn--hot"><span data-face>Get it ▸</span></button>
+            </form>
+            <p class="obd-form-status" data-obd-status role="status" aria-live="polite" tabindex="-1"></p>
+            <p class="obd-fine">We&rsquo;ll also send a few short getting-started emails and a heads-up before your trial ends. Unsubscribe anytime.</p>
+          </div>
+          {canBuy && (
+            <div class="obd-get-buy">
+              <p class="obd-get-price"><b>{fmtUsd(obdtune.priceUsd!)}</b><span>one-time · yours to keep</span></p>
+              <button
+                type="button" class="obd-btn obd-btn--hot obd-buy"
+                data-add-to-cart data-cart-open
+                data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+              >Buy now</button>
+              <p class="obd-fine">{obdtune.formats}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { initObdtune } from '../lib/obdtune/init';
+  initObdtune();
+</script>

@@ -17,6 +17,7 @@ const STATIC_PAGES = [
   '/gas',
   '/thank-you',
   '/widebeam', // the WIDE BEAM page (unlisted until launch): 200 and no console errors; tests/widebeam.spec.ts holds its own assertions
+  '/obdtune', // the OBDTUNE page: 200 and no console errors
 ];
 
 const PLUGIN_SLUGS = ['revlimiter', 'radio-roulette', 'gas', 'drift', 'the-ac'];
