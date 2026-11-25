@@ -558,3 +558,13 @@ after `holdMs` is let go by design. Three traps from checking Dan's tuned number
 - Use one gesture per stream. Overlapped `page.mouse.wheel` or CDP calls queue and reach the page 0.3-3.6 s late, and the
   quiet timer (it uses `e.timeStamp`) then lets go at once. Log `performance.now() - e.timeStamp` before trusting a
   timing result.
+
+## 2026-11-25 — a hand-over is checked past its end, on more than one phone shape
+
+The phone garage's reveal was measured at the moment the 3D screen hands over to the page (0.73 of 255, a match), and
+it still looked "a little bit cutted underneath" to Dan in the Simulator: the page was one screen's picture, so a
+little further down it ended over a dark strip. Later the opening still, made for 390x844, was a zoomed crop on the
+Pro Max and the view jumped when the live room took over.
+
+Rule: for any picture that stands in for a live view (a first frame, a landing), step on past the hand-over to where
+the visitor scrolls next, and check it on at least 390x844, 402x754, 440x880 and 360x640 before calling it seamless.

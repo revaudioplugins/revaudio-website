@@ -1,4 +1,4 @@
-## 2026-11-24 — The PHONE garage gets the laptop's work: VHS, the speed fixes, the seams, the walk's feel (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/phone-dive` (worktree `.claude/worktrees/phone-dive`), `origin/feat/garage-home` merged in; NOT pushed, NOT on main
+## 2026-11-24 — The PHONE garage gets the laptop's work: VHS, the speed fixes, the seams, the walk's feel (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/phone-dive` (worktree `.claude/worktrees/phone-dive`), `origin/feat/garage-home` merged in; on GitHub, NOT on main
 
 Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `tools/_home-opening/phone-dive.html`, `tools/_home-opening/room.html`
 (the `?dive` lines and the look's hook only), `tools/_home-opening/assets/dive/`, this entry. The laptop garage's claim
@@ -7,7 +7,8 @@ Dan 2026-11-24: "all the things we did to the laptop already, like the VHS, and 
 applied to the phone ... show it to me, test it ... test the speed of the website in the phone, and then we'll test it on my
 phone in the end."
 
-**State (2026-11-24).** `feat/phone-dive` at the commit after `afdc9a3`, NOT pushed (origin is at `2254b30`). Commits:
+**State (2026-11-25).** `feat/phone-dive` at `e5a8f30` = `origin/feat/phone-dive` (pushed 2026-11-25 13:26; that push is not
+in this session's transcript, so another session or Dan ran it). Commits:
 `ff364d5` (merge of `origin/feat/garage-home` @ `8fe71aa`: 4 room.html conflicts, see its message), `afdc9a3` (the port), then the hold made safe (a hold that fails lets go; `?feel=0`, `?debug`).
 Not on main, not live. Main itself is not merged in (Gil's temporary hero, the BF strip): that waits for the home-page step.
 - **Done:** VHS on the dive (`room.html` `?dive&live`; the look follows the dive through `R.lookP`, sharp at the lock); the
@@ -79,6 +80,12 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
 - **Next, Dan's to decide:** the phone garage on the home page for phones (HomeOpening.astro: a phone branch, the room in
   `?dive&live` as the frame's srcdoc, the real phone TV photographed in the browser as on the laptop, the hand-over onto
   it, pins only first). Main merged in first. Then a push of this branch on his word.
+- **At the close (2026-11-25, rv close):** open for Dan: (1) the page under the phone, **A Glass or B Plain** (the
+  page opens on Glass, my pick; his pick pending); (2) the test on his own phone (the Wi-Fi line under Run). Seen, not
+  fixed: in Simulator Safari the live room reads about 5 levels (of 255) darker than the Chrome-rendered first picture (the
+  Simulator's known lamp difference; on the Mac's Chromium and WebKit the seam is 0.5-0.95). Left running: the no-store
+  server on 4691 and the iPhone 17 Pro Max simulator. The check scripts (fling, seam, perf, phone capture, diff) lived in
+  that session's scratchpad and are gone with it; rebuild from the numbers above if needed.
 - **Run:** a no-store server on the worktree root, `/tools/_home-opening/phone-dive.html` (on 2026-11-24: port 4691).
   Dan's phone on the Wi-Fi: he runs `python3 -m http.server 4690 --bind 0.0.0.0 --directory <this worktree>` (auto mode
   refuses an assistant binding 0.0.0.0), then `http://<the Mac's Wi-Fi address>:4690/tools/_home-opening/phone-dive.html`.
