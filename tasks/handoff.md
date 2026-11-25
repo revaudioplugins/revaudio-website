@@ -1,3 +1,24 @@
+## 2026-11-25 — The $69 bundle on the site: where it shows on phones, round 1 (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), NOT on main
+
+Claim: OPEN (Dan's Mac). Files: `src/components/SaleBundleCard.astro` (new), `src/assets/sale/bundle-thumb.png` (new),
+`tools/sale/bundle-thumb.cjs` (new), `src/components/Cart.astro` (bundle thumbnail + row line, the swap offer, no paying
+twice), `src/components/SaleStrip.astro` (the bundle line stays on phones, short), `src/data/sale.ts` (`saleBundle.meta`,
+`.slugs`), `src/pages/plugins.astro` + `src/pages/index.astro` (the card under the TV), this entry. `Cart.astro` is also
+in the open garage-home claim (2026-11-18): different lines.
+- Gil's handoff `tasks/bundle-checkout-handoff-dan-2026-11-25.md`: the site's look and placement are Dan's. Licence worker
+  live with the bundle (`/version` stamp `43a2105`, the bundle price commit) on 2026-11-25 20:55 Israel.
+- Found: on phones the strip hides the bundle and the pop-up shows on home only, once per phase, so a phone visitor on
+  any other page never sees the bundle.
+- Built for Dan's pick (review bench, phone, WebKit 402x714): A the strip keeps "ALL 8 $69" on phones (fits at 360);
+  B a card under the TV on /plugins + home (steel slat, 8 pictures on plates, $69 plate, "Add all 8 to cart", the
+  DRIFT promise; CM = the scan-tool screen); C the cart: "Swap for the bundle" when it holds singles, the bundle row
+  gets a picture of the 8 and "6 licence keys in one email · GAS + GAS 2 free"; adding the bundle takes the singles
+  out, a single added after it is refused with a note. All gated on html[data-sale] (gone Dec 1 with no push).
+- Open for Dan (+ Gil): with REDLINE the 5 priced plugins = $55.50 < $69, so the bundle only wins through DRIFT (TV says
+  FREE BETA): no value line for now. Paddle's checkout name is Paddle's product name (Gil).
+- Checks: `astro build` green; WebKit 402 + Chromium 390/360/1312x734, `?sale=bf|cm`: no sideways scroll, swap leaves
+  only `bundle` in the cart, no page errors. Not yet: a real Paddle overlay opened with the bundle price (not paid).
+
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
 Claim: CLOSED 2026-11-24 `revaudio-cc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `widebeam`), `src/pages/review.astro`, `DESIGN.md` (Review picker bullet only), this entry.

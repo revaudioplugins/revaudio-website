@@ -3,6 +3,7 @@ import { getImage } from 'astro:assets';
 import { pluginImage } from '../lib/images';
 import { plugins } from '../data/plugins';
 import { saleBundle } from '../data/sale';
+import bundleThumbSrc from '../assets/sale/bundle-thumb.png';
 import TermsContent from './legal/TermsContent.astro';
 import EulaContent from './legal/EulaContent.astro';
 import PrivacyContent from './legal/PrivacyContent.astro';
@@ -50,7 +51,7 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  */
 import { site } from '../data/site';
 const checkoutMap: Record<string, string> = {};
-const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string; until?: number }> = {};
+const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string; until?: number; meta?: string; includes?: string[] }> = {};
 for (const p of plugins) {
   const target = p.paddlePriceId;
   if (target) {
@@ -63,7 +64,8 @@ for (const p of plugins) {
 // The Black Friday / Cyber Monday bundle (the sale strip's and intro's bundle line add it);
 // read() drops it once the sale is over.
 checkoutMap[saleBundle.slug] = saleBundle.paddlePriceId;
-cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceUsd, img: '', formats: saleBundle.formats, until: Date.parse(saleBundle.until) };
+const bundleThumb = await getImage({ src: bundleThumbSrc, width: 288, format: 'webp' });
+cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceUsd, img: bundleThumb.src, formats: saleBundle.formats, until: Date.parse(saleBundle.until), meta: saleBundle.meta, includes: saleBundle.slugs };
 ---
 
 <script is:inline type="application/json" data-cart-catalog set:html={JSON.stringify(cartCatalog).replace(/</g, '\\u003c')}></script>
@@ -102,6 +104,10 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
     <h3>Your next sound starts here.</h3>
     <p>Your cart is empty. Explore the plugins and find your next addition.</p>
     <a href="/plugins" class="cd-browse">Explore the plugins <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="cd-bundle" data-cart-bundle-offer hidden>
+    <p><b>All {saleBundle.slugs.length} plugins, ${saleBundle.priceUsd}.</b> <span data-cart-bundle-why></span></p>
+    <button type="button" class="cd-bundle-swap" data-cart-bundle-swap>Swap for the bundle</button>
   </div>
   <ul class="cd-items" data-cart-items aria-label="Plugins in your cart"></ul>
   <div class="cd-foot" data-cart-foot hidden>
@@ -428,9 +434,26 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
       return (drawer && drawer.open) || (lModal && lModal.open);
     }
 
+    // The sale bundle holds every paid plugin: adding it takes them out (nobody pays twice), and a plugin it
+    // already holds is not added beside it (the drawer says so).
+    function bundleIn(c) {
+      for (var i = 0; i < c.length; i++) if (c[i].includes) return c[i];
+      return null;
+    }
+    function announce(text) {
+      var a = drawer && drawer.querySelector('[data-cart-announcement]');
+      if (a) a.textContent = text;
+    }
     function add(item) {
       if (!item || !item.slug) return;
       var c = read();
+      var bundle = bundleIn(c);
+      if (bundle && bundle.includes.indexOf(item.slug) >= 0) { announce((catalog[item.slug] ? catalog[item.slug].name : 'That plugin') + ' is already in the bundle.'); sync(); return 'held'; }
+      var inc = catalog[item.slug] && catalog[item.slug].includes;
+      if (inc) {
+        var out = c.filter(function (i) { return inc.indexOf(i.slug) >= 0; });
+        if (out.length) { write(c.filter(function (i) { return inc.indexOf(i.slug) < 0; })); c = read(); announce('The bundle holds ' + out.map(function (i) { return i.name; }).join(', ') + ', so ' + (out.length > 1 ? 'they' : 'it') + ' came out of the cart.'); }
+      }
       // One licence per product — a repeat add is a no-op, never stacks qty.
       var exists = c.some(function (i) { return i.slug === item.slug; });
       if (!exists) {
@@ -517,7 +540,7 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
         return '<li class="ci">' +
           (i.img ? '<div class="ci-picture"><img class="ci-img" src="' + esc(i.img) + '" alt="" width="144" height="84"></div>' : '') +
           '<div class="ci-main"><span class="ci-name">' + esc(i.name) + '</span>' +
-          '<span class="ci-meta">1 licence · Digital download</span>' +
+          '<span class="ci-meta">' + esc(i.meta || '1 licence · Digital download') + '</span>' +
           '<span class="ci-formats">' + esc(i.formats) + '</span></div>' +
           '<div class="ci-actions"><span class="ci-price">' + money(i.price) + '</span>' +
           '<button type="button" class="ci-x" data-remove="' + esc(i.slug) + '" aria-label="Remove ' + esc(i.name) + '">Remove</button></div>' +
@@ -530,6 +553,20 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
         var offerItem = offer && c.filter(function (i) { return i.slug === offer.slug; })[0];
         offerEl.textContent = offerItem ? 'Your personal discount on ' + offerItem.name + ' is applied at payment.' : '';
         offerEl.hidden = !offerItem;
+      }
+      // the sale bundle offer: singles it holds in the cart, the sale on, the bundle not in yet
+      var bOffer = drawer && drawer.querySelector('[data-cart-bundle-offer]');
+      if (bOffer) {
+        var b = null;
+        for (var k in catalog) if (catalog[k].includes && (!catalog[k].until || Date.now() < catalog[k].until)) { b = k; break; }
+        var held = b ? c.filter(function (i) { return catalog[b].includes.indexOf(i.slug) >= 0; }) : [];
+        var heldSum = held.reduce(function (s, i) { return s + (i.price || 0); }, 0);
+        bOffer.hidden = !(b && html.dataset.sale && held.length && !bundleIn(c));
+        if (!bOffer.hidden) {
+          bOffer.setAttribute('data-bundle-slug', b);
+          var others = catalog[b].includes.length - held.length;
+          bOffer.querySelector('[data-cart-bundle-why]').textContent = (held.length > 2 ? 'These ' + held.length : held.map(function (i) { return i.name; }).join(' and ')) + ' plus the other ' + others + ', in one order.';
+        }
       }
     }
 
@@ -671,6 +708,16 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
 
     document.addEventListener('click', function (e) {
       var t = e.target;
+      // the drawer's bundle offer: the bundle in, the singles it holds out (add())
+      var swapBtn = t.closest('[data-cart-bundle-swap]');
+      if (swapBtn) {
+        var bSlug = swapBtn.closest('[data-cart-bundle-offer]').getAttribute('data-bundle-slug');
+        if (catalog[bSlug]) {
+          add({ slug: bSlug, name: catalog[bSlug].name, price: catalog[bSlug].price });
+          track('AddToCart', { content_ids: [bSlug], content_type: 'product', value: +catalog[bSlug].price || 0, currency: 'USD' });
+        }
+        return;
+      }
       var addBtn = t.closest('[data-add-to-cart]');
       if (addBtn) {
         e.preventDefault();
@@ -679,12 +726,13 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
         if (addBtn.classList.contains('is-in-cart')) { openDrawer(); return; }
         var addSlug = addBtn.getAttribute('data-slug');
         var addPrice = addBtn.getAttribute('data-price');
-        add({
+        // a plugin the cart's bundle already holds: show the drawer, which says so
+        if (add({
           slug: addSlug,
           name: addBtn.getAttribute('data-name'),
           price: addPrice,
           img: addBtn.getAttribute('data-img')
-        });
+        }) === 'held') { openDrawer(); return; }
         // One call site covers the crane BUY NOW square, the store card, and the mobile buy bar.
         track('AddToCart', { content_ids: [addSlug], content_type: 'product', value: +addPrice || 0, currency: 'USD' });
         // BUY NOW buttons opt in to showing the cart straight away (see the
@@ -875,6 +923,13 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
   .cd-sub span:last-child { color: var(--fg); font-size: 1.65rem; font-weight: 600; font-variant-numeric: tabular-nums; }
   .cd-tax { font-size: 0.75rem; line-height: 1.5; color: #b9b0a2; margin: 0.45rem 0 0; }
   .cd-offer { font-size: 0.8125rem; line-height: 1.45; color: var(--brass-bright); margin: 0.45rem 0 0; }
+  /* the sale bundle offer: a brass-edged slip over the items */
+  .cd-bundle { display: flex; align-items: center; gap: 0.9rem; margin: 0 0 1rem; padding: 0.75rem 0.9rem; border: 1px solid var(--brass-dark); border-radius: 6px; background: linear-gradient(180deg, rgba(201, 163, 92, 0.14), rgba(201, 163, 92, 0.05)); }
+  .cd-bundle[hidden] { display: none; }
+  .cd-bundle p { margin: 0; font-size: 0.84rem; line-height: 1.4; color: var(--fg-dim); }
+  .cd-bundle b { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; letter-spacing: 0.06em; color: var(--brass-bright); }
+  .cd-bundle-swap { flex: none; font-family: var(--font-display); font-size: 1rem; letter-spacing: 0.08em; color: #1d1916; padding: 0.45rem 0.8rem 0.36rem; border: 0; border-radius: 4px; cursor: pointer; background: linear-gradient(180deg, var(--brass-bright), var(--brass) 45%, var(--brass-dark)); box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.6), 0 2px 0 #5e4a26; }
+  .cd-bundle-swap:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
   .cd-next { font-size: 0.8125rem; color: #b9b0a2; line-height: 1.6; margin: 0; padding-top: 0.4rem; }
 
   /* Consent checkbox — required before checkout; its links open the reader popup. */

@@ -73,4 +73,9 @@ export const saleBundle = {
   formats: 'VST3 · AU · AAX',
   /** The cart drops it from here on (a bundle left in a cart after the sale can't be bought). */
   until: salePhases[salePhases.length - 1].end,
+  /** The cart row's second line (where a single plugin says "1 licence · Digital download"). */
+  meta: '6 licence keys in one email · GAS + GAS 2 free',
+  /** The plugins it holds, as src/data/plugins.ts slugs, in saleBundlePlugins' order (the card under the TV,
+   *  the cart's thumbnail). Every paid one is in it, so the cart swaps singles out for it. */
+  slugs: ['revlimiter', 'revfx', 'radio-roulette', 'gas', 'gas2', 'drift', 'obdtune', 'widebeam'],
 };
