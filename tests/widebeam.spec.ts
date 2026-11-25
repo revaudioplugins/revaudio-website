@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { widebeam, buyable } from '../src/data/widebeam';
+import { widebeam, buyable, askFor } from '../src/data/widebeam';
 import { salePhases } from '../src/data/sale';
 
 // The durable assertions for /widebeam (lane T of the WIDE BEAM build). Run by the house config (chromium + mobile-safari) against the built preview.
@@ -63,8 +63,11 @@ test.describe('/widebeam honesty', () => {
   test('search engines skip the page until it is listed, and index it after', async ({ page }) => {
     await open(page, '/widebeam', 300);
     const robots = page.locator('meta[name="robots"]');
-    if (widebeam.listed) expect(await robots.getAttribute('content').catch(() => null) ?? '').not.toMatch(/noindex/);
-    else await expect(robots).toHaveAttribute('content', /noindex/);
+    // listed: BaseLayout emits no robots tag at all, so read what is there instead of waiting for a tag that never comes
+    if (widebeam.listed) {
+      const tags = await robots.evaluateAll((els) => els.map((e) => e.getAttribute('content') || ''));
+      for (const c of tags) expect(c).not.toMatch(/noindex/);
+    } else await expect(robots).toHaveAttribute('content', /noindex/);
   });
 });
 
@@ -86,7 +89,8 @@ test.describe('/widebeam behaviour', () => {
     for (const n of names) expect(n, 'an email field whose name is not "Your email"').toBe('Your email');
   });
 
-  test('the Owner\'s Manual anchor is there and /widebeam/#manual lands on it', async ({ page }) => {
+  // the projector page (feat/widebeam-projector-live) builds section by section: #manual comes with section 2
+  test.fixme('the Owner\'s Manual anchor is there and /widebeam/#manual lands on it', async ({ page }) => {
     await open(page, '/widebeam/#manual', 3500);
     // the manual's heading lands under the nav: the section itself lands with its top padding above the screen
     // (manual.css scroll-margin-top), so the heading, the screen and its strap fit together on a 1141x636 laptop
@@ -100,7 +104,8 @@ test.describe('/widebeam behaviour', () => {
     expect(r!.top, '#manual should land with its heading under the nav').toBeLessThan(200);
   });
 
-  test('the letter keys act only inside the dash', async ({ page, isMobile }) => {
+  // the dash is gone from the projector page; section 3 (the plugin's face) decides what the letter keys do
+  test.fixme('the letter keys act only inside the dash', async ({ page, isMobile }) => {
     test.skip(!!isMobile, 'a keyboard check: phones have no letter keys');
     await open(page);
     await page.keyboard.press('Escape');
@@ -119,7 +124,8 @@ test.describe('/widebeam behaviour', () => {
     expect(await mono(), '"m" with a dash control focused toggles MONO').not.toBe(b2);
   });
 
-  test('the music never starts on Tab or on the cookie banner', async ({ page, isMobile }) => {
+  // passes vacuously without the old SOUND key ([data-wb-sound]): rewrite for the film's voice in step 2
+  test.fixme('the music never starts on Tab or on the cookie banner', async ({ page, isMobile }) => {
     test.setTimeout(90_000);
     await open(page, '/widebeam', 3000);
     expect(await soundOn(page), 'sound before any act').toBe(false);
@@ -133,7 +139,8 @@ test.describe('/widebeam behaviour', () => {
     }
   });
 
-  test('the music starts on a real act on the demo (SOUND key), and stops on a second press', async ({ page, browserName }) => {
+  // the SOUND key is gone with the dash: the voice and its tap key come with section 2 (step 2)
+  test.fixme('the music starts on a real act on the demo (SOUND key), and stops on a second press', async ({ page, browserName }) => {
     test.skip(browserName === 'firefox', 'headless Firefox has no audio device: an AudioContext stays suspended even after a gesture');
     await open(page, '/widebeam', 2500);
     await page.evaluate(() => { const b = document.getElementById('cookie-banner'); if (b) b.remove(); });
@@ -165,4 +172,153 @@ test.describe('/widebeam on the sale dates', () => {
       expect(wb.shown > 0, 'a sale strip shown on /widebeam').toBe(buyable());
     });
   }
+});
+
+// The projector page's sign-up gate (src/components/widebeam/projector/WbpGate.astro + src/lib/widebeam/projector/signup.ts): the old page's live
+// contract on every gate. The licence worker is faked: each POST is recorded with its body, a preflight gets a 204, and the reply is the test's.
+test.describe('/widebeam sign-up gate', () => {
+  const ask = askFor();
+  type Call = { path: string; body: Record<string, unknown> };
+  async function fake(page: Page, reply: (path: string) => object | 'abort' = () => ({ ok: true, sent: true })) {
+    const calls: Call[] = [];
+    await page.route(WORKER, (r) => {
+      const req = r.request(), url = req.url();
+      if (/cloudflareinsights/.test(url)) return r.fulfill({ status: 200, contentType: 'application/javascript', body: '' });
+      const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type', 'access-control-allow-methods': 'POST' };
+      if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+      const path = new URL(url).pathname;
+      if (req.method() === 'POST') calls.push({ path, body: JSON.parse(req.postData() || '{}') });
+      const out = reply(path);
+      if (out === 'abort') return r.abort('failed');
+      return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(out) });
+    });
+    await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+    // bound: signup.ts took [data-wb-needs-script] off and enabled the key
+    await expect(page.locator('form[data-wbp-gate][data-wb-needs-script]')).toHaveCount(0);
+    await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+    return calls;
+  }
+  const gate = (page: Page) => page.locator('[data-wbp-ask]').first();
+  const send = async (page: Page, email: string) => {
+    const g = gate(page);
+    await g.getByRole('textbox', { name: 'Your email', exact: true }).fill(email);
+    await g.locator('form[data-wbp-gate] button[type=submit]').click();
+  };
+
+  test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('the server renders the whole contract: key disabled, the no-JS line, the hooks, the honeypot, the status outside the form', async ({ page }) => {
+      await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+      const forms = page.locator('[data-wb-page] form[data-wbp-gate]');
+      expect(await forms.count(), 'a gate on the page').toBeGreaterThan(0);
+      for (const f of await forms.all()) {
+        await expect(f).toHaveAttribute('novalidate', '');
+        await expect(f).toHaveAttribute('method', /post/i);
+        await expect(f).toHaveAttribute('data-plugin', widebeam.gateId);
+        await expect(f).toHaveAttribute('data-msg-ok', ask.ok);
+        await expect(f).toHaveAttribute('data-msg-already', ask.already);
+        await expect(f).toHaveAttribute('data-once-url', /\/form-once$/);
+        await expect(f).toHaveAttribute('data-wb-cta', '');
+        await expect(f.locator('input[type=hidden][name=source]')).toHaveAttribute('value', ask.source);
+        await expect(f.locator('input[name=_gotcha]')).toHaveCount(1);
+        await expect(f.locator('[data-wbp-status]'), 'the status line sits outside the form (a done form keeps it)').toHaveCount(0);
+        if (ask.registerUrl) {
+          await expect(f).toHaveAttribute('data-register-url', ask.registerUrl);
+          await expect(f).toHaveAttribute('data-wb-needs-script', '');
+          await expect(f.locator('button[type=submit]'), 'the key waits for the script').toBeDisabled();
+        }
+      }
+      await expect(page.locator('[data-wb-ask] > [data-wbp-status][role=status][aria-live=polite]').first()).toHaveCount(1);
+      // the no-JS line, read from the served HTML: a script-disabled test browser still parses <noscript> as text
+      if (ask.nojs) expect(await (await page.request.get('/widebeam/')).text()).toContain(`<noscript><p class="wbp-status err">${ask.nojs}</p></noscript>`);
+      await expect(page.locator('[data-wb-page] [data-wb-ask] a[href="/privacy"]').first()).toBeVisible();
+    });
+  });
+
+  test('a good address posts /download/register, then /form-once, with the live bodies, and every gate shows done', async ({ page }) => {
+    const calls = await fake(page);
+    await send(page, '  Test.Person@example.com ');
+    await expect(gate(page).locator('.wbp-done')).toBeVisible();
+    await expect.poll(() => calls.length).toBe(2);
+    expect(calls.map((c) => c.path)).toEqual(['/download/register', '/form-once']);
+    expect(calls[0].body).toEqual({ email: 'Test.Person@example.com', plugin: widebeam.gateId, marketing: true });
+    expect(calls[1].body).toEqual({ form: 'newsletter', page: '/widebeam/', email: 'Test.Person@example.com', source: ask.source, _gotcha: '' });
+    await expect(gate(page).locator('[data-wbp-status]')).toHaveText(ask.ok);
+    await expect(gate(page).locator('.wbp-done em')).toContainText('@example.com');
+    for (const a of await page.locator('[data-wb-page] [data-wb-ask]').all()) await expect(a).toHaveAttribute('data-wb-done', '');
+    expect(await page.evaluate(() => document.documentElement.hasAttribute('data-wb-joined'))).toBe(true);
+  });
+
+  test('the same address again never registers twice; another address is a new sign-up', async ({ page }) => {
+    const calls = await fake(page);
+    await send(page, 'same@example.com');
+    await expect.poll(() => calls.length).toBe(2);
+    await gate(page).locator('[data-wbp-change]').click();
+    await expect(gate(page).getByRole('textbox', { name: 'Your email', exact: true })).toBeFocused();
+    await send(page, 'SAME@example.com');
+    await expect(gate(page).locator('.wbp-done')).toBeVisible();
+    await page.waitForTimeout(400);
+    expect(calls.length, 'no second register, no second list join').toBe(2);
+    await gate(page).locator('[data-wbp-change]').click();
+    await send(page, 'other@example.com');
+    await expect.poll(() => calls.length).toBe(4);
+    expect(calls[2]).toEqual({ path: '/download/register', body: { email: 'other@example.com', plugin: widebeam.gateId, marketing: true } });
+  });
+
+  test('the worker\'s "already" reply shows the already words', async ({ page }) => {
+    await fake(page, () => ({ ok: true, already: true }));
+    await send(page, 'again@example.com');
+    await expect(gate(page).locator('[data-wbp-status]')).toHaveText(ask.already);
+  });
+
+  test('a worker error marks the field and joins nothing; a network drop says so', async ({ page }) => {
+    let mode: 'err' | 'net' = 'err';
+    const calls = await fake(page, () => (mode === 'err' ? { ok: false, error: 'That address bounced.' } : 'abort'));
+    const field = gate(page).getByRole('textbox', { name: 'Your email', exact: true });
+    await send(page, 'bad@example.com');
+    await expect(gate(page).locator('[data-wbp-status]')).toHaveText('That address bounced.');
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(calls.map((c) => c.path), 'no list join after a refused register').toEqual(['/download/register']);
+    await expect(gate(page).locator('.wbp-done')).toBeHidden();
+    mode = 'net';
+    await field.fill('net@example.com');
+    await expect(gate(page).locator('[data-wbp-status]')).toHaveText('');
+    await gate(page).locator('form[data-wbp-gate] button[type=submit]').click();
+    await expect(gate(page).locator('[data-wbp-status]')).toHaveText('Network hiccup. Try again in a moment.');
+  });
+
+  test('a filled honeypot skips the register and posts the list join only', async ({ page }) => {
+    const calls = await fake(page);
+    await page.evaluate(() => { (document.querySelector('form[data-wbp-gate] input[name=_gotcha]') as HTMLInputElement).value = 'bot'; });
+    await send(page, 'bot@example.com');
+    await expect.poll(() => calls.length).toBe(1);
+    expect(calls[0].path).toBe('/form-once');
+    expect(calls[0].body).toMatchObject({ form: 'newsletter', email: 'bot@example.com', _gotcha: 'bot' });
+  });
+
+  test('a bad address is caught before the worker, with a one-tap fix', async ({ page }) => {
+    const calls = await fake(page);
+    await send(page, 'dan');
+    await expect(gate(page).locator('[data-wbp-status]')).toHaveText('An email needs an @.');
+    await send(page, 'dan@gmail');
+    await expect(gate(page).locator('[data-wbp-status]')).toContainText('Did you mean');
+    await gate(page).locator('[data-wbp-fix]').click();
+    await expect(gate(page).getByRole('textbox', { name: 'Your email', exact: true })).toHaveValue('dan@gmail.com');
+    expect(calls.length, 'nothing sent for a bad address').toBe(0);
+    // a real address on an internationalised ending goes through to the worker (Chromium hands the field's value over
+    // in punycode, WebKit as typed: both pass)
+    await send(page, 'user@пример.рф');
+    await expect.poll(() => calls.length).toBeGreaterThan(0);
+    expect(calls[0].path).toBe('/download/register');
+    expect(calls[0].body.email).toMatch(/^user@(пример\.рф|xn--e1afmkfd\.xn--p1ai)$/);
+  });
+
+  test('the emailed trial link (#dl=) is left to TrialGateModal', async ({ page }) => {
+    await page.route(WORKER, stub);
+    await page.goto('/widebeam/#dl=test-token&p=widebeam', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    expect(await page.evaluate(() => location.hash), 'TrialGateModal scrubs the token').not.toMatch(/dl=/);
+    expect(await page.evaluate(() => localStorage.getItem('tg:gate:widebeam')), 'TrialGateModal kept the gate').not.toBeNull();
+    await expect(page.locator('dialog.tg-modal')).toHaveAttribute('open', '');
+  });
 });

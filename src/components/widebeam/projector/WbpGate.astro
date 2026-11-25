@@ -1,0 +1,84 @@
+---
+/**
+ * The projector page's one sign-up card (bench/widebeam-projector, the mock-up's plates), server-rendered so it is
+ * there with JS off. Variants: 'glass' = section 1's smoked glass over the car film (this step); 'card' (the film's
+ * Intertitle title card) and 'face' (section 3) come with their sections and reuse this markup.
+ *
+ * The live contract (the old WbGet.astro, read:live-contract 1-4), kept exactly:
+ *  - the form: novalidate, method=POST, [data-wb-needs-script] (its key disabled until signup.ts binds it),
+ *    data-once-url, data-register-url, data-plugin = widebeam.gateId (never the slug), data-msg-ok / data-msg-already,
+ *    [data-wb-cta]; fields email (labelled exactly "Your email"), the hidden source and the _gotcha honeypot. Nothing
+ *    else is named: /form-once's body spreads the form's fields.
+ *  - the status line OUTSIDE the form (role=status, aria-live, tabindex=-1), the <noscript> line and the 9 s late line.
+ *  - every word from askFor() / buyFor() / projector (src/data/widebeam.ts); the consent line with its Privacy link
+ *    under every gate (the basis for marketing:true on /download/register).
+ *  - BUY: the cart's own key (data-add-to-cart data-cart-open data-slug data-name data-price), only when buyable().
+ * The done box (the mock-up's "on its way" box with the address) sits in the field's place and shows ask.ok; signup.ts
+ * drives it from the real success, on every gate at once.
+ * Pre-open (no registerUrl) the form posts itself, urlencoded, to /form-once?form=newsletter, as WbGet does.
+ */
+import { widebeam, askFor, buyFor, buyable, formatsLine, projector, onceUrl as formOnceUrl } from '../../../data/widebeam';
+
+interface Props {
+  /** the instance's id prefix (each gate on the page has its own) */
+  id: string;
+  variant?: 'glass' | 'card' | 'face';
+}
+const { id, variant = 'glass' } = Astro.props;
+const ask = askFor();
+const buy = buyFor();
+const onceUrl = formOnceUrl();
+const native = !ask.registerUrl;
+const canBuy = buyable() && !!buy.key;
+const keyWords = ask.key.replace(/ ▸$/, '');
+---
+<div class:list={['wbp-ask', `wbp-ask--${variant}`]} data-wb-ask data-wbp-ask>
+  {canBuy ? (
+    <div class="wbp-buyrow">
+      <div class="wbp-well">
+        <button
+          type="button" class="wbp-key wbp-key--big"
+          data-add-to-cart data-cart-open
+          data-slug={widebeam.slug} data-name={widebeam.name} data-price={widebeam.priceUsd}
+        >{buy.key}</button>
+      </div>
+      <p class="wbp-eng wbp-or">{projector.orTry()}</p>
+    </div>
+  ) : (
+    <p class="wbp-stamp wbp-ask-head">{ask.label}</p>
+  )}
+  <form
+    class="wbp-gate" data-wbp-gate data-wb-trial data-wb-cta novalidate
+    action={native ? onceUrl + '?form=newsletter' : undefined} method="POST"
+    data-wb-needs-script={native ? undefined : ''}
+    data-once-url={onceUrl}
+    data-register-url={ask.registerUrl ?? undefined}
+    data-plugin={widebeam.gateId}
+    data-msg-ok={ask.ok}
+    data-msg-already={ask.already}
+  >
+    <div class="wbp-well wbp-rail">
+      <label class="sr-only" for={`${id}-email`}>Your email</label>
+      <input
+        id={`${id}-email`} type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off"
+        autocorrect="off" spellcheck="false" enterkeyhint="send" placeholder="your@email.com" required
+        aria-describedby={`${id}-micro ${id}-consent`}
+      />
+      <span class="wbp-divider" aria-hidden="true"></span>
+      <button type="submit" class="wbp-key" disabled={!native}><span data-face>{keyWords} <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l6 4-6 4z" fill="currentColor"/></svg></span></button>
+      <div class="wbp-done" tabindex="-1"><b>{ask.ok}</b><span><em></em><button type="button" data-wbp-change>{projector.change}</button></span></div>
+    </div>
+    <input type="hidden" name="source" value={ask.source} />
+    <input type="text" name="_gotcha" class="wb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  </form>
+  {!native && ask.nojs && <noscript><p class="wbp-status err">{ask.nojs}</p></noscript>}
+  {!native && <p class="wbp-status err wbp-late">{ask.late}</p>}
+  <p class="wbp-status" id={`${id}-status`} data-wbp-status role="status" aria-live="polite" tabindex="-1"></p>
+  {/* the consent line comes first, right under the key it governs (the basis for marketing:true): while the cookie
+      banner is up it is the line lift.ts keeps clear of it, on a short laptop and on a phone. Then the terms and the
+      trust line (one row on a laptop, two lines on a phone) and the formats (what the trial and the key both run in, as
+      the old WbGet printed under Buy). */}
+  <p class="wbp-fine wbp-consent" id={`${id}-consent`}>{ask.consent} &middot; <a href="/privacy" data-open-legal="privacy">Privacy</a></p>
+  <p class="wbp-fine wbp-terms"><span id={`${id}-micro`}>{ask.micro}</span>{canBuy && buy.trust && <><span class="wbp-sep" aria-hidden="true"> · </span><span class="wbp-trust">{buy.trust}</span></>}</p>
+  <p class="wbp-fine wbp-formats">{formatsLine()}</p>
+</div>

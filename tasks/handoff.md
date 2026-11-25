@@ -9,6 +9,22 @@ Claim: OPEN 2026-11-25 `Wide Beam projector page build [2a7fb9]`. Files: `src/pa
   ourselves" = we make the manual film, not Gil (Gil to be told by Dan).
 - The trial gate's worker calls and the cart / Paddle path keep their code; tests fake both (no real email, no real buy).
 - Not started: the go-live date (proposed: not during the sale, Fri Nov 27 to Mon Nov 30 PT).
+- **Step 1 built (2026-11-25), waiting for Dan's look:** /widebeam = BaseLayout + section 1 only (the car film behind the
+  glass card, the Buy key, the trial gate). New code, all scoped (`wbp-`, `.wbp-page`): `src/components/widebeam/projector/`
+  (WbpCar, WbpGate), `src/lib/widebeam/projector/` (init, car, signup, lift), `src/styles/widebeam/projector/`, the
+  `projector` words block in `src/data/widebeam.ts`, `src/assets/widebeam/title.webp`, real Gelasio
+  `public/fonts/widebeam/Gelasio-Regular.wbp-v1.woff2` (OFL text already there). The old Wb* components and
+  `src/lib/widebeam/*.ts` are untouched, only no longer imported (going back = revert `src/pages/widebeam.astro`).
+  - signup.ts = capture.ts's requests, bodies and order (register, then form-once, then the conversion), binding every
+    gate; a second submit of the same address sends nothing. The consent line + Privacy sits right under the key on
+    every gate and is kept clear of the cookie banner (lift.ts). formatsLine() is printed under the gate.
+  - Checks (headless Chromium + WebKit, worker and Paddle stubbed): contract suite 132/132; repo specs 73 passed,
+    8 skipped (fixme: #manual, letter keys, music-on-Tab and the SOUND key, back in steps 2/3), 1 failed = the /drift
+    mobile-safari console-noise test that fails on the untouched baseline too; G11 first view 1.74 MiB at L1141 / L1440
+    (bar 1.9), 0.84 MiB at P390 (bar 1.0); axe 0 violations. The robots test is fixed (it waited 30 s for a noindex
+    that `listed: true` no longer prints). Headed real Chrome at 1312x734 seen by the orchestrator: film, blur, keys OK.
+  - Known, for steps 2/3: "Scroll for the film ↓" points at nothing yet; G11's face / hand-off rows and G0's `.wb-buy`
+    selectors still name the old page; the OG card still shows the dash.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 

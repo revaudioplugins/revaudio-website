@@ -1,0 +1,55 @@
+---
+/**
+ * Section 1 of the projector page (bench/widebeam-projector s1): the car film fills the band under the nav and the sale
+ * strip, the plugin's own title lettering and the tagline over it, and the glass card with the Buy key and the trial
+ * gate from the first frame. car.ts runs the open (the mock-up's timing: 1.5x, the paint wait, the fade).
+ *
+ * The film's <source>s are the old hero's (WbHero.astro), in the same order: the portrait cut that follows the car on an
+ * upright phone or tablet (the default there, an approved pick), the 720 file on a narrow landscape screen, the 1080
+ * file elsewhere, the 720 again last (a slow line drops every data-wbp-tier="hi"). car.ts moves these nodes and never
+ * writes a file name, so assetver's ?v= stamp holds. preload="none": a visitor who gets no film (reduced motion,
+ * Save-Data, Back, a deep link, a late script) downloads none of it; car.ts asks for it once it will play.
+ * The end still (no film: the last frame, the car gone) is resolved here and handed over in data-end / data-end-portrait.
+ * class wb-intro stays on the video: the weight gate G11 finds the film by it.
+ */
+import { getImage } from 'astro:assets';
+import introPosterImg from '../../../assets/widebeam/intro-poster.jpg';
+import introEndImg from '../../../assets/widebeam/intro-end.jpg';
+import introEndPortraitImg from '../../../assets/widebeam/intro-end-portrait.jpg';
+import titleImg from '../../../assets/widebeam/title.webp';
+import { widebeam, projector } from '../../../data/widebeam';
+import WbpGate from './WbpGate.astro';
+
+const poster = await getImage({ src: introPosterImg, format: 'webp', width: 1280, quality: 70 });
+const endStill = await getImage({ src: introEndImg, format: 'webp', width: 1920, quality: 72 });
+const endPortrait = await getImage({ src: introEndPortraitImg, format: 'webp', width: 680, quality: 72 });
+// the lettering is drawn at most 560 CSS px wide (--wbp-lw): the 616 file on a 1x screen, the full 1231 on 2x and up
+const title = await Promise.all([616, 1231].map((width) => getImage({ src: titleImg, format: 'webp', width, quality: 90 })));
+const PORTRAIT = '(max-aspect-ratio: 3/5), (orientation: portrait) and (min-width: 600px) and (max-width: 1100px)';
+---
+{/* ============ 1. the car film, the gate from the start ============ */}
+<section class="wbp-s1" id="wbp-s1" aria-labelledby="wbp-name" data-wbp-s1>
+  <video
+    class="wbp-s1-film wb-intro" data-wbp-film muted playsinline preload="none" poster={poster.src} aria-hidden="true" tabindex="-1"
+    data-end={endStill.src} data-end-portrait={endPortrait.src} data-portrait={PORTRAIT}
+  >
+    <source src="/widebeam/intro-portrait-1080.mp4" type="video/mp4" media={PORTRAIT} data-wbp-tier="hi" />
+    <source src="/widebeam/intro-portrait-720.mp4" type="video/mp4" media={PORTRAIT} />
+    <source src="/widebeam/intro-720.mp4" type="video/mp4" media="(max-width: 900px)" />
+    <source src="/widebeam/intro-1080.mp4" type="video/mp4" data-wbp-tier="hi" />
+    <source src="/widebeam/intro-720.mp4" type="video/mp4" />
+  </video>
+  <div class="wbp-s1-shade"></div>
+  <div class="wbp-s1-in">
+    <div class="wbp-lock">
+      <h1 class="wbp-lock-name" id="wbp-name">
+        <img src={title[1].src} srcset={`${title[0].src} 616w, ${title[1].src} 1231w`} sizes="(max-width: 560px) min(88vw, 380px), min(560px, 46vw)" alt={widebeam.name} width="1231" height="82" fetchpriority="high" />
+      </h1>
+      <p class="wbp-eng wbp-lock-sub"><span>{projector.tagline}</span></p>
+    </div>
+    <div class="wbp-plate wbp-plate--glass">
+      <WbpGate id="wbp-s1" variant="glass" />
+    </div>
+  </div>
+  <p class="wbp-scroll-cue" aria-hidden="true">{projector.scrollCue}</p>
+</section>

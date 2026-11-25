@@ -97,6 +97,19 @@ export const widebeam = {
 export const heroLine = 'WIDER MIX. BASS DEAD CENTRE.';
 export const signature = 'Open the road.';
 
+/** The projector page (bench/widebeam-projector, Dan's approved mock-up, 2026-11-25): the words it adds. The ask, the
+ *  price, the trial length and the formats still come from askFor() / buyFor() / formatsLine() below. */
+export const projector = {
+  /** under the title lettering, on the plugin's ruled subtitle line */
+  tagline: 'The precise, gentle widener',
+  /** the line at the foot of section 1 (aria-hidden: a cue, not content) */
+  scrollCue: 'Scroll for the film ↓',
+  /** beside the Buy key on the glass card: the trial is the other way in */
+  orTry: () => `or try it free for ${widebeam.trialDays} days`,
+  /** the link in the done box that lets a visitor sign up another address */
+  change: 'Change',
+};
+
 /* ---------- formats: every string reads the flags ---------- */
 export const formatsMac = () => (widebeam.aaxReady ? 'VST3 · AU · AAX' : 'VST3 · AU');
 export const formatsWin = () => 'VST3'; // AAX is Mac only (the Windows build is VST3, plugins.ts systemReq)
