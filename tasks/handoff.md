@@ -80,6 +80,9 @@ bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro u
   (what changed from his reference, how to run it, a 9-item QA list, what we checked, the open price question). The
   cart rules were clicked through in WebKit for it (bundle in -> RevLimiter out with a note; RevFX refused with a
   note; subtotal $69.00). The merge into main waits for Gil's QA and Dan's word. Claim stays OPEN until then.
+- Dan's round-1 notes (pick page "The $69 Bundle", artifact 8yYU5gsCbcoSYKuWWbNixU, pasted 22:56): the card "Not
+  now" ("all these sections should be a part of the screen we have right now", also for Cyber Monday); value line:
+  none; the cart name stays "RevAudio bundle (all 8 plugins)". All three already as built; written into Gil's note.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 

@@ -100,6 +100,15 @@ npx playwright test tests/sale-bundle-tv.spec.ts
   - Main's CI has been red since Nov 23 for another reason: the `webServer` 60 s timeout, so no test runs.
 - **The licence worker** is live with the bundle: the `/version` stamp read `43a2105` at 20:55 Israel on Nov 25.
 
+## Settled by Dan tonight
+
+These come from his notes on the first review page, at 22:56 on Nov 25.
+- **A card under the TV:** "Not now". His note: "all these sections should be a part of the screen we have right
+  now", and the same for Cyber Monday. That is why the bundle now lives inside the TV.
+- **A value line ("$X of plugins for $69"):** none. This was asked as a Dan + Gil question; say so if you disagree.
+- **The name in the cart:** "RevAudio bundle (all 8 plugins)", as it is now. The Paddle checkout shows Paddle's own
+  product name.
+
 ## Open for you and Dan
 
 1. 🔴 **The price.**
