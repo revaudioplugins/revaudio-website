@@ -696,9 +696,9 @@ export const plugins: Plugin[] = [
     },
   },
   {
-    // OBDTUNE (2026-11-19): in the catalog for the cart only (its Paddle price; keep paddlePriceId and
-    // regularPriceUsd equal to src/data/obdtune.ts). No `library`: off the home TV until it is meant to be listed;
-    // 'in-development' keeps it off /support and /buy. The /obdtune page is its own route ([slug].astro OWN_ROUTE).
+    // OBDTUNE: on sale with the 0.9.5 Mac build (2026-11-24, Gil; Windows follows from Yoni). Keep paddlePriceId and
+    // introPriceUsd equal to src/data/obdtune.ts (paddlePriceId, priceUsd). 'live' puts it on /support, /buy/obdtune and
+    // the cart; `library` puts it on the home TV. The /obdtune page is its own route ([slug].astro OWN_ROUTE).
     slug: 'obdtune',
     name: 'OBDTUNE',
     category: 'vocal',
@@ -709,11 +709,11 @@ export const plugins: Plugin[] = [
       'It reads every note you sing, finds the key with DETECT and puts each note where it belongs, then stacks harmonies and finishes the vocal with EQ, compression, echo and reverb.',
     longPitch:
       'DETECT sets KEY and SCALE from a few sung bars. SPEED runs from a hard 1 ms snap to a 200 ms glide, HUMANIZE and FLEX keep the life in it, two harmony voices follow the scale, and the FX page adds EQ, SQUEEZE, ECHO and REVERB.',
-    status: 'in-development',
-    statusLabel: 'Free trial',
+    status: 'live',
+    statusLabel: 'Available now',
     trialOpen: true,
-    introPriceUsd: null,
-    regularPriceUsd: 15, // = obdtune.ts priceUsd (the cart's price; Paddle charges its own $15.00)
+    introPriceUsd: 15, // = obdtune.ts priceUsd (the cart's price; Paddle charges its own $15.00)
+    regularPriceUsd: null,
     paddlePriceId: 'pri_01m7vhe769c8s1rsqs3c0f0xvm',
     checkoutPaused: false,
     demoUrl: null,
@@ -726,9 +726,24 @@ export const plugins: Plugin[] = [
       { name: 'Harmony + FX', desc: 'Two scale-aware harmony voices, then EQ, SQUEEZE, ECHO and REVERB.' },
     ],
     audioDemos: [],
-    systemReq: { ...baseSystemReq, formats: 'VST3 + AU + AAX on Mac, VST3 + AAX + ARA on Windows' },
+    // = obdtune.ts formats: the Mac pkg (universal, macOS 10.13+) has no ARA yet; Windows ships OBDTUNE ARA beside it
+    systemReq: { ...baseSystemReq, os: 'Windows 10/11 64-bit, macOS 10.13+', formats: 'VST3 + AU + AAX on Mac, VST3 + AAX + ARA on Windows' },
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['vocals', 'creative'],
+      typeWord: 'pitch correction',
+      words: [
+        { w: 'Detect', o: 0.5 },
+        { w: 'Snap',   o: 0.72 },
+        { w: 'In tune', o: 1, hot: true },
+        { w: 'Human',  o: 0.72 },
+        { w: 'Stacked', o: 0.5 },
+      ],
+      blurb:
+        'Plug in the DETECT connector and it finds the key, then pulls every note in, from a hard snap to no trace. Two harmony voices and an FX page finish the vocal.',
+      alt: 'OBDTUNE plugin: a red handheld scan tool with an LCD of six tiles (TUNE, NOTES, FX, HARMONY, LIVE DATA, CUSTOM), a D-pad, BACK and POWER keys, and the DETECT plug on its cable',
+    },
   },
   {
     slug: 'the-ac',

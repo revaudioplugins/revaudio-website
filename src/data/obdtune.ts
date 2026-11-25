@@ -1,6 +1,6 @@
 /**
  * /obdtune commerce config: the one place the page reads its trial and buy state from (the src/data/widebeam.ts
- * pattern). OBDTUNE = the OBDTune repo (~/RevTune, main, 0.9.5), not released yet.
+ * pattern). OBDTUNE = the OBDTune repo (~/RevTune, main, 0.9.5): on sale from 2026-11-24, Mac first, Windows when Yoni uploads it.
  *
  * Commerce (Gil 2026-11-19, Paddle product pro_01m7vhdsxv3arw74gkb1fe9fxp):
  *   - gateWired true: the trial form posts {email, plugin, marketing} to the worker's /download/register first, which
@@ -8,8 +8,8 @@
  *     revlimiter-license 0f241f7; until /pit-lane ships the builds the email says "coming soon" per platform. The
  *     worker must be live before this page is, or the register call has no gate.
  *   - priceUsd + paddlePriceId: BUY NOW adds to the cart and opens it. plugins.ts has the same id and price (the cart
- *     only checks out slugs it finds there), [slug].astro OWN_ROUTE has 'obdtune', and the plugins.ts entry has no
- *     `library`, so OBDTUNE stays off the home TV until it is meant to be listed.
+ *     only checks out slugs it finds there), [slug].astro OWN_ROUTE has 'obdtune', and the plugins.ts entry is 'live' with a
+ *     `library` (2026-11-24): on the home TV, /plugins, /downloads, /support, /buy/obdtune and the /review picker.
  */
 import { site } from './site';
 
