@@ -42,19 +42,20 @@ export const salePhases: SalePhase[] = [
     end: '2026-12-01T00:00:00-08:00',
     pct: 40,
     code: 'CYBER40',
-    bundleUsd: 74,
+    bundleUsd: 69, // same bundle price as Black Friday (Gil 2026-11-17)
     endLabel: 'Monday, November 30, 23:59 Pacific',
     endShort: 'tonight, 23:59 PT',
   },
 ];
 
-/** The home page's "Black Friday in…" countdown runs from here until Black Friday starts
- *  (Gil 2026-11-02: a week before). Preview: ?sale=soon. */
+/** The "Black Friday in…" countdown runs on every page from here until Black Friday starts
+ *  (Gil 2026-11-02: a week before; every page, not just home: Yoni 2026-11-22). Preview: ?sale=soon. */
 export const saleSoonFrom = '2026-11-20T00:00:00-08:00';
 
 /** What the bundle holds. OBDTune comes out on Nov 22 if it isn't released by then
- *  (plan decision 3); every count on the site follows this list. */
-export const saleBundlePlugins = ['RevLimiter', 'RevFX', 'Radio Roulette', 'GAS', 'GAS 2', 'DRIFT', 'OBDTune'];
+ *  (plan decision 3); Wide Beam ($9) joined on Nov 17, same rule. Every count on the
+ *  site follows this list. */
+export const saleBundlePlugins = ['RevLimiter', 'RevFX', 'Radio Roulette', 'GAS', 'GAS 2', 'DRIFT', 'OBDTune', 'Wide Beam'];
 export const saleBundleCount = saleBundlePlugins.length;
 
 /** Where the bundle line points: the plugins page (the TV) until the bundle has its own

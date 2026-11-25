@@ -97,6 +97,9 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
   hue / saturation numbers) fades up on hover, a one-shot glitch as it tunes in (picture jump + tear, glass
   flicker, the hum bar rolls), the picked one stays lit with its name filled. Radio Roulette's picture =
   `radioroulette-hero-cut.png`, cut along its chrome (fitted superellipse corners; Yoni: "crop it precisely").
+  Rows of 4 from 900 px, 3 on a tablet, 2 on a phone; a short last row sits centred (seven since WIDE BEAM
+  joined 2026-11-24 = 4 + 3), so the cubes stay ~160 px and the names keep their full size (one row of seven
+  would be ~85 px cubes).
 - Plugin TV (`WordWall.astro`, `#plugins`; branch feat/home-library, built 2026-10-18; the user: switching
   between the plugins lives in the TV, only there, only on home). One broken CRT set on the garage wall
   (Dan 2026-10-14: "every plugin on the TV, only the screen changes, like changing channels"). The
@@ -137,12 +140,27 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     through the same gate; DRIFT to `/drift#try`) and a "Product page ->" key. On the screen both keys are
     light on the glass, inverse video like the lit ALL key (the user's pick 2026-11-04, option A of three on
     `/__wwkeys`: the Try key "is not fitting the LCD screen, I want it to feel like it's part of the LCD
-    screen"): Try = a block of the channel's phosphor with dark words, two lines; Product page = a phosphor
-    outline; no plate, depth or lift. That replaces D9 on the TV only; off the screen (high contrast, or
+    screen"): Try = a block of the channel's phosphor with dark words, two lines; no plate, depth or lift.
+    Product page and Add to cart (on paid plugins, Gil 2026-11-11) are FASTEXT (Dan 2026-11-24 on `/__wwcart`: "make
+    them special and not just like a regular button"; option 1 of five, then icon 1b of three): the coloured page keys
+    along the bottom of a teletext page, one colour per key on the remote. Each is a dark band with a teletext pixel
+    picture and its words in its colour: brass for Product page (a magnifier), oxide for Add to cart (a cart). Hover
+    fills the band with the colour, words and picture going dark; a plugin in the cart keeps its key filled ("In your
+    cart"). The runner-up, a worn manila parts tag and index card that fall off the glass when pressed, is saved for a
+    later update: `docs/worn-paper.md`. All of that replaces D9 on the TV only; off the screen (high contrast, or
     `WALL_BG = 'wood'`) they
     stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
-    stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop). No Add to cart on
-    home: buying stays on the product page.
+    stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop).
+  - Laptop layout B, "the channel strip" (Dan 2026-11-23, picked on `/__wwlayout` over two others; branch
+    `feat/home-tv-layout`, being tuned on the live bench `/?bench`): from plugin to plugin the words jumped up to 356 px
+    and the picture swung from 130 to 419 px tall. Now the plugins are one row of channels under the categories, the lit
+    plugin's words sit in a fixed column on the left (one-line name, three blurb lines, one line of words, the keys on a
+    grid) and never move, and the picture changes in a fixed stage on the right. The words change in place (they fade,
+    never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
+    it on laptops.
+    - The keys in B (Dan's bench export, 2026-11-24): row 1 = Try (one fixed width for every plugin, 16rem) with the
+      price beside it, big (Bebas 3.4rem; "Free beta" 2.4rem), at the same spot on every plugin; row 2 = Product page
+      and Add to cart, left, side by side.
     - Reading (the user's bench pick of 2026-11-01, option A of three; asked for "sexier and much more
       comfortable to understand"): bigger and bolder, still the house faces. The name in Bebas up to
       2.7rem; the type word and the five words in Oswald 600; the blurb in Inter 500 at
@@ -459,6 +477,14 @@ is, three modes, a short line for each", A picked over B): THREE GRADES. PICK ON
 a Bebas honey headline + one Inter line, all readable at once (B, the key bank with one line that changes on tap, hid two of
 the three lines).
 Why: a portrait phone shows a third of a 3:2 scene, the photo goes soft, and the props turn into hunt-the-hotspot.
+One exception, Dan's pick (the WIDE BEAM page, 2026-11-18, D8 B over the zoom-in C, picked knowing it bends this
+rule): /widebeam's intro film on an upright phone is a portrait cut that FOLLOWS the car (both headlight pairs fill the
+screen at about 1 s, then it swings to the tail lights and settles on the road). The film is that page's signature, and
+a centre crop played its best moment off screen (15 % of the headlight light on screen; the follow-cut 77 %). The rest
+of that page is still rebuilt for portrait (the dash becomes a deck of big controls, D7 B). Extended 2026-11-21 (Dan's
+pick B): an upright tablet (600-1100 px wide) gets the same follow-cut, a little softer, since the centre crop showed one
+headlight pair, cut by the edge. The film plays at 1.5x (Dan 2026-11-22, "make the car scene go faster"): about 5.4 s
+on screen instead of 8 s, the tail lights' hand-off at the same speed (intro.ts RATE).
 
 ## 8. Layout
 
@@ -589,3 +615,28 @@ came up with, or it rescales under the finger.
   the 2026-10-18 "no glitches" in one place only: the entrance's motion is unchanged, and the new picture
   locks in with a short tear about one time in three once it is in place (§4). Built as phase 4e;
   design-language §3 gained the exception (a broken object's own faults, small and rare).
+- 2026-11-21 Dan, after he heard /widebeam's sound: "remove the player". The dash's console (his pick D5 A of
+  2026-11-18: a column of the plugin's own parts beside the face at >= 1100 px, a plate under it below) loses TRACK
+  (the four demo clips went with it), its VOLUME fader and the brass engine key ("Start / Stop the engine"); the phone
+  deck loses its TRACK too. What stays: the rear-view mirror, ORIGINAL | WIDE BEAM, MONO CHECK and PRESET, and the SOUND
+  key, "Take it for a drive" and "Use your own track". The sound starts on a touch of the demo or SOUND and plays the
+  synth loop at the fader's old level (-3.9 dB); any start lights the face, as the key did. The shorter column keeps
+  the face's height: the A/B stands over MONO CHECK (the plate's own stacked pair), so the console's strap still meets
+  the face's; under the face the plate is mirror | A/B + MONO CHECK over PRESET.
+- 2026-11-22 Dan: "make the car scene go faster". The /widebeam intro film plays at 1.5x (playbackRate, the files
+  untouched): about 5.4 s instead of 8 s, the title up about 3.4 s after the film starts, and the canvas tail lights
+  after the hand-off travel 1.5x faster too (night.ts TRAVEL), so the car never slows down on the hand-off (§7).
+- 2026-11-22 Dan's page map (Black Friday; "simplify and minimize this page as much as we can ... the plugin is
+  really simple"): /widebeam is now hero, dash, ask plate, Owner's Manual, closer, footer. The glove box (#wb-presets)
+  and the stereo road (#wb-story) are cut: their components, data and scripts stay (presets.ts and story.ts are
+  null-safe in init.ts), off the page and out of the stylesheet; bringing either back is its section line and its import
+  in widebeam.astro and its @import in widebeam.css (the chapters would still go to the dash). The dash moved up, unchanged (Dan's bench the same day: both dash screens ticked, "may MOVE,
+  not change"). The manual's six chapters keep their titles (STEPS) and now drive the face to the screen (the glove
+  box's old drive, align 'face'); the note under them says "the dash above". The below-the-fold art's 3/4-screen
+  look-ahead now starts with the first scroll, so the face-still and the console's road stay out of the first view
+  now that the dash sits under the hero. This map supersedes, dated 2026-11-22: the plan's "the ask plate, right under
+  the hero" (tasks/widebeam-polish-plan-2026-11-18.md:87), "the glove box, moved up right under the dash"
+  (plan:105-107), the stereo road per D4 C and plan:108-112, the manual note "the stereo road above", and D2 B's rule
+  that the body copy keeps the two facts around the hero line (plan:9): the side below LOW FOCUS is removed at any
+  WIDTH, and MIX under 100 blends the dry back. They lived in the road's steps 01-02; where they still show is in
+  tasks/handoff.md, for Dan to decide. widebeam.astro's header called the order final after lane F: Dan changed it.

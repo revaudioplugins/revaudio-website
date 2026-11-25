@@ -44,10 +44,12 @@ import gasImg from '../assets/plugins/gas-hero.png';
    (GAS2.hose(true)), the house FLOATING shadow baked under it (53 deg, 30 / 24 / .50 + 5 / 4 / .55, rgb(12,9,6)) */
 import gas2Img from '../assets/plugins/gas2-float.png';
 import rrImg from '../assets/plugins/radioroulette-hero.png';
+import revfxImg from '../assets/plugins/revfx-hero.png';
+import widebeamImg from '../assets/plugins/widebeam-hero.png';
 import driftImg from '../assets/showcase/drift-window-init.png';
 import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
-import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, type TvAction } from '../data/library';
+import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, cartAction, type TvAction } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
 
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
@@ -139,6 +141,8 @@ const WINDOWS: Record<string, { img: ImageMetadata; portrait?: boolean; float?: 
   revlimiter: { img: rlImg },
   gas: { img: gasImg, portrait: true },
   gas2: { img: gas2Img, portrait: true, float: true }, // float: the object alone, its own shadow, no frame round it
+  revfx: { img: revfxImg },
+  widebeam: { img: widebeamImg },
   'radio-roulette': { img: rrImg },
 };
 type Item = {
@@ -171,6 +175,7 @@ const items: Item[] = tvPlugins()
     blurb: p.library!.blurb,
     price: priceLine(p),
     action: tryAction(p),
+    cart: cartAction(p),
     cats: catsOf(p),
   }));
 const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
@@ -194,6 +199,8 @@ const first = items[0]?.slug ?? '';
     <div class="ww-screen" aria-hidden="true"><div class="ww-screen-glow"></div><div class="ww-screen-was"></div></div>
     <div class="ww-screen-fx" aria-hidden="true"></div>
     <div class="ww-frame" aria-hidden="true"><i class="ww-frame-glass"></i><span class="ww-frame-led"></span></div>
+    {/* anything shown on the glass over the menu (the home page's opening screen, TempHero.astro) */}
+    <slot />
 
     {/* the on-screen menu: the categories (buttons; shown once the script runs, they do nothing without it) */}
     <div class="ww-osd">
@@ -301,7 +308,7 @@ const first = items[0]?.slug ?? '';
               ))}
             </p>
             <div class="ww-buy">
-              {it.price && <span class="ww-price">{it.price}</span>}
+              {it.price && <span class:list={['ww-price', { 'is-long': it.price.length > 5 }]}>{it.price}</span>}
               {/* the button family (buttons.css, D9 2026-11-01): Try = brass (honey when free), Product page = ghost;
                   on the screen both are restyled as light on the glass (option A, 2026-11-04, in the CSS) */}
               {it.action && (it.action.href ? (
@@ -315,6 +322,10 @@ const first = items[0]?.slug ?? '';
                   {it.action.sub && <span class="rv-btn__sub">{it.action.sub}</span>}
                 </button>
               ))}
+              {it.cart && (
+                <button type="button" class="ww-cart rv-btn rv-btn--ghost rv-btn--sm" data-add-to-cart data-cart-label
+                  data-slug={it.slug} data-name={it.name} data-price={it.cart.price}>Add to cart</button>
+              )}
               <a class="ww-more rv-btn rv-btn--ghost rv-btn--sm" href={`/${it.slug}`}><span class="sr-only">{it.name} </span>Product page <span aria-hidden="true">&rarr;</span></a>
             </div>
           </div>
@@ -1267,6 +1278,127 @@ const first = items[0]?.slug ?? '';
       if (kind && glOk()) glitch(kind, false);
     });
 
+    /* The live bench (?bench, dev only; Dan 2026-11-23: "a bench to move things around, resize"): the harness styles
+       ONE element, but each plugin has its own copy of every part (a panel per plugin, a strip row per plugin, a key
+       per category), so what is moved or resized on one is copied to the same part of all the others, and the words
+       stay put from channel to channel. Only the harness's own values travel (it sets them !important; the channel
+       change's GSAP transform / opacity are not). Each part also gets a stable id first: the harness names what it
+       saves by the shortest unique selector, which otherwise carried the lit plugin's is-active / is-lit and missed on
+       the next load. The build drops this block (import.meta.env.DEV). */
+    if (import.meta.env.DEV && new URLSearchParams(location.search).has('bench')) {
+      const KINDS: [string, string][] = [['.ww-panel', 'wwPanel'], ['.ww-item', 'wwItem'], ['.ww-cat', 'wwCat']];
+      const GROUP = KINDS.map((k) => k[0]).join(', ');
+      const relPath = (el: Element, root: Element) => {
+        const path: string[] = [];
+        for (let n: Element | null = el; n && n !== root; n = n.parentElement) {
+          const c = n.classList[0];
+          if (!c || c.startsWith('bench')) return null;
+          path.unshift('.' + CSS.escape(c));
+        }
+        return path.length ? `:scope > ${path.join(' > ')}` : ':scope';
+      };
+      // stable ids: <kind>-<slug>-<class path>, only where the part is the one of its kind in its group
+      KINDS.forEach(([k, data]) => wall.querySelectorAll<HTMLElement>(k).forEach((root) => {
+        const key = `wwb-${k.slice(4)}-${root.dataset[data]}`;
+        if (!root.id) root.id = key;
+        root.querySelectorAll<HTMLElement>('[class]').forEach((el) => {
+          const path = relPath(el, root);
+          if (el.id || !path || root.querySelectorAll(path).length !== 1) return;
+          el.id = `${key}-${path.replace(/:scope > |\.|\\/g, '').replace(/ > /g, '-')}`;
+        });
+      }));
+      const own = (el: HTMLElement) => {
+        const o: Record<string, string> = {};
+        for (let i = 0; i < el.style.length; i++) {
+          const p = el.style[i];
+          if (el.style.getPropertyPriority(p) === 'important') o[p] = el.style.getPropertyValue(p);
+        }
+        return o;
+      };
+      const seen = new WeakMap<Element, string>();
+      const mirror = (src: HTMLElement) => {
+        const root = src.closest(GROUP);
+        const path = root && relPath(src, root);
+        if (!root || !path) return;
+        const want = own(src);
+        const key = JSON.stringify(want);
+        const kind = KINDS.find(([k]) => root.matches(k))![0];
+        wall.querySelectorAll(kind).forEach((other) => {
+          if (other === root) return;
+          const to = (path === ':scope' ? other : other.querySelector(path)) as HTMLElement | null;
+          if (!to) return;
+          const has = own(to);
+          for (const p in has) if (!(p in want)) to.style.removeProperty(p);
+          for (const p in want) if (has[p] !== want[p]) to.style.setProperty(p, want[p], 'important');
+          seen.set(to, key);
+        });
+        seen.set(src, key);
+      };
+      const mo = new MutationObserver((recs) => {
+        const changed = new Set<HTMLElement>();
+        recs.forEach((r) => {
+          const el = r.target as HTMLElement;
+          if (seen.get(el) !== JSON.stringify(own(el))) changed.add(el);
+        });
+        changed.forEach(mirror);
+        mo.takeRecords(); // our own copies: never mirrored back
+      });
+      mo.observe(wall, { subtree: true, attributes: true, attributeFilter: ['style'] });
+      // the harness may have restored its saved work before the ids above existed: put it back on, then mirror it
+      try {
+        const saved = JSON.parse(localStorage.getItem('bench:index') || '{}') as Record<string, { props?: Record<string, string> }>;
+        Object.entries(saved).forEach(([sel, d]) => {
+          let el: HTMLElement | null = null;
+          try { el = wall.querySelector<HTMLElement>(sel); } catch { /* a selector this page can't parse */ }
+          if (el) Object.entries(d.props ?? {}).forEach(([p, v]) => el!.style.setProperty(p, v, 'important'));
+        });
+      } catch { /* no saved work */ }
+      // an unchanged value fires no mutation: copy what is on now by hand
+      wall.querySelectorAll<HTMLElement>('[style]').forEach((el) => {
+        if (el.closest(GROUP) && Object.keys(own(el)).length) mirror(el);
+      });
+
+      /* The grid (Dan 2026-11-24: "move stuff around and resize freely and on a grid"). The harness's SNAP (G) moves a
+         part in 8 px steps from where it sits and sizes it in 8 px steps, so the grid drawn here starts at the picked
+         part's own corner (as if it had not been moved): its edges land on the lines. Nothing picked: the grid starts
+         at the TV's content corner. Lines every 8 px, stronger every 32. Shown only while SNAP is on; `?bench&grid`
+         turns SNAP on at load. Free movement = SNAP off (G again). */
+      const grid = document.createElement('div');
+      grid.setAttribute('aria-hidden', 'true');
+      grid.style.cssText = 'position:fixed;inset:0;z-index:2147482990;pointer-events:none;display:none;'
+        + 'background-image:linear-gradient(to right, rgb(120 220 255 / .3) 1px, transparent 1px),linear-gradient(to bottom, rgb(120 220 255 / .3) 1px, transparent 1px),'
+        + 'linear-gradient(to right, rgb(120 220 255 / .1) 1px, transparent 1px),linear-gradient(to bottom, rgb(120 220 255 / .1) 1px, transparent 1px);'
+        + 'background-size:32px 32px,32px 32px,8px 8px,8px 8px;';
+      document.body.appendChild(grid);
+      if (new URLSearchParams(location.search).has('grid')) {
+        const on = window.setInterval(() => {
+          const b = document.querySelector<HTMLElement>('.bench-b-snap');
+          if (!b) return;
+          window.clearInterval(on);
+          if (!b.classList.contains('bench-btn-on')) b.click();
+        }, 200);
+      }
+      window.setInterval(() => {
+        const snapOn = !!document.querySelector('.bench-b-snap.bench-btn-on');
+        grid.style.display = snapOn ? 'block' : 'none';
+        if (!snapOn) return;
+        let ox: number, oy: number;
+        const path = document.querySelector('.bench-selpath')?.textContent?.trim();
+        let picked: HTMLElement | null = null;
+        try { picked = path && document.querySelector('.bench-sel-box')?.getAttribute('style')?.includes('block') ? document.querySelector<HTMLElement>(path) : null; } catch { picked = null; }
+        if (picked) {
+          const r = picked.getBoundingClientRect();
+          const [tx, ty] = (picked.style.getPropertyValue('translate') || '0 0').split(/\s+/).map((v) => parseFloat(v) || 0);
+          ox = r.left - tx; oy = r.top - (ty || 0);
+        } else {
+          const r = wall.getBoundingClientRect(), cs = getComputedStyle(wall);
+          ox = r.left + parseFloat(cs.paddingLeft); oy = r.top + parseFloat(cs.paddingTop);
+        }
+        const pos = `${ox}px ${oy}px`;
+        grid.style.backgroundPosition = [pos, pos, pos, pos].join(',');
+      }, 120);
+    }
+
     /* One screen: lock the scroll onto the TV (Dan 2026-10-14). Only after the
        visitor's own scrolling (wheel, a finger that moved, scroll keys; never a
        script's scrollTo, an anchor jump or the bench), once it has gone idle
@@ -1285,6 +1417,8 @@ const first = items[0]?.slug ?? '';
         if (lenis?.isScrolling === 'smooth') { later(); return; }
         armed = false;
         if (!lenis || wall.dataset.wwBg !== 'screen' || document.documentElement.classList.contains('hc')) return;
+        // the garage's walk lands itself on the TV, at its own lock (HomeOpening.astro)
+        if (document.documentElement.classList.contains('ho-on') && !document.documentElement.classList.contains('ho-locked')) return;
         // the page itself did not move: a sideways swipe, Space on a button, a wheel inside an open drawer
         const moved = window.scrollY - startY;
         if (Math.abs(moved) < 1 || document.querySelector('dialog[open]')) return;
@@ -1724,10 +1858,10 @@ const first = items[0]?.slug ?? '';
   /* .ww-try + .ww-more: the button family's look (buttons.css, D9 2026-11-01); placement only here. On the screen they
      are light on the glass instead (Dan 2026-11-04, option A of /__wwkeys: the Try key "is not fitting the LCD screen,
      I want it to feel like it's part of the LCD screen"): inverse video, the lit ALL key's language. Try = a block of
-     the channel's phosphor with dark words, Product page = a phosphor outline; no plate, depth or lift. Hover
-     brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
+     the channel's phosphor with dark words (Product page + Add to cart: Fastext, below); no plate, depth or lift.
+     Hover brightens, a press dims like the tube. High contrast (html.hc) and the wood wall keep the button family. */
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy { gap: 0.6rem 1rem; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more) {
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart) {
     min-height: 0;
     background: none;
     font-weight: 400;
@@ -1737,8 +1871,8 @@ const first = items[0]?.slug ?? '';
     transform: none;
     transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 120ms ease;
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):is(:hover, :active, .is-pressed) { transform: none; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart):is(:hover, :active, .is-pressed) { transform: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-try, .ww-more, .ww-cart):focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 4px; }
   :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-try {
     flex-direction: column;
     align-items: flex-start;
@@ -1772,24 +1906,55 @@ const first = items[0]?.slug ?? '';
     box-shadow: 0 0 0 1px var(--ww-ink-hot), 0 0 10px var(--ww-glow);
     transition-duration: 60ms;
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more {
-    padding: 0.6rem 0.9rem 0.5rem;
-    border-radius: 3px;
-    color: var(--ww-ink);
+  /* Product page + Add to cart on the screen: FASTEXT (Dan 2026-11-24, /__wwcart: "make them special and not just like
+     a regular button"; picked option 1 of five, then icon 1b of three). The coloured page keys along the bottom of a
+     teletext page, one colour per key on the remote: each key is a dark band with a teletext pixel picture in its
+     colour, brass for Product page (a magnifier: look closer), oxide for Add to cart (a cart). Hover fills the band
+     with the colour, the words and picture go dark (the lit key's inverse video); a key whose plugin is in the cart
+     stays filled ("In your cart", Cart.astro). One pixel = 0.125rem. Not color-mix (older Safari): the glows are rgb. */
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart) {
+    --fx: var(--brass-bright);
+    --fx-glow: rgb(232 200 120 / 0.45);
+    gap: 0.6rem;
+    padding: 0.42rem 0.85rem 0.36rem 0.6rem;
+    border-radius: 0;
+    background-color: hsl(var(--ww-ch-h) 35% 5% / 0.82);
+    box-shadow: inset 0 0 0 1px hsl(var(--ww-ch-h) 30% 30% / 0.35);
+    color: var(--fx);
     font-family: var(--font-display);
-    font-size: 1.32rem;
+    font-size: 1.22rem;
     line-height: 0.9;
-    letter-spacing: 0.06em;
-    text-shadow: 0 0 9px var(--ww-glow);
-    box-shadow: inset 0 0 0 1.5px var(--ww-ink), inset 0 0 14px var(--ww-glow-faint), 0 0 14px var(--ww-glow-soft);
+    letter-spacing: 0.07em;
+    text-shadow: 0 0 8px var(--fx-glow);
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { font-family: var(--font-body); font-weight: 700; font-size: 0.72em; vertical-align: 0.08em; }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:hover {
-    color: var(--ww-ink-hot);
-    background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.14);
-    box-shadow: inset 0 0 0 1.5px var(--ww-ink-hot), inset 0 0 18px var(--ww-glow-soft), 0 0 20px var(--ww-glow);
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-cart { --fx: var(--oxide-text); --fx-glow: rgb(212 98 42 / 0.45); }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more [aria-hidden] { display: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart)::before {
+    content: '';
+    flex: none;
+    background: var(--fx);
+    -webkit-mask: var(--fx-icon) center / contain no-repeat;
+    mask: var(--fx-icon) center / contain no-repeat;
+    filter: drop-shadow(0 0 4px var(--fx-glow));
   }
-  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more:is(:active, .is-pressed) { background-color: hsl(var(--ww-ch-h) var(--ww-gs) 58% / 0.28); transition-duration: 60ms; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-more::before {
+    --fx-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Crect x='2' y='0' width='1.02' height='1.02'/%3E%3Crect x='3' y='0' width='1.02' height='1.02'/%3E%3Crect x='4' y='0' width='1.02' height='1.02'/%3E%3Crect x='5' y='0' width='1.02' height='1.02'/%3E%3Crect x='1' y='1' width='1.02' height='1.02'/%3E%3Crect x='6' y='1' width='1.02' height='1.02'/%3E%3Crect x='0' y='2' width='1.02' height='1.02'/%3E%3Crect x='3' y='2' width='1.02' height='1.02'/%3E%3Crect x='7' y='2' width='1.02' height='1.02'/%3E%3Crect x='0' y='3' width='1.02' height='1.02'/%3E%3Crect x='2' y='3' width='1.02' height='1.02'/%3E%3Crect x='7' y='3' width='1.02' height='1.02'/%3E%3Crect x='0' y='4' width='1.02' height='1.02'/%3E%3Crect x='7' y='4' width='1.02' height='1.02'/%3E%3Crect x='0' y='5' width='1.02' height='1.02'/%3E%3Crect x='7' y='5' width='1.02' height='1.02'/%3E%3Crect x='1' y='6' width='1.02' height='1.02'/%3E%3Crect x='6' y='6' width='1.02' height='1.02'/%3E%3Crect x='7' y='6' width='1.02' height='1.02'/%3E%3Crect x='2' y='7' width='1.02' height='1.02'/%3E%3Crect x='3' y='7' width='1.02' height='1.02'/%3E%3Crect x='4' y='7' width='1.02' height='1.02'/%3E%3Crect x='5' y='7' width='1.02' height='1.02'/%3E%3Crect x='7' y='7' width='1.02' height='1.02'/%3E%3Crect x='8' y='7' width='1.02' height='1.02'/%3E%3Crect x='7' y='8' width='1.02' height='1.02'/%3E%3Crect x='8' y='8' width='1.02' height='1.02'/%3E%3Crect x='9' y='8' width='1.02' height='1.02'/%3E%3Crect x='8' y='9' width='1.02' height='1.02'/%3E%3Crect x='9' y='9' width='1.02' height='1.02'/%3E%3C/svg%3E");
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy .ww-cart::before {
+    --fx-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='1.02' height='1.02'/%3E%3Crect x='1' y='0' width='1.02' height='1.02'/%3E%3Crect x='1' y='1' width='1.02' height='1.02'/%3E%3Crect x='1' y='2' width='1.02' height='1.02'/%3E%3Crect x='2' y='2' width='1.02' height='1.02'/%3E%3Crect x='3' y='2' width='1.02' height='1.02'/%3E%3Crect x='4' y='2' width='1.02' height='1.02'/%3E%3Crect x='5' y='2' width='1.02' height='1.02'/%3E%3Crect x='6' y='2' width='1.02' height='1.02'/%3E%3Crect x='7' y='2' width='1.02' height='1.02'/%3E%3Crect x='8' y='2' width='1.02' height='1.02'/%3E%3Crect x='9' y='2' width='1.02' height='1.02'/%3E%3Crect x='10' y='2' width='1.02' height='1.02'/%3E%3Crect x='11' y='2' width='1.02' height='1.02'/%3E%3Crect x='2' y='3' width='1.02' height='1.02'/%3E%3Crect x='3' y='3' width='1.02' height='1.02'/%3E%3Crect x='4' y='3' width='1.02' height='1.02'/%3E%3Crect x='5' y='3' width='1.02' height='1.02'/%3E%3Crect x='6' y='3' width='1.02' height='1.02'/%3E%3Crect x='7' y='3' width='1.02' height='1.02'/%3E%3Crect x='8' y='3' width='1.02' height='1.02'/%3E%3Crect x='9' y='3' width='1.02' height='1.02'/%3E%3Crect x='10' y='3' width='1.02' height='1.02'/%3E%3Crect x='11' y='3' width='1.02' height='1.02'/%3E%3Crect x='2' y='4' width='1.02' height='1.02'/%3E%3Crect x='3' y='4' width='1.02' height='1.02'/%3E%3Crect x='4' y='4' width='1.02' height='1.02'/%3E%3Crect x='5' y='4' width='1.02' height='1.02'/%3E%3Crect x='6' y='4' width='1.02' height='1.02'/%3E%3Crect x='7' y='4' width='1.02' height='1.02'/%3E%3Crect x='8' y='4' width='1.02' height='1.02'/%3E%3Crect x='9' y='4' width='1.02' height='1.02'/%3E%3Crect x='10' y='4' width='1.02' height='1.02'/%3E%3Crect x='2' y='5' width='1.02' height='1.02'/%3E%3Crect x='3' y='5' width='1.02' height='1.02'/%3E%3Crect x='4' y='5' width='1.02' height='1.02'/%3E%3Crect x='5' y='5' width='1.02' height='1.02'/%3E%3Crect x='6' y='5' width='1.02' height='1.02'/%3E%3Crect x='7' y='5' width='1.02' height='1.02'/%3E%3Crect x='8' y='5' width='1.02' height='1.02'/%3E%3Crect x='9' y='5' width='1.02' height='1.02'/%3E%3Crect x='2' y='6' width='1.02' height='1.02'/%3E%3Crect x='2' y='7' width='1.02' height='1.02'/%3E%3Crect x='3' y='7' width='1.02' height='1.02'/%3E%3Crect x='4' y='7' width='1.02' height='1.02'/%3E%3Crect x='5' y='7' width='1.02' height='1.02'/%3E%3Crect x='6' y='7' width='1.02' height='1.02'/%3E%3Crect x='7' y='7' width='1.02' height='1.02'/%3E%3Crect x='8' y='7' width='1.02' height='1.02'/%3E%3Crect x='9' y='7' width='1.02' height='1.02'/%3E%3Crect x='10' y='7' width='1.02' height='1.02'/%3E%3Crect x='3' y='8' width='1.02' height='1.02'/%3E%3Crect x='4' y='8' width='1.02' height='1.02'/%3E%3Crect x='8' y='8' width='1.02' height='1.02'/%3E%3Crect x='9' y='8' width='1.02' height='1.02'/%3E%3Crect x='3' y='9' width='1.02' height='1.02'/%3E%3Crect x='4' y='9' width='1.02' height='1.02'/%3E%3Crect x='8' y='9' width='1.02' height='1.02'/%3E%3Crect x='9' y='9' width='1.02' height='1.02'/%3E%3C/svg%3E");
+    width: 1.5rem;
+    height: 1.25rem;
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:hover, .is-in-cart) {
+    background-color: var(--fx);
+    color: var(--ww-ink-on);
+    text-shadow: none;
+    box-shadow: 0 0 18px var(--fx-glow);
+  }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:hover, .is-in-cart)::before { background: var(--ww-ink-on); filter: none; }
+  :global(html:not(.hc)) .ww[data-ww-bg='screen'] .ww-panel .ww-buy :is(.ww-more, .ww-cart):is(:active, .is-pressed) { filter: brightness(0.8); transition-duration: 60ms; }
 
   /* ==========================================================================
      INK. On the wood: brass, the lit one oxide (the old stencil). On the
@@ -1848,7 +2013,7 @@ const first = items[0]?.slug ?? '';
      saturation (unitless %) from the plugin's own UI: RevLimiter amber (its
      gauge + LCDs; kept well clear of race-red, the homepage's one red is
      .hh-redline), GAS brass gold, GAS 2 its pump's oxide red-orange, Radio Roulette the dial glass's pale warm
-     cream, DRIFT violet (its screen stays /drift's own tube). A plugin with no
+     cream, DRIFT violet (its screen stays /drift's own tube), RevFX its rack's neon magenta, WIDE BEAM its LCDs' blue. A plugin with no
      channel here plays in neutral cream. */
   .ww {
     --ww-ch-revlimiter-h: 26;      --ww-ch-revlimiter-s: 78;
@@ -1856,6 +2021,8 @@ const first = items[0]?.slug ?? '';
     --ww-ch-gas2-h: 14;            --ww-ch-gas2-s: 58;
     --ww-ch-radio-roulette-h: 38;  --ww-ch-radio-roulette-s: 28;
     --ww-ch-drift-h: 280;          --ww-ch-drift-s: 70;
+    --ww-ch-revfx-h: 305;          --ww-ch-revfx-s: 72;
+    --ww-ch-widebeam-h: 205;       --ww-ch-widebeam-s: 60;
     --ww-on-h: 38;
     --ww-on-s: 28;
   }
@@ -1865,11 +2032,15 @@ const first = items[0]?.slug ?? '';
   .ww-panel[data-ww-panel='gas2'] { --ww-ch-h: var(--ww-ch-gas2-h); --ww-ch-s: var(--ww-ch-gas2-s); }
   .ww-panel[data-ww-panel='radio-roulette'] { --ww-ch-h: var(--ww-ch-radio-roulette-h); --ww-ch-s: var(--ww-ch-radio-roulette-s); }
   .ww-panel[data-ww-panel='drift'] { --ww-ch-h: var(--ww-ch-drift-h); --ww-ch-s: var(--ww-ch-drift-s); }
+  .ww-panel[data-ww-panel='revfx'] { --ww-ch-h: var(--ww-ch-revfx-h); --ww-ch-s: var(--ww-ch-revfx-s); }
+  .ww-panel[data-ww-panel='widebeam'] { --ww-ch-h: var(--ww-ch-widebeam-h); --ww-ch-s: var(--ww-ch-widebeam-s); }
   .ww[data-ww-on='revlimiter'] { --ww-on-h: var(--ww-ch-revlimiter-h); --ww-on-s: var(--ww-ch-revlimiter-s); }
   .ww[data-ww-on='gas'] { --ww-on-h: var(--ww-ch-gas-h); --ww-on-s: var(--ww-ch-gas-s); }
   .ww[data-ww-on='gas2'] { --ww-on-h: var(--ww-ch-gas2-h); --ww-on-s: var(--ww-ch-gas2-s); }
   .ww[data-ww-on='radio-roulette'] { --ww-on-h: var(--ww-ch-radio-roulette-h); --ww-on-s: var(--ww-ch-radio-roulette-s); }
   .ww[data-ww-on='drift'] { --ww-on-h: var(--ww-ch-drift-h); --ww-on-s: var(--ww-ch-drift-s); }
+  .ww[data-ww-on='revfx'] { --ww-on-h: var(--ww-ch-revfx-h); --ww-on-s: var(--ww-ch-revfx-s); }
+  .ww[data-ww-on='widebeam'] { --ww-on-h: var(--ww-ch-widebeam-h); --ww-on-s: var(--ww-ch-widebeam-s); }
 
   /* ---- THE SCREEN (WALL_BG 'screen') --------------------------------------
      /drift's digital screen (the keep-it TV's phosphor tube, .d-crt.d-keep-
@@ -2316,4 +2487,78 @@ const first = items[0]?.slug ?? '';
   :global(html.hc) .ww-row.is-lit .ww-name { color: var(--oxide-text); }
   :global(html.hc) .ww-thumb { opacity: 1; }
   :global(html.hc) :is(.ww-tag, .ww-tag-ask, .ww-cat, .ww-pname, .ww-blurb, .ww-pw, .ww-price) { text-shadow: none; }
+</style>
+
+<style is:global>
+  /* ==========================================================================
+     LAYOUT B, "the channel strip" (Dan 2026-11-23, picked on /__wwlayout over A and C: from plugin to plugin the
+     words jumped up to 356 px and the picture swung from 130 to 419 px tall). Laptop only (>= 861 px); the phone keeps
+     its one pane at a time. The plugins are one row of channels under the categories; the lit plugin's words sit in a
+     fixed column on the left, each text slot a set size (one-line name, three blurb lines, one line of words, the keys
+     on a grid), so they never move; the picture changes in a fixed stage on the right, as big as the stage allows.
+     The words change in place (they fade, never travel). Global, as the bench injected it, so it is exactly the B Dan
+     picked; Dan is tuning it next on the live bench (?bench), then it folds into the rules above.
+     ========================================================================== */
+  @media (min-width: 861px) {
+
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] { --ww-mv-text-px: 0 !important; --ww-mv-out-px: 0 !important; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-osd { flex-wrap: nowrap; gap: .4rem 1.1rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'][data-ww-lib='on'] .ww-tag-ask { font-size: clamp(1.25rem, 1.9vw, 1.6rem); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-cats { flex-wrap: nowrap; gap: .1rem .15rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-cat { font-size: clamp(1.1rem, 1.75vw, 1.5rem); padding: .28rem .5rem .14rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel { align-content: stretch; align-items: stretch; align-self: start; grid-template-rows: minmax(0, 1fr); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui { grid-area: ui; container-type: size; display: grid; place-items: center; min-width: 0; min-height: 0; height: 100%; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui img,
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui video {
+  width: min(100cqw, calc(100cqh * var(--ww-ar))) !important; height: auto !important;
+  max-width: none !important; max-height: none !important; aspect-ratio: var(--ww-ar) !important;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { grid-area: info; align-self: center; max-width: none; min-width: 0; display: grid; gap: .55rem; justify-items: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-phead { display: grid; gap: .35rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-pname { font-size: var(--lay-nm) !important; line-height: .95; white-space: nowrap; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ptype { font-size: .82rem; white-space: nowrap; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-blurb {
+  white-space: pre-line;
+  font-size: var(--lay-bl, 1rem); line-height: 1.42; height: calc(var(--lay-bl-lines) * 1.42em); overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lay-bl-lines);
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-pwords { width: 100%; font-size: .86rem; line-height: 1.4; height: 1.4em; white-space: nowrap; overflow: hidden; }
+/* the keys (Dan's bench export, 2026-11-24, "apply this composition to all plugins"): Try at the column's edge, the
+   price big beside it, Product page + Add to cart under Try with a small gap. Every plugin's Try is the same width
+   (--lay-try-w, the widest label: RevFX's) so the price sits at one spot on every channel and never runs into a wider
+   key; a long price word ("Free beta") is set smaller so it stays inside the column at 1141. A free plugin just has
+   no Add to cart. */
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-buy {
+  display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); grid-template-areas: 'try try .' 'more cart .';
+  justify-content: stretch; align-items: center; margin-top: .2rem;
+  column-gap: .5rem !important; /* Dan's 8 px between Product page and Add to cart; the scoped 1rem out-ranks this block */
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-try { grid-area: try; justify-self: start; width: var(--lay-try-w); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price {
+  grid-row: 1; grid-column: 1 / -1; justify-self: start; margin-left: calc(var(--lay-try-w) + 1.25rem);
+  font-size: 3.4rem; line-height: .8; white-space: nowrap;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price.is-long { font-size: 2.4rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-more { grid-area: more; justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-cart { grid-area: cart; justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] {
+  grid-template-columns: minmax(0, 1fr); grid-template-areas: 'osd' 'list' 'panel';
+  --lay-strip: clamp(4.6rem, 12vh, 6.4rem); --lay-nm: clamp(2.2rem, 3.2vw, 3rem); --lay-bl-lines: 3;
+  --lay-try-w: 16rem;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { gap: .45rem; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list { container-type: normal; height: var(--lay-strip); grid-template-columns: repeat(var(--ww-rows, 6), minmax(0, 1fr)); grid-auto-flow: column; align-content: stretch; gap: 0 clamp(.5rem, 1.2vw, 1rem); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-item { min-width: 0; min-height: 0; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-row { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; row-gap: .3rem; padding: .3rem .25rem; --ww-thumb-col: auto; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb { height: calc(var(--lay-strip) - 2.4rem); width: auto; min-height: 0; aspect-ratio: 16 / 10; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb img, html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb.is-tall img { width: auto !important; height: auto !important; max-width: 100%; max-height: calc(var(--lay-strip) - 2.4rem) !important; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-rtext { justify-items: center; text-align: center; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-name { font-size: clamp(1rem, 1.5vw, 1.4rem) !important; -webkit-text-stroke-width: 1px; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-type { display: none; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel {
+  height: calc(var(--ww-main) - var(--lay-strip) - var(--ww-row-gap));
+  grid-template-columns: minmax(0, clamp(26rem, 34vw, 28rem)) minmax(0, 1fr); grid-template-areas: 'info ui';
+  column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+  }
 </style>

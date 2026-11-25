@@ -1,6 +1,513 @@
+## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
+
+Claim: CLOSED 2026-11-24 `revaudio-cc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `widebeam`), `src/pages/review.astro`, `DESIGN.md` (Review picker bullet only), this entry.
+- Yoni: "add widebeam to the review section, same rules" (= the GAS 2 / RevFX steps).
+- WIDE BEAM = the home TV's picture (`widebeam-hero.png`) and channel colour (205 / 60). Price: plugins.ts has it `live` at $9, so the plain
+  rule asks "At $9, WIDE BEAM is…" (no revfx.ts-style special case).
+- Picker: seven no longer fit one row (~85 px cubes), so the grid became flex rows of `--cols` (4 from 900 px, 3 from 641, 2 on phones) with a
+  short last row centred: 4 + 3, 3 + 3 + 1, 2 + 2 + 2 + 1. Names back to full size at 4 across (the 6-across step-down is gone). Any count works.
+- Worker: nothing to do. `REVIEW_PLUGINS` in the RevLimiter worker has `widebeam` since `f06a0b0` / `0f241f7`; the latest deploy stamp `206f618`
+  covers worker HEAD `e00c984`. Not live-probed (the auto-mode classifier blocked the empty-form POST twice) - the first real WIDE BEAM
+  review settles it ("bad request" = the live worker lacks the slug).
+- Checks (local build, Chromium): `npm run build` green; at 390 / 640 / 641 / 760 / 899 / 900 / 1280 / 1920 px: 7 cubes, square, every picture
+  loaded, every name inside its cube, rows as above, no sideways scroll; price question RevLimiter $49, Radio Roulette $19, RevFX $19,
+  WIDE BEAM $9, DRIFT / GAS / GAS 2 hidden; WIDE BEAM lights blue when picked; no page errors.
+- Next: one real WIDE BEAM review -> code mail + team copy "Review: WIDE BEAM n/10".
+
+## 2026-11-22 — The home TV's layout: the words hold still, only the plugin changes (Claude Code `RevAudio homepage redesign [a65e39]`, Dan's Mac) — branch `feat/home-tv-layout` (worktree `.claude/worktrees/tv-layout`, from main `2851c19`), NOT on main
+
+Claim: OPEN 2026-11-22. Files: `tools/wwbench/wwlayout.html` (new, dev only), `tools/wwbench/integration.mjs` (the
+`/__wwlayout` route), `src/components/WordWall.astro` (B's CSS block + the dev-only bench mirror), `tools/wwbench/wwcart.html` (new, dev only), `DESIGN.md` (§4 TV), `docs/worn-paper.md` (new), this entry.
+- Dan: on the live TV, from plugin to plugin "the gap is really big", and "the words will stay in the same place and
+  just the plugin will change". Asked: brainstorm + bench; composition, placements, fonts, not a full redesign.
+- Measured on revaudio.net (Chromium): across the 6 plugins the lit name moves up to 356 px (1312x734) / 223 px
+  (1141x636); RevLimiter's window is 130 px tall beside GAS 2's 419; the TV is 70 / 63 px taller than the screen, so
+  its bottom bezel is cut.
+- Bench `/__wwlayout` (npm run dev): today + A (list | words | picture), B (a channel strip under the categories, words
+  left, picture right; Claude's pick), C (list | picture | words), each a <style> in a frame of the real page. In A/B/C
+  every text slot has a set size: 0 px movement at both laptop sizes and in a one-plugin category, and the TV fits.
+- Not done: the phone (round 2); the garage's TV captures (`tvcap.mjs`) go stale once a layout is baked.
+- 2026-11-23: Dan picked **B** ("b is good but we need to work on it") and asked for "a bench to move things around,
+  resize" for the reading and the buttons. B's CSS is now in `WordWall.astro` (an `is:global` block at the end, exactly
+  the CSS the layout bench injected; laptop only), so `/__wwlayout` is spent (its frames now stack A / C on top of B).
+  The live bench is `/?bench` (the shared harness): a dev-only block in the TV's script gives every part a stable id
+  (`wwb-<panel|item|cat>-<slug>-<class path>`; the harness had saved selectors carrying `is-active` / `is-lit`, which
+  missed on the next load) and copies whatever the harness sets on one plugin's part to the same part of the other
+  five, live and after a reload. Checked in Chromium: a move and a resize land on all six, survive a reload with
+  another plugin lit. Next: Dan's EXPORT, then "apply bench" (each `#wwb-...` selector becomes its generic
+  `.ww-panel .ww-...` rule, folded into B's block).
+- 2026-11-24: Dan: Add to cart and Product page should be "special and not just like a regular button", five options
+  from the brand. Bench `/__wwcart` (dev only, `tools/wwbench/wwcart.html`): today + 1 Fastext (teletext page keys),
+  2 VHS screen (▶ / REC dot), 3 Dashboard (turn-signal arrow + an odometer that rolls 0 -> 1 in the cart; Claude's pick),
+  4 Label tape (embossed tape on the glass), 5 Parts tag (manila tag + index card, masking tape). Each a <style> in a
+  frame of the real page (B); a cart switch shows "In your cart" the way Cart.astro does (class + label, no real cart).
+  Checked in Chromium at 1312x734: every option at rest, hovered, in the cart, and on a free plugin (Product page only).
+- 2026-11-24, round 2: Dan liked 5 Parts tag and 1 Fastext, "polish both". `/__wwcart` now shows: the tag as worn
+  paper (SVG grain, a rough edge cut by a displacement map, stains, a crease, the GAS 2 postcards' tape.webp inlined)
+  that sways on hover and, pressed, falls off the glass with paper physics (a copy in a layer over the page; the real
+  key re-sticks, Add to cart as "In your cart"; the bench holds the Product page link); Fastext with pixel icons, a
+  cart and three Product page icons (1a page, 1b magnifier, 1c tiny plugin, Claude's pick). Checked in Chromium: the
+  fall, the re-stick, the held link, no layer left behind. To bake: the fall needs the clone-in-a-layer code in the
+  TV's script and Product page navigating after the fall (a modified click still opens at once).
+- 2026-11-24, Dan: "I like the wearing text and the wearing tag ... save it for future updates in the website. And
+  let's take 1B for now. And commit". Fastext with the magnifier (1b) and the cart is now the TV's Product page / Add
+  to cart in `WordWall.astro` (scoped CSS, the screen wall only; html.hc and the wood wall keep the button family; rgb
+  glows, no color-mix). The worn paper is saved as a recipe: `docs/worn-paper.md` (what Dan liked, the CSS with generic
+  classes, the fall as a function), pointed to from `DESIGN.md` §4, which also has layout B and Fastext now.
+- 2026-11-24: Dan: "open the bench so I can move stuff around and resize freely and on a grid". `/?bench&grid`: the
+  dev-only block now draws an 8 px grid (stronger every 32) while the harness's SNAP is on, starting at the picked
+  part's own corner (SNAP moves in 8 px steps from where a part sits), and `&grid` turns SNAP on at load. Checked in
+  Chromium: a snapped move lands the part's edge on a line.
+- 2026-11-24: Dan exported the bench ("apply this composition to all plugins"; the JSON moved to
+  `~/Archive/bench-exports/revaudio-home-tv-bench-deltas-index-2026-11-24-09-42.json`). Baked into B's block as rules
+  for every plugin, not per-plugin moves: Try one fixed width (16rem) at the column's left edge, the price big (3.4rem)
+  beside it at one fixed spot, Product page + Add to cart in a row under them. Two deliberate changes from the raw
+  moves: with the moves as exported RevFX's wider Try ran under its price and GAS's FREE floated off, hence the one
+  width and the fixed spot; "Free beta" (Drift) is 2.4rem so it fits. Dan's RevLimiter blurb edit (a line break before
+  "The redline is the threshold.") is in `src/data/plugins.ts`, shown by `white-space: pre-line` on the TV only.
+  Checked in Chromium at 1312x734 and 1141x636: all six plugins, Try / price / keys at the same spots, nothing
+  overlaps, the price stays in the column (Drift's widest: 410 of 416 px), no blurb cut, the TV still fits; the phone
+  (390) keeps its list view, no sideways scroll; `npm run build` passes. Files added to the claim: `src/data/plugins.ts`.
+  Then checked against the export itself (Dan's moves replayed on the old layout: Try/Product page at x 5, the
+  price glyphs at ~253, 8 px between Product page and Add to cart): the 8 px gap had been lost to the scoped 1rem
+  (higher specificity), now `column-gap: .5rem !important` in B's block. Try / Product page sit at x 0, not 5 (flush with
+  the name and blurb; the 5 is where 8 px snap steps landed). The price is ~23 px right of Dan's spot because Try is
+  16rem for every plugin. WebKit (Safari's engine) at 1141x636 and 1312x734 measures the same as Chromium; "In your
+  cart" fits row 2 and Product page does not move. Pre-line and the small "Free beta" are laptop-only rules; the
+  blurb's `\n` only reaches the TV (home + /plugins), where phones show it as a space.
+- 2026-11-24: Dan: "check the backend, that everything is aligned and working" + "test it". Merged origin/main in
+  (73 commits: WIDE BEAM on sale and on the TV, the temporary home hero in the TV's `<slot />`, the Black Friday strip;
+  only this file clashed, both sides kept). The TV now has seven plugins; WIDE BEAM sits on the same spots (Chromium +
+  WebKit, 1312x734 + 1141x636), the hero's one scroll tick shows the menu in B, the phone list has 7 rows and no
+  sideways scroll. Backend, checked: every key's wiring (gate id, register URL, cart slug + price, links) is identical
+  to live revaudio.net; the licence worker is on its repo's deploy stamp (e00c984), knows every gate id the TV sends,
+  /health/builds ok, CORS from revaudio.net 204, and a bad email is refused for all six ids (nothing sent); Paddle's
+  PricePreview (public token) gives $49 / $19 / $19 / $9, all active, = the TV and the cart ($96 for all four); the
+  cart's terms box blocks checkout until ticked. Paddle refuses checkout on localhost ("blocked for this vendor", 403:
+  the domain); on revaudio.net the overlay opened with WIDE BEAM $9.00 (one abandoned checkout, no email entered).
+  Not tested: a real trial email and a real purchase (Dan's). Noticed, not ours: the worker has a RevFX Windows build
+  while revfx.ts says winReady false; Meta's pixel calls a Conversions API gateway the site's CSP blocks.
+
+## 2026-11-18 — WIDE BEAM page: review fixes (Claude Code `Wide Beam page tour [3eef2b]`, Dan's Mac) — on `feat/widebeam-page` (the branch itself NOT pushed); PUSHED for team QA as `qa/widebeam-page-1121` on 2026-11-21 (Dan's word), NOT on main
+
+Claim: OPEN (Dan, 2026-11-18: "fix the code ... review it and fix whatever you see fit, then we continue with the design").
+Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`, `tasks/widebeam-polish-plan-2026-11-18.md`, one line of
+`tasks/widebeam-handoff-dan-2026-11-17.md` (the intro rule), `tasks/lessons.md` (2026-11-18 entry), this entry.
+
+- The car: Dan didn't see it. It played once per tab (`sessionStorage`), so the tab opened for him played it unseen and
+  every reload showed only the road. Now it plays on every load; Back / Forward skips it (`intro.ts`).
+- Launch list: the status line was looked up as `[data-wb-notify-status]` (the page has `data-wb-status`), and both
+  forms' `hidden` lost to their `display: flex`. A visitor pressing "Notify me" saw nothing change, not even for a bad
+  email. Both forms now go away after sending and say what happened.
+- Knobs: the wheel turned whichever knob was under the cursor while the visitor scrolled the page past the dash
+  (WIDTH 136 -> 0 in one pass). The wheel now turns a control only once it is clicked or tabbed to; Lenis leaves the
+  wheel to it then (`data-lenis-prevent-wheel` while focused).
+- The dash fits a laptop screen (min-width 901 px: the 3:2 face sized to the height under the nav; 1141x636 -> 828x552,
+  was 1109x739, never whole on screen). A preset click lands the whole face centred under the nav (a number to
+  `lenis.scrollTo`), and the dash's rise is triggered on its still wrapper, so it finishes where it should.
+- The stereo road: twin sources that meet (BASS / BASS, PAD / PAD, GTR L / GTR R) share one label instead of
+  printing over each other ("BASBASS" on a phone).
+- Checked (stubbed worker, nothing sent; Chrome + Playwright WebKit at 1141x636, WebKit 390x844): 9 of 9 fix checks
+  pass in both engines (car on first load, on reload, skipped on Back; dash fits; wheel ignored / works after a
+  click; launch list bad + good email; trial form), the old code failed the car-on-reload, wheel and launch-list checks
+  earlier the same session; preset click lands the face at 64-616 of 636 in both; `npm run build` green; no page
+  errors. Not checked: real Safari / iPhone (remote automation is off on Dan's Mac), Firefox, Windows, the sound by ear.
+- Left for Dan (design round next): the music starts on the first click anywhere (cookie Decline included); the
+  "AAX" in the two formats lines (WideBeam README: PACE wcguid not created); the gold gradient on the WIDE BEAM lockup
+  (the design hook flags gradient text; Gil chose it to match the plugin plate).
+- **Design round, same day** (Dan: "a team of designers that knows how we build websites ... meet the standard of the
+  DRIFT page and the GAS 2 page ... a place for a tutorial video ... no bugs"). Ten designer agents (guidelines, art,
+  motion, hero, video, copy, demo, mobile, a11y, perf) studied the page against DRIFT + GAS 2, debated, a lead wrote the
+  plan, one verifier per bug re-ran it (46 of 53 reproduced, 6 partly, 1 not), and a critic checked the plan. The plan,
+  with the critic's corrections on top: `tasks/widebeam-polish-plan-2026-11-18.md`. Four more designers mocked the 8
+  visual options (0 credits; the pictures live in the session scratchpad only).
+- **Dan's pick page:** https://claude.ai/artifact/CnPheXrffMYYjpPcN6Dr8Y (private; 8 looks + 5 plain calls, my pick
+  marked). His picks save to its database, collection `picks` (ArtifactData `list`). P1 (Black Friday) is time-bound:
+  `sale.ts` on main takes "Wide Beam ($9)" out of the bundle on Nov 22 unless it is released.
+- **State:** nothing from the plan is built; repo files touched by the round: the plan file and this entry only. Next,
+  after the picks: Step 0 (merge `origin/main` in in a temp worktree after `git merge-tree`; baselines), Step 0.5 (the
+  critic's corrections), lane F alone, then lanes H / D / S / A / T in their own worktrees, then the gates; commit per
+  lane by exact path; no push or merge to main until Dan says "push".
+- **Dan picked, 2026-11-18 ~16:10** (on the pick page, no notes): D1 B (the four readings), **D2 B "WIDER MIX. BASS DEAD
+  CENTRE."** (not my A), D3 B (satin brass), D4 C (cut from the plugin, engraved serif labels), D5 A (console column),
+  D6 A (Owner's Manual plate + strap), D7 B (phone deck), D8 B (portrait cut that follows the car), P1 A (launch after
+  Black Friday: WIDE BEAM leaves the bundle on Nov 22 by Gil's rule, "Price at launch", the BF strip hidden on
+  /widebeam), P2 B (music on the first touch of the demo), P3 B (3-4 real clips through the live demo), P4 A (a
+  partner records the film), P5 A ("Mac VST3 · AU · Windows VST3", the build guards the Windows flag).
+- **Build started the same day:** `origin/main` merged in (only this file clashed; `/widebeam` is still excluded in
+  both popups). Lanes and gates as in the plan.
+- **Build state, updated 2026-11-20 ~01:45 (all local on `feat/widebeam-page`, NOT pushed):**
+  - Stage 1 committed: `be6153d` the split into one file set per lane (196/196 shots pixel-identical, every behaviour
+    check the same), `49a9976` the parts kit cut from the plugin's photo (`tools/widebeam-parts/`), `0c0a6f8` DESIGN.md
+    §7 records Dan's D8 B exception.
+  - Stage 2 committed: `607fb1f` the data contract + honest words + final order + tokens (build green, honesty greps
+    clean, every behaviour change explained), `a7d186f` the plate label on the shared serif tokens.
+  - Stage 3 DONE and merged, 2026-11-20 ~01:20: five lanes built in their own worktrees
+    (`.claude/worktrees/wb-lane-{h,d,s,a,t}`, branches `wb/lane-{h,d,s,a,t}`), each committed by path; octopus merge
+    `7b06e2b` (no file touched by two lanes), build green. Lane servers 4513-4517 stopped. The lane worktrees and
+    `wb-base` (detached at `d76c750`) stay until stage 4 ends, then go.
+    - Stage 3's adversarial checkers for the hero, the dash and the glove box / road / manual never finished (sleep, then
+      the account limit); stage 4's hunt has three lenses that re-check those lanes' own claims.
+  - Stage 4, updated 2026-11-21 ~15:00. Run `wf_34e21857-e42` did the integration, 4 gate runs with fixes, timing
+    (9/9 PASS) and bug-hunt rounds 1-2 (65 + 31 findings; 28 + 27 real after a skeptic each, all fixed by area, a gate
+    run after each). It stopped at round 3: the lid was closed at 01:53 (pmset "Clamshell Sleep" until 13:49; caffeinate
+    can't stop that), then the Claude login had expired. Checkpoint commit `94d5663` (39 files, build green).
+    RESUMED as `wf_753116d1-2ea` (scratchpad `team/build/stage4-resume.js`, seeded with the round-2 state from the old
+    journal): round 3 (six lenses + the 25 carried lows, cap 60), timing, the final check, the section shots
+    (`team/gates/baseline-final`), the gate scripts into `tools/widebeam-gates/`. Pit Wall http://127.0.0.1:8795;
+    caffeinate until Mon 23 Nov 02:51 (keep the lid open). Dev server 4392 restarted fresh. All agents Opus.
+    - Biggest fixes so far: the words described the 0.9 plugin (a CRUISE switch, TRACTION); the trial form was not
+      wired in the open/released phases; MONO / SIDE did nothing below MIX 100 (12 of 16 presets); a mono own-track
+      file played hard left; the hero name lost its word space from 1236 px; the BF/CM sale strip would have shown on
+      /widebeam (now gated in `src/layouts/BaseLayout.astro`, the sale-gate line only).
+    - Built, not yet seen passing: the L1440 full-visit byte row (3.33 vs 3.30 MB before the face.ts tier fix) and the
+      G3 Firefox "stops" guard. The final gate run proves them.
+  - Dan, 2026-11-21: "we only deal with design" here, so his list holds design choices only. Shown with pictures on
+    https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs (every section now vs his picks, laptop + iPhone; the old stills
+    link is gone).
+  - For the launch owner (Gil / Yoni), not Dan: mail the whole newsletter list at launch (`launchMailToWholeList`, now
+    false; fixer's pick yes); the licence of the loops under the demo clips (Yoni's renders).
+  - Dan, 2026-11-21, "go with your picks" (`ec9ac17`): the phone deck puts HIGH BEAM / MONO / SIDE / POWER right under
+    WIDTH (A; the deck leaves the plugin's plate order); an upright tablet 600-1100 px wide gets the portrait cut that
+    follows the car (B, a little softer; DESIGN.md §7 extended). The stage 4 calls stay: the name capped at 137 px from
+    1236 px; on a slow line the film is skipped (REPLAY plays it); the dash inside the page column from 1212 px; dash
+    images q72, plate q80; the road's LEVEL reads 0.0 dB under CRUISE; 2x deck art on 3x phones; the no-JS line on the
+    trial forms; the phone bar on zoomed short screens; the seam before the manual kept.
+    - The running round-3 workflow's "known" list still calls deck order and iPad "held for Dan": stale since
+      `ec9ac17`, harmless (it tells fixers never to change them).
+  - Waiting on Dan (design): the intro film's bytes, only if the final G11 still fails (keep the film and move the bar,
+    or a lighter encode: `team/build/fix-cross/film-pick/index.html`, B drops some faint stars). Device checks: turn a
+    real phone while typing in the closer's field; VoiceOver on the deck; iPad B softness on a real iPad.
+  - Dan, 2026-11-21, "The two failures fix": the cookie banner is fixed on this branch, CSS only, the wording and the
+    script untouched (Yoni owns the consent text). `e401fba`: a phone held sideways (601-1099 px wide, 500 px tall or
+    less) gets one slim row with the phone's short line (844x390: 626 -> 63 px, top -236 -> 327). `bd8d4ac`, separate so
+    it can be dropped: the title above the full copy at 641-1099 px wide (an upright iPad: 626 -> 145 px, 4 lines).
+    Measured on /widebeam, / and /drift in Chrome and WebKit; 1100 px and wider and upright phones unchanged. Yoni's
+    note says "applied" now (`tasks/widebeam-cookie-banner-for-yoni.md`). Not seen on a real sideways iPhone.
+  - Dan, 2026-11-21, "send an agent to push the branch to qa": `qa/widebeam-page-1121` = `bd8d4ac` + origin/main
+    `2851c19` (merge `7b3e9ba`, the `qa/drift-page-1005` pattern), pushed by an Opus agent, nothing forced; build green
+    (34 pages); Dan's look served from the QA worktree (scratchpad `team/qa/wt`) on 127.0.0.1:4394. GitHub Pages builds
+    main only, so the branch has no web address. It holds the page up to the banner fix, not round 3 (still running).
+    - NOT in it: Gil's two commits on origin/feat/widebeam-page from 2026-11-19, `7a92522` (BUY NOW $9 via Paddle
+      `pri_01m7vhcdt6t1dtpbyn9g1mx00m`, the trial form posting to the download gate, a cart entry in plugins.ts,
+      `widebeam` in OWN_ROUTE) and `3c91404` (its handoff). This branch never took them in; they clash in
+      `src/data/widebeam.ts`, `src/pages/[slug].astro` and `src/pages/widebeam.astro`. Next, after the run: merge
+      origin/feat/widebeam-page in, re-run the gates (the trial form's flow changes with `gateWired: true`), refresh qa.
+    - Dan, 2026-11-21: "dont over write gil branch". origin/feat/widebeam-page is Gil's (`3c91404`): never push to
+      it, never force. His commits come INTO this branch by a merge; our work goes out only as `qa/...` branches. The
+      local branch's upstream was unset the same day, so a bare `git push` can't land there.
+  - **State 2026-11-23 ~15:00, Dan's NEW DIRECTION: the projector look (a look only; the site is unchanged):**
+    - Dan, 2026-11-22: "no player at all. no music nothing", in 3 sections: (1) the car film with the email gate from the
+      start; (2) the manual film full screen on a projector, a vintage educational film with our ElevenLabs voice (Gil
+      provides it), which turns over mechanically into the Buy plate + gate when it ends; (3) "understand it": the
+      plugin's face, presented, with the gate again under it. Why WIDE BEAM exists (Dan's pick A, same day): the cheap
+      first purchase that brings new customers in.
+    - The look: `bench/widebeam-projector/` (README there), published at
+      https://claude.ai/artifact/4oWMU9NiWGPcZniDsHee3Y (private; db `pick/dan` = {look, flip, note}, empty so far).
+      The first link (`6bbysbnKpcaGSKtCZu7hLL`) was deleted or lost its write access on 2026-11-23 (not by this
+      session); its db held no pick.
+    - The open, Dan 2026-11-23 ("the film just snaps" on reload): the screen starts black, the words rise in, and the
+      car film waits on its first frame until ~0.4 s after the first paint, then plays as it fades up (1.6 s). No
+      `autoplay` in the markup and `opacity:0` inline on the video (WebKit once painted it whole before the sheet
+      applied). Reduced motion: the still end frame fades up. Checked frame by frame (WebKit + Chrome, 1141 and 390,
+      film delayed 1.5 s too).
+    - Dan's calls on it, 2026-11-23: section 1 centred; its email card is smoked glass, then "more transparent"; the
+      small print on one row on a laptop (wraps on a phone); the line under the name is "THE PRECISE, GENTLE WIDENER"
+      and the lede "One big knob spreads your track, and a steep split keeps the bass in mono." (gentle = it opens a
+      touch wider, at most +6 dB side; precise = the 24 dB/oct split); two typefaces on the whole page, Bebas Neue +
+      Gelasio (the plugin face's LCD keeps Courier New). Checked in Playwright WebKit 1141 + Chrome 1312 + WebKit 390.
+    - Later the same day (Dan): the top text is down to the name + the tagline (the lede, then "Wider mix. Bass dead
+      centre." removed; the bass point now lives in section 3's heading); the name is the plugin's own engraved
+      letters (`title.webp`, cut from face.webp and unmixed from the plate's #242424), over the plugin's ruled subtitle
+      line carrying the tagline (in Gelasio, not the plugin's sans, to stay at two faces); "Scroll for the film"
+      centred and bigger; the email error line sits 10 px under the box's brass ring; the face's number pins are flat
+      round coins just before each printed name ("1 WIDTH"), hidden under 640 px of face (the names are ~5 px tall).
+      Left-to-right they read 2 4 1 3 (the list puts WIDTH first); 1-2-3-4 across would reorder the list too.
+    - The film's ending, Dan 2026-11-23, in steps: the latches off the panel ("let remove them"), then no flip at all
+      ("play like the film"), then "the card will be the film ... a little bit of glitch ... seamless", then "it moves
+      too much", then "it blinks too much, make it more like a real film". Now: the film cuts to its own 1930s title
+      card inside the film frame (black and white, double-ruled frame, the plugin's lettering in film white, the gate as
+      a white box + a white block key), under the film's grain (now every frame), a light that wavers a little each
+      frame (no blinks) and a single-frame dust speck now and then. The cut: one small shiver, a one-frame slip with the
+      frame line, one faint splice frame. The held card does not move (0 px over 12 s, both engines). Watch again runs
+      it back. On phones the film frame grows to hold the card (the film letterboxes in it). The flips (F1-F3), the
+      latches and the pivots stay in the code, switched off; the Look controls lost the flip and hardware rows.
+    - Open for Dan: the projector look (P1-P3; my pick P1 "Beam in the dark", not saved yet); section 3's face still or
+      moving a little (my pick: a little, silent); "vintage 30s" = a 1930s look or about 30 seconds; glass for section
+      3's plate too (still leather + brass).
+    - For Gil: the film as 16:9 (laptop) + 9:16 (phone); the captions as a cue file (VTT / SRT), not burned in; the $9
+      shown before launch (reverses P1 A's "Price at launch").
+    - Not started: the real build (out: the dash's sound engine, the SOUND key, the console, the manual's chapters;
+      in: the three sections). It supersedes the page map below where they differ. The page map IS on this branch now
+      (fast-forward to `a58715c`); `qa/widebeam-page-1121` still waits for Dan's push line.
+  - **State 2026-11-22 ~13:30, Dan's page map (branch `wb/restructure-1122` from `4f05c1b`, NOT pushed, NOT merged into
+    `feat/widebeam-page`):** the page is hero, dash, ask plate, Owner's Manual, closer, footer; the glove box and the
+    stereo road are cut (files kept; bring back = per section its line + import in widebeam.astro and its @import in
+    widebeam.css; the chapters stay on the dash). The manual's chapters drive to the dash; its note says "the dash
+    above". The art look-ahead starts on the first scroll (G11's first view). Gate rows for the two cut sections SKIP
+    while they are off the page.
+    - Phone bar (`2083c4e`, droppable): up over the dash now (before the plate), and up over the stand-by manual (G9
+      fell to 61.5-69.2 % without it; 80.8-84.6 % with it, one step of headroom on WebKit 390). Two "Email me at
+      launch" on that phone screen: the manual line's and the bar's.
+    - Gates (G0, G3-G11, G13 + fixtures, `rg-1122-123319`): 221 PASS, 31 SKIP, 4 FAIL, 1 MISSING. MISSING: G0 "every JS
+      file the page loads" (the production bundle is 2 files; the same row was MISSING on the 11-22 00:05 / 00:56
+      runs, not new). FAIL, all G8, whose fixed scroll fractions now land on the manual: B safe area at P390 / P360 (the
+      key is aside over the manual frame at 0.6 and the row reads its off-screen rect; with or without `2083c4e`); C
+      "never hidden while sound plays" S844 (could not start the sound); C "step aside over [data-wb-watch]" P390 /
+      P360, both engines (the playing key over the stand-by frame, ONLY with `2083c4e`, which lifts the key). Without
+      `2083c4e`, G9's ask rows fail instead. G8 left untouched; Dan / the session picks.
+    - Superseded by the map (dated 2026-11-22): plan:87 the plate under the hero, plan:105-107 the glove box under the
+      dash, the road per D4 C / plan:108-112, the manual note "the stereo road above", D2 B's body-copy rule (plan:9).
+    - Open for Dan: D2 B's two facts (the side below LOW FOCUS removed at any WIDTH; MIX under 100 blends the dry back)
+      now show only behind the closed Specs fold, and only in part (LOW FOCUS "the side below it is removed", no "at any
+      WIDTH"; MIX "Dry blend"); in view: the odometer's "24 dB/oct mono-bass split" and chapter 02's title. No copy
+      added; he decides.
+  - **State 2026-11-22 ~11:30 (local on `feat/widebeam-page`, NOT pushed; Dan: Black Friday, Gil wants it today):**
+    - `a040c17` the car film plays at 1.5x (intro.ts `RATE`, defaultPlaybackRate on every start; night.ts TRAVEL /
+      RATE). Measured Chrome / WebKit / portrait, Replay, Skip, slow line, hidden tab: ~5.4 s film, title ~3.4 s.
+      Known: under ~1 Mbit/s the 720 file stalls at 1.5x (1x stalls there too); fallback to 1x = a follow-up.
+    - `85b596c` lag: the empty haze plates are `display: none` until the footer nears (base.css). Measured on the qa
+      preview: wheel input to motion 40 -> 25 ms, wheel scroll 12.8 -> 10.3 s, rest 9 -> 4-5 % busy, 0 pixels differ.
+      The page itself drops no frames (even at 4x CPU). The rest: three orphaned headless Playwright Chromes on
+      Dan's Mac (12 days old, parent pid 1; PIDs 28952, 30280, 99358), one burning ~45 % CPU nonstop.
+    - qa worktree merged = `e36b6af`, built, preview on 4394 restarted (serves both). The qa push still waits on
+      Dan's `!` line. Bench for Dan's notes, round 1: https://claude.ai/artifact/NErJDGkBE3RyAsHDkWjjDh (24 screens
+      at 1312x734 from 203ea3d; db collection `notes`). Its two asks: the film speed, the site-wide Lenis glide
+      (lerp 0.1; 0.15-0.2 or smoothWheel off are the options; motion.ts is shared, not a WIDE BEAM file).
+  - **State 2026-11-22 ~02:10 (all local on `feat/widebeam-page`, HEAD `9b81220`, NOT pushed):**
+    - `0ca2471` round 3 committed (from the dead run's journal). `a44ec19` merged Gil's `7a92522` + `3c91404` in (phase
+      stays `preopen`, so the page shows none of BUY NOW / the gate yet; his plugins.ts formats line still says AAX: fix
+      before `released`). The two bullets above about "NOT in it" are done.
+    - Dan, 2026-11-21, "remove the player" -> "TRACK, VOLUME, Stop the engine": `0f16610` removes the console's TRACK,
+      VOLUME fader and engine key and the deck's TRACK; the 4 demo clips are deleted (so the loops' licence question
+      and "the clips by ear" are moot). Sound starts on SOUND, "Take it for a drive", a touch of the demo or a chosen
+      file, at the fader's old level (-3.9 dB); any start lights the face. Column beside the face: A/B over MONO CHECK.
+    - `72e8275` the spec's stub answers the Cloudflare beacon with an empty script (a production build failed "no page
+      errors" on JSON parsed as JS). `c64a7fe` the gate kit is in the repo: `tools/widebeam-gates/` (README there).
+    - `9b81220` the console switch picks its art by layout width: the 256 px toggle file had loaded during the dash's
+      rise (+49.6 KB), putting L1440's full visit at 3.32 MB > 3.30. Now 3.27 MB.
+    - Final check at `0f16610`, run rg-1121-235515 + fixture rerun rg-1122-005214 + G11 rg-1122-014335 at the fix:
+      build green (34 pages); G11 9/9 PASS; G0 open/released, G3-G10, G13 PASS. Left: G1 (baseline-B1 from 11-18 is
+      stale; new shots in scratchpad `team/gates/baseline-final`, WebKit shots there are unstable run to run), G0's
+      "every JS file" row (a dev-server count; the dist row passes). House specs: 86 pass; the /drift WebKit smoke fails
+      on WebKit's own video-control icons (not this page; not checked on main). Not run: the timing gates.
+    - QA: merged locally as `203ea3d` in scratchpad `team/qa/wt` (feat `9b81220` + origin/main `2851c19`), build
+      green, served on 127.0.0.1:4394. NOT pushed: auto mode refused the agent's push; Dan runs the push line.
+      origin/qa/widebeam-page-1121 is still `7b3e9ba`, Gil's `3c91404`, main `2851c19`.
+  - Calls made for Dan (he can veto any): HIGH BEAM at the plugin's amount (0.5 at REACH 100); the level follows the
+    plugin's own auto-gain (CRUISE law), so some sources read up to ~1.5 dB off in A/B, as in the plugin; the portrait
+    film's short-screen limits stay; the phone bar's key goes forward to the closer's form from halfway down; "SLIDE
+    WIDTH RIGHT" as the coach's first line on touch screens.
+  - Open for Dan: the four demo clips by ear (vocal, guitar, pad, full mix, cut from Yoni's renders already live on
+    /revfx, /radio-roulette, /gas; no licence note was found for the loops underneath) and the review page after stage 4.
+  - For Yoni (a note): in headless Chrome the AudioContext clock stays near 0, so the page's level checks are offline
+    renders of its own engine, not real-time measures.
+  - The gate kit and the stage scripts live in the session scratchpad (lost on a reboot); stage 4 copies the gate
+    scripts into the repo. Dan's stills page, after hunt round 2 (21 Nov): https://claude.ai/artifact/P8BDjSgvNB37ueLcuvWSFs
+  - Owed by others, unchanged: Gil (Paddle price, licence worker + hub line, signed builds on R2, the trial download,
+    a real test purchase; and on Nov 22 his `sale.ts` line takes "Wide Beam" out of the bundle with OBDTune), Ilay
+    (MANUAL -> /widebeam/#manual), a partner (the film), Yoni (Cloudflare long-cache rule; a look at the banner fix
+    in `tasks/widebeam-cookie-banner-for-yoni.md`). At launch someone sends the list "one email the day the trial
+    opens" (the page promises it; nothing sends it automatically).
+
+## 2026-11-17 — WIDE BEAM page, `/widebeam` (Claude Code, Gil's Mac) — on `feat/widebeam-page`, PUSHED 2026-11-17 on Gil's word ("push this to Dan"), NOT merged, NOT live
+
+Claim: OPEN, handed to Dan. Full brief: `tasks/widebeam-handoff-dan-2026-11-17.md`.
+Files: `src/pages/widebeam.astro`, `src/lib/widebeam/*`, `src/data/widebeam.ts`, `src/styles/widebeam.css`,
+`src/assets/widebeam/*`, `public/widebeam/*`, `tools/assetver/integration.mjs` + `docs/assets.md` (the `widebeam/`
+folder), `src/components/{WelcomeDiscountPopup,ExitIntentPopup}.astro` (`/widebeam` excluded), this entry.
+
+- Unlisted product page for WIDE BEAM (revaudioplugins/WideBeam, 1.0 candidate): Higgsfield intro that dissolves into
+  its own last frame, a free-trial + BUY NOW plate, the plugin's real face live with a Web Audio demo, a scroll story,
+  the 16 factory presets, specs, launch list. House type and `.rv-btn` buttons.
+- Not wired, on purpose (Gil): BUY NOW is a placeholder until there is a Paddle price id; the trial form only joins the
+  list (`gateWired: false`) until the license worker has `DL_PLUGINS.widebeam`. Steps to go live: the brief, "Open".
+- `main` gained `713f6b3` today ("Wide Beam ($9)" in the BF/CM bundle, `sale.ts` only); the branch merges into
+  `origin/main` with no conflict (checked with `git merge-tree` before the push).
+- Checked: `npm run build` green; Playwright Chromium + WebKit at 1440×900 and 390×844, no page errors; the trial
+  form's payload against a stubbed worker; the cart's add-and-open with the same markup on revfx. Not checked: a real
+  iPhone, Windows, Firefox, the live host.
+- Next: Dan's review on the branch; Gil sends the Paddle id.
+
+## 2026-11-22 — "Black Friday in" countdown strip on every page, not just home (Claude Code `revaudio-eb`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-22 on Yoni's word "push" (`193d459`, rebased onto `2851c19`); deploy run 45016020586 success (incl. Cloudflare cache clear), smoke run 45016020692 success
+
+Claim: CLOSED 2026-11-22 `revaudio-eb`. Files: `src/layouts/BaseLayout.astro` (sale gate), `src/components/SaleStrip.astro` + `src/data/sale.ts` (comments), this entry.
+- Yoni: "theres the black friday skin - but its only in the homepage - lets make it pernament on every page".
+- The week-before strip (`html[data-sale-soon]`, Nov 20 00:00 PT until BF) was gated to `/` in the BaseLayout head script
+  (`sHome &&`, live + `?sale=soon` preview). Gate removed: the strip now shows on every BaseLayout page. Unchanged: the BF /
+  CM strip (already site-wide), SaleIntro (home only by design: it is the home TV), SaleTransition (BF/CM only).
+- Not covered: `/gas2/` and `/garage-9f3c/` are standalone pages (integrations, no BaseLayout), so they show no strip in any
+  phase; `paddle-test` and `pit-lane` have no layout either.
+- Checks: `npm run build` green (33 pages). `astro preview` + Playwright Chromium, real clock (Nov 22): 10 pages (`/`, `/plugins/`,
+  `/revlimiter/`, `/drift/`, `/radio-roulette/`, `/revfx/`, `/about/`, `/support/`, `/review/`, `/blog/`) x 1280x665 + 390x844
+  DPR2 = 20/20: strip visible at top (46 / 42 px), nav under it, odometer ticking, no sideways scroll, no page errors.
+- Live check on revaudio.net after the deploy: the same 10 pages x 2 viewports = 20/20 PASS (Chromium).
+- Also this session: the website `.git` had lost `pack-bd733105….pack` again (Drive sync); copied back from the Recycle Bin,
+  `verify-pack` + `fsck --connectivity-only` clean. The main clone (`revaudio-website`, 180 behind) still holds
+  `revaudio-99`'s uncommitted 2026-11-04 entry in `tasks/handoff.md`; left untouched.
+
+## 2026-11-18 — Temporary home hero ON THE TV (the garage's big line, pixel tune-in), with the BF/CM reskins (Claude Code, Gil's Mac) — branch `feat/temp-hero` (from main `94c8562`), PUSHED for Dan, NOT on main
+
+Claim: HANDED TO DAN 2026-11-18. Files: `src/components/TempHero.astro` (new), `src/components/WordWall.astro` (a slot),
+`src/pages/index.astro`, `src/components/SaleIntro.astro`, `tasks/temp-hero-handoff-dan-2026-11-18.md`, this entry.
+Gil 2026-11-18: until the garage is ready for everyone, the home TV first shows "Built like cars." on its glass. It
+tunes in pixelated, and the first scroll changes the channel to the menu. With the sale on, that scroll brings the
+sale's TV intro first, and its close shows the menu. "See the plugins" always goes to /plugins. Gil approved the look
+in the browser ("looks great").
+- Full brief, behaviour table, what was and wasn't checked, open items: `tasks/temp-hero-handoff-dan-2026-11-18.md`.
+- `npm run build` passes. Not tested: real Safari / iPhone, Windows, `?sale=soon`, `?home=garage` together with it.
+
+## 2026-11-18 — The long garage ON THE HOME PAGE, an A/B test for laptops (Claude Code `3D Garage – סגירת האתר`, Dan's Mac) — branch `feat/garage-home` (worktree `.claude/worktrees/garage-home`, from main `713f6b3`), NOT on main
+
+Claim: OPEN 2026-11-18. Files: `src/components/HomeOpening.astro` (new), `src/pages/index.astro`, `src/components/Cart.astro`
+(customData.home), `src/components/WelcomeDiscountPopup.astro` (waits for the TV), `tools/_home-opening/room.html` (embed
+mode), `tools/_home-opening/lights/lights-on.js` (the stall give-up), `tools/_home-opening/assets/{tv,nav,below}-*`,
+`tools/_home-opening/assets/lights/*`, `tools/_home-opening/tvcap.mjs`, `tools/garagepage/integration.mjs`, this entry.
+Dan 2026-11-18: "let's close the 3D garage site", then picked "try for Nov 19 anyway" (the plan's date: the room as the
+home page for half the laptop visitors) and the two fixes "no more stuck" + "the TV updated".
+- The room runs as the srcdoc of a fixed frame behind the home page (the site's X-Frame-Options: DENY and CSP frame-src
+  refuse a framed URL of ours; checked against a local server sending the live headers). Details: the component's head.
+- Being checked by an approved agent team (Ultracode, 10 agents); full entry at the end of the session.
+
+## 2026-11-15 — The long garage: Gil's faster first load KEPT (PR #33), plus one line that lets the model downloads go (Claude Code `Garage load-speed branch review [c19840]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-15 on Dan's word ("keep gil"); MERGED TO MAIN 2026-11-16 on Dan's word ("lets commit and marge to main")
+
+Claim: CLOSED 2026-11-16 at rv close (opened 2026-11-15; merged to main 2026-11-16). Files: `tools/_home-opening/room.html` (one line at the end of
+`loadModels()`), `tasks/handoff.md` (this entry).
+
+Request (Dan, 2026-11-15, on Gil's note): compare `perf/home-opening-load` with `feat/home-opening` and keep the better
+one. Dan's answer after the results: "keep gil".
+
+- Done: `feat/home-opening` fast-forwarded `2380642` -> `17c3620` (Gil's three commits exactly as pushed; GitHub shows
+  PR #33 as merged). On top, `02e021c`: `loadModels()` empties the early download's two lists (`modelFiles`,
+  `modelBytes`) once the models are placed.
+- **⚠️ Read this before the phone cut (`feat/phone-dive`, `?dive`) merges this branch.** `prefetchModels()` starts before
+  `createRoom()` and downloads every `MODELS` row, the mess models and the sign, and it merges with no conflict. The
+  `?dive` filter lives inside `loadModels()`, so after a merge the phone still downloads everything: in a test merge 100
+  model requests instead of 30, 54 MB held instead of 8, ready at 12.0 s instead of 6.5 s on 10 Mbit/s, with no error
+  or warning. When merging: for `DIVE` skip `prefetchModels()` and the early `initTexture` loop, or hand
+  `prefetchModels` the kept list. Expect 2 conflicts: the first lines of `loadModels()` and the `const ups` upload loop.
+- Speed, time until the room is ready (Chrome 1141x636 @2, cold first visits, the versions taking turns; Gil's sooner in
+  all 42 pairs of two methods: the team's `perf/simserve.py`, and an HTTP/2 server with Chrome's line limiter):
+  135 Mbit/s (the world's median home line, Ookla, September 2026) 3.83 -> 3.59 s · 50 Mbit/s 6.17 -> 4.56 s ·
+  25 Mbit/s 9.59 -> 7.45 s · 10 Mbit/s 20.69 -> 16.88 s · processor slowed 4x 8.39 -> 7.97 s · 4 Mbit/s 48.7 -> 40.5 s.
+  Download 23.19 -> 19.75 MB, the same 175 files. Gil's table holds. On a fast line the room now stands ready about
+  half a second before the hand-off: the loading lights' own pacing (`lights/lights-on.js`, one flash per 0.4 s) is the
+  limit there, not the download (read from the code and the idle frames, not tested by shortening the lights).
+- Look: the same. Motion frozen, 14 walk stops: at most 0.05 of 255 mean difference; `lights/check.mjs` PASS on both
+  (3.28 / 3.31). A rebuild of all 102 models from `masters/` gives the committed files byte for byte.
+- The fix's checks (the committed file): data held after loading 53.6 -> 14.7 MB (15.2 MB before the early download);
+  97 model files, each asked for once; the same 94 models, 64 mess pieces and sign; a download that fails once still
+  recovers; Playwright WebKit loads clean; `lights/check.mjs` PASS (3.28); stills at five walk stops match;
+  50 Mbit/s 4.5 s with and without.
+- Left open in Gil's change, all small: the neon's colour strip `neon_core` went from PNG to WebP for one byte and its
+  glow shifted slightly (keep the PNG); a failed early download is fetched again without a console line; a host that
+  sends models without `Content-Length` makes the loading lights wait about 1 s; the picture is no longer identical from
+  one load to the next (a few dozen pixels at the car's tail lamp: the models can be read before the room is built,
+  which changes the draw order where two surfaces touch).
+- Found on the way, the same before and after: a font file that fails to download stops the 3D room from starting
+  (`document.fonts.load` rejects in the boot line; a slow font is fine); about 2 MB of PBR sets (carpet, fabric, rust,
+  cardboard) are downloaded and shown on nothing since round 6.
+- Not measured: real Safari, a phone, Windows, a weak graphics chip, the live host.
+- Raw results on Dan's Mac: `.claude/perf-compare-2026-11-15/` (git-ignored).
+- Merged into main on 2026-11-16: `8745067`, a `--no-ff` merge of `feat/home-opening` @ `2736e6b` (this file was the only
+  conflict, both sides kept). Built first in a temp worktree (`npm ci`, `npm run build`): the built `/garage-9f3c/` opened
+  in Chrome with 94 models, 97 model requests, no page errors; `lights/check.mjs` PASS. Deploy run 43851370710 success
+  (Cloudflare cache clear passed), Smoke test 43851370712 success (68 passed). Live: `/garage-9f3c/` serves the fix and
+  the early download; Chrome, 3 visits: 94 models, no page errors. Live timing NOT measured: Dan's Mac's line ran at
+  2-6 Mbit/s that hour and the room was ready with its last byte (35-56 s).
+- `feat/home-opening` (`2736e6b`) is now an ancestor of main. Next garage work can start from it or from main.
+- The phone-cut session (`feat/phone-dive`, "Garage 3D phone page") got the `prefetchModels` warning on 2026-11-16: Dan
+  pasted the note into it (his word "pasted"; a direct message from this session had been refused by auto mode).
+- Next: Dan's own look at https://revaudio.net/garage-9f3c/ in Safari and on a phone.
+
+## 2026-11-15 — Review: RevFX joins the plugin picker (Claude Code `revaudio-fc`, Yoni's laptop 2) — LIVE ON MAIN 2026-11-15 on Yoni's word "push" (`a0e0fdb` + `1a884b9`, fast-forward from `1b4bc34`); head was `[skip ci]`, so the
+deploy was dispatched by hand: run 43720976072 success (build, deploy, Cloudflare cache clear). Live check on revaudio.net/review/ (Chromium):
+6 columns at 1280, 2 at 390; price question RevLimiter $49, Radio Roulette $19, RevFX $19, the free three hidden; no page errors.
+Not done: a real RevFX review (code mail + team copy) - the worker side was probed live with an empty form only.
+
+Claim: CLOSED 2026-11-15 `revaudio-fc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `revfx`), `src/pages/review.astro`, this entry.
+- Yoni: "lets add revfx to the review page in the website".
+- RevFX = the home TV's picture (`revfx-hero.png`) and channel colour (305 / 72). Its price comes from `revfx.ts` (`buyable()`, $19), as the TV's
+  price line does: plugins.ts keeps it `in-development` with no `introPriceUsd`, so the old rule would have skipped the "At $19" question.
+- Picker: 6 across from 900 px (names a size smaller there: `clamp(0.95rem, 1.4vw, 1.1rem)`), 3 x 2 from 641-899 px, 2 x 3 on phones (unchanged).
+- Checks (local build, Chromium, 320-1920 px): `astro build` clean; every name fits its cube at 10 widths; every picture gets enough pixels for
+  its slot, except landscape at exactly 640 px (462 needed, 400 served), the same on the live page today; price question: RevLimiter $49,
+  Radio Roulette $19, RevFX $19, DRIFT / GAS / GAS 2 hidden; no page errors (the CF beacon fails from localhost, as always).
+- Go-live order: RevLimiter worker deploy FIRST (DONE 2026-11-15, stamp `16f609b`, live probe: RevFX accepted), then this push. The other way round,
+  every RevFX review gets "bad request". After both: one real RevFX review -> code mail + team copy "Review: RevFX n/10".
+
+## 2026-11-11 — Assets in order: 33 unused files out, versions on static URLs, bench tools dev-only (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — ON MAIN 2026-11-12 on Dan's word "push to main" (`132869b` + `5fb54fa` + `8d42e64`, fast-forward from `004c62a`); deploy + smoke green
+
+Claim: closed 2026-11-12. From the asset audit of 2026-11-11 (Dan: "go 2 and 3").
+Files: `tools/assetver/integration.mjs` (new), `astro.config.mjs` (assetver last + `benchdevonly`), `docs/assets.md` (new: where
+a file goes), `README.md` (pointer), 33 deletions: `src/assets/hero/` (all 7), `src/assets/ui/` (14 old button plates +
+`icon-cart`, `toggle-on`), `src/assets/showcase/` (`ac-icon`, `drift-car`, `rev-gauge`), `public/dl/` (3), `public/brand/` (2),
+`public/plate/` (`btn-viewmore`, `card-bolt`, `card-plate`), `public/bench/hero-bench.html`.
+- Live 2026-11-12: Deploy to GitHub Pages run 43209914344 and Smoke test run 43209914228, both success. On revaudio.net:
+  `/`, `/revlimiter/`, `/gas/`, `/gas2/`, `/drift/`, `/revfx/`, `/radio-roulette/`, `/plugins/` answer 200; `?v=` is in the live
+  HTML (unique URLs: `/radio-roulette/` 2, `/gas/` 2, `/gas2/` 7, `/drift/` 9; the rest sit in the folders' CSS); versioned
+  URLs answer 200 with `cache-control: max-age=600` (the Cloudflare rule is not in yet); the removed files answer 404
+  (`/bench/home-bench.html`, `/bench/hero-bench.html`, `/brand/revaudio-plate-3d.webp`, `/plate/card-plate.jpg`,
+  `/plate/btn-viewmore.png`, the three `/dl/` cards); `/plate/arm-mount-v3*.png` 200; Chromium 1440x900 on `/`, `/gas/`,
+  `/gas2/`, `/radio-roulette/`, `/drift/`: no response >= 400 and no failed request on revaudio.net.
+- Open: Yoni's Cloudflare rule (until it exists the `?v=` does nothing). This Mac's worktree `.claude/worktrees/webp-art`
+  no longer exists; the remote branches `chore/asset-order` and `perf/webp-mixer-art` remain until Dan says to delete them.
+- Removed files: nothing in `src`, `tools`, `tests` names them; no other RevAudio repo loads the `public/` ones (the `dl/`
+  cards were for a portal change that sits unmerged on Revlimiter `origin/portal-card-shots`). The 24 `src/assets` images
+  and the 5 `brand/` + `plate/` files are in `revaudio-kit` under `archive/` (`534a3d1`, `3c245ed`), byte-identical; its
+  sync leaves `archive/` alone. Built site vs the build before the removals: only those files are gone, no file differs.
+- Side effects accepted: root `bench/card-*-test.html` (a card design reverted in June) lose their plate images; the stale
+  branches `feat/conversion-stop-a` and `fs-checkout-local` still expect `public/brand/revaudio-plate-3d*.webp`.
+- Bench tools: `public/bench/{home,layout,drag,studio}-bench.html` stay and work on the dev server; the build deletes
+  `dist/bench/`, so `revaudio.net/bench/…` stops answering after the deploy (Dan: "Dev only"). This replaces the older
+  "master bench, live on prod too" note further down.
+- assetver: the last `astro:build:done` hook puts `?v=<10 hex of sha256>` on URLs into `station-mixer`, `gas-mixer`, `gas2`,
+  `audio`, `fonts`, `drift`, where the URL is written out in a page or in those folders' own CSS/JS: 125 refs in 13 files,
+  96 files. Never touches `_astro/` or `garage-9f3c/` (it throws if they change). A name a script builds at run time, or
+  one that also appears in `_astro`, stays plain everywhere, so no file is fetched under two URLs.
+- Why: GitHub Pages stamps every file with the deploy time, so a returning visitor re-downloads everything outside
+  `/_astro/` after each deploy. With a Cloudflare rule that keeps `?v=` URLs (handoff for Yoni: shared
+  `collaboration/handoffs/2026-11-11-yoni-cache-versioned/handoff-yoni.md`), return visit after a deploy, local, Chromium,
+  laptop: /radio-roulette/ 1.36 -> 0.43 MB, /gas/ 1.01 -> 0.30, /gas2/ 6.77 -> 4.66, /drift/ 0.72 -> 0.37. Without the
+  rule the `?v=` does nothing. First visits are unchanged.
+- Checks: two builds byte-identical; before vs after = 125 insertions of `?v=…` in 13 files and nothing else; Chromium +
+  WebKit at 1440x900@2x and 390x844@3x on `/`, `/revlimiter/`, `/gas/`, `/radio-roulette/`, `/drift/`, `/revfx/`, `/gas2/`:
+  no new failed request or error, no file under two URLs, screenshots within the animation noise; mixers play in
+  Chromium (stems 200). Smoke tests against the local build: 65 pass, 3 fail, the same 3 before the change (a local
+  server redirect on `/support`, WebKit's video-control icons on `/drift`).
+- Not checked: mixer playback in WebKit (never reached "playing" in the test, with or without the change), a real phone,
+  the Cloudflare rule itself (not in place yet).
+- Not versioned (they keep the 10-minute cache): mixer stems, GAS 2 drone art and three.js, the DRIFT / RevFX demo clips,
+  `fonts/drift/*`: their names are built at run time or sit in `_astro`. Next step if wanted: version those at the source.
+- Known limit: a script that builds a whole file name at run time while a page also writes that file's URL out would
+  fetch it twice. None today.
+- To add a `public/` folder to the versioning: `FOLDERS` in `tools/assetver/integration.mjs` + the Cloudflare rule.
+
+## 2026-11-11 — Radio Roulette mixer + GAS 2 page: the PNG art as WebP (Claude Code `danavivi-20 [1b9b41]`, Dan's Mac) — PUSHED TO MAIN 2026-11-11 on Dan's word "push to main" (from `perf/webp-mixer-art`, rebased on `8e1d07d`)
+
+Claim: closed 2026-11-11. From the asset audit of 2026-11-11 (Dan: "go 1").
+Files: `public/station-mixer/img/*` (15 PNG -> WebP), `public/station-mixer/station-mixer.js` (the image names + one
+comment), `tools/station-mixer/webp_pass.py` (new) + `export_component.py` (calls it last), `tools/_gas2-scene/frames/f6-v17.webp`
++ `props/{pump-cut,walk-cut,mailbox,chalkboard}.webp` (new, beside the PNG masters), `tools/_gas2-scene/page-b.html` (8 lines:
+the names), `tools/_gas2-scene/README.md`, `tools/gas2page/integration.mjs` (the build leaves `.png` out of /gas2/).
+- Why: both pages shipped raw PNGs from outside the image pipeline. First visit, cold cache, Chrome, local build:
+  /radio-roulette/ 6.02 -> 1.90 MB (laptop), 5.91 -> 1.78 MB (phone); /gas2/ laptop 9.57 -> 6.22 MB. The GAS 2 phone
+  page (postcards) is byte-identical.
+- Radio Roulette: quality 88, method 6 (the GAS mixer exporter's setting), same pixel sizes. `public/station-mixer/` is
+  generated: a re-export (laptop with `bench/assets/station-mixer/`) now ends with the same pass, so the PNGs don't come
+  back. The exporter was not run here (no bench sources on this Mac); the pass was run on the committed output.
+- GAS 2: quality 90 (the scene's `land.webp` setting). The PNGs stay as masters (the player / postcards art tools read
+  `f6-v17.png` and `pump-cut.png`; the mockup pages load them). After changing a master, remake its WebP (scene README).
+- Checks: build clean; Playwright Chromium + WebKit, 1280x665 @2x, 1440x900 @2x, 390x844 @3x: no 404, no page errors,
+  every mixer image loads; before / after pixel compare (same-build noise floor 0): mixer mean 0.7-1.0 of 255, max 25;
+  /gas2/ mean 1.9-2.4, 2 % of pixels over 8, max 49. Not checked: Dan's eye, a real phone, the drone intro
+  (`?drone=0` was used), the mixer exporter end to end.
+- Old URLs: `/station-mixer/img/*.png` and `/gas2/{frames,props}/*.png` stop existing on the site. Nothing in the site,
+  the licence worker or the plugin sources on this Mac links to them.
+
 ## 2026-11-03 — Home opening: the long garage, an ACTIVE PROJECT (Claude Code `danavivi-4e [b36252]`, Dan's Mac; continues `danavivi-7a [9ae241]`) — on branch `feat/home-opening`, pushed, not on main
 
-Claim: OPEN `danavivi-d5 [443a28]` (Dan's Mac; the same session as `danavivi-20 [c417bc]` after a restart; the next session takes it, see SESSION END 2026-11-10 below); `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
+Claim: CLOSED 2026-11-11 `danavivi-cf [3dcc55]` at its SESSION END (round 6 mostly landed, see "SESSION END 2026-11-11 — `danavivi-cf`" below: the next session takes it over) (Dan's Mac; took it over 2026-11-11 from `danavivi-d5 [443a28]`, closed, as its SESSION END 2026-11-10 says; round 6: the plugin objects for the CRTs, the props, the TV picture, the sign, see "2026-11-11 round 6" below); `danavivi-d5` was the same session as `danavivi-20 [c417bc]` after a restart; `danavivi-20` took it over from `danavivi-09` on 2026-11-08 (Dan: "take the claim from
 danavivi-09, then go", for the look pass), which took it from `danavivi-4e` on 2026-11-04, which took it from `danavivi-7a`
 (closed) on 2026-11-03. Dan, 2026-11-03: "this is a
 project we start working on now, from now on": the long garage is a standing project of the site, not a one-off hero. It
@@ -403,11 +910,37 @@ UPDATE 3 2026-11-09 / 11-10 (night): Dan's round-2 notes (db `notes-r2`, pins re
 
 ### SESSION END 2026-11-10 — `danavivi-d5 [443a28]` — round 5 half landed, three builds ready, then bench round 6
 
-State: `feat/home-opening` clean and in sync with origin at `b90ec47` (main merged in, Dan: "merge main do not
-deploy": nothing on main, no deploy). Today's commits, all pushed: `064d8b9` blanket, `4142e38` RevAmp pedals,
+State (closed 11-11 10:50): `feat/home-opening` at `04e995a`, in sync with origin. Main was merged in at `b90ec47`
+(Dan: "merge main do not deploy"); danavivi-fa later put the branch on main (LIVE below), so main holds it up to
+`eca276e` plus 3 commits of its own, and the 2 commits main lacks (`956150c`, `04e995a`) are handoff notes that ride
+along with the next room push. The session's commits, all pushed: `064d8b9` blanket, `4142e38` RevAmp pedals,
 `c562939` synth cable, `6d9f6cf` + `955074f` the loading screen + its layers, `e8ab4d6` the speed brief + simulator,
 `50c52b7` the street (built in, off), `6cbe654` round 5's street (G1, every grade FREE) + four guitars out + layers,
-`b90ec47` main merged; plus handoff commits.
+`b90ec47` main merged; plus handoff and lessons commits up to `04e995a`.
+
+LIVE, unlisted, since 11-10 21:00 (`danavivi-fa`, on Dan's ask for a hidden page to see it load live and on his
+phone): https://revaudio.net/garage-9f3c/ (robots noindex, nofollow; not in the sitemap; nothing links to it).
+origin/main went `3419f07..200a599` as a fast-forward: this branch up to `eca276e` (no SHAs rewritten) + danavivi-fa's
+`8aef421` (the build integration `tools/garagepage/integration.mjs` + 1 line in `astro.config.mjs`), its merge
+`9fb1151` and `200a599` (the room's fonts and Lenis from the site, under the live CSP). Outside the room and tasks/,
+main also got this branch's own `DESIGN.md` and `.impeccable/config.json` changes (no page). Deploy run 42880463423
+succeeded (18:57-19:00 UTC); checked here: the page answers 200 with the noindex tag, the homepage 200. At build time
+the integration copies room.html (as index.html), street.js, lights/lights-on.js, layouts/, vendor/ and assets/ into
+`dist/garage-9f3c/`, swaps Google Fonts and jsDelivr for the site's own @font-face rules and `node_modules/lenis`
+(1.3.23, the same pin), and warns in the build log if a family or host is missing; the dev material stays out. Until
+Yoni's three CSP words land, the live page shows white models (danavivi-fa saw the same 194 drops + the meshopt wasm
+failure on live, and 0 violations under the proposed header in Chrome + iPhone WebKit).
+To update it: merge `feat/home-opening` into main and push (pull --rebase in the same command; main carries 3 commits
+this branch doesn't), ~3 min to live, the workflow purges Cloudflare. Dan's standing OK, said to this session
+11-10 ("yes with the limits"; danavivi-fa got the same OK in its session): room changes go to main without asking
+each time, within four limits:
+1. Room files only: after the pull, `git diff --name-only origin/main...HEAD` lists nothing outside
+   `tools/_home-opening/` and `tasks/`. Anything else (src/, public/, astro.config, the homepage) waits for his word.
+2. One push per finished round (models landed + loading pictures checked), never per commit: every push to main runs
+   `purge_everything` on revaudio.net's Cloudflare cache (deploy.yml), so real visitors load cold for a while.
+3. After each push: Deploy and Smoke test both green (`gh run list --limit 2`) and /garage-9f3c/ loads; then send Dan
+   the link + one line on what changed.
+4. It ends when the room becomes the homepage (planned Nov 19): from then on every push to main waits for his word.
 
 NEXT, in order:
 1. Land the three builds of Dan's round-5 notes (workflow `wf_3bb75485-05c`, finished 11-10 around 20:00, its last files 19:59; each had a Sonnet
@@ -430,7 +963,7 @@ NEXT, in order:
      with its `lift_pump.py` (prints the new slot).
    - Then: the overlap check, the loading pictures (`lights/render.mjs --check` + `lights/check.mjs`; copies with
      900 s timeouts for a loaded Mac in `.claude/garage-bench-2026-11-10/lights-run/`, run from the worktree root),
-     commit by path, push.
+     commit by path, push the branch; then the live page (LIVE above).
 2. Bench round 6: the same link as round 5 (https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm, personal account; pass
    `url`, collection `notes-r6`). Cards: the street (G1 + the FREE sign: close, first screen, before), the pedals
    (close, near, before), the left wall (four out + the new L20: close, walk, before), N03 (walk 0.15 + its close pose
@@ -439,8 +972,10 @@ NEXT, in order:
    `round2/notes-r5/`). The street's close pose: [0.3, 1.7, 15.2] looking at [7.5, 1.9, 11.0]. Don't re-ask the
    blanket, the car floor or the end wall (unmarked twice).
 
-Unverified: Dan hasn't seen G1 with the FREE sign in the room yet, nor the left wall without the four guitars; L17's
-pegboard was built with gaps where L02 / L03 / L18 hung: look whether it reads bare now.
+Unverified: Dan hasn't said he saw G1 with the FREE sign or the left wall without the four guitars (both are on the
+hidden page, its models white until the CSP fix); L17's pegboard was built with gaps where L02 / L03 / L18 hung: look
+whether it reads bare now. The CSP fix was tested on local servers only (here: room.html in Chrome, WebKit, Firefox;
+danavivi-fa: its site copy in Chrome + iPhone WebKit), never on live: it waits on Yoni.
 
 Background processes (this session's; nothing else depends on them once round 6 is shot):
 - `python3 -m http.server 4490 --bind 127.0.0.1` (worktree root), pid 52126: the room's server. `kill 52126`.
@@ -456,7 +991,9 @@ Decide / ask Dan:
 2. Model files no slot uses now: bass.glb, guitar-black.glb, guitar.glb (and jack-creeper.glb once N03 lands). Not
    loaded; keep or delete is Dan's call.
 3. The speed session (`danavivi-cc`, `feat/home-speed`) merges into this branch on Dan's OK; expect overlap in
-   room.html's loadTextures / loadModels (the street's 11 lines are there too).
+   room.html's loadTextures / loadModels (the street's 11 lines are there too). Main now also builds the hidden page
+   from room.html (danavivi-fa's `tools/garagepage/integration.mjs` swaps its Google Fonts and jsDelivr Lenis for the
+   site's own): a change to how room.html loads fonts or Lenis must keep that swap working (its build log warns if not).
 
 Cleanup: this session's scratchpad (`/private/tmp/claude-501/-Users-danavivi/b6aad35f-2a94-4c15-bec7-6071dd878989/
 scratchpad`, ~20 GB with the speed study) can go once round 6 is out: the essentials are in
@@ -466,12 +1003,243 @@ Open: the monitors bench had B (vintage) ticked but Dan's chat said "black + woo
 Owed by Dan: send Yoni the CSP link (three words: `'wasm-unsafe-eval'` in script-src, `blob:` in img-src and
 connect-src; tested 11-10 in Chrome, Safari, Firefox; steps, exact values, check and undo: the shared repo's
 `collaboration/handoffs/2026-11-10-yoni-csp-room/handoff-yoni.md`); when he says done, compare the live header with that page's value byte
-for byte; tell Gil (the room on laptops from Nov 19, next to his Black Friday
+for byte (the value: `.claude/garage-bench-2026-11-10/csp/csp-prop3-raw.txt`; the local test, `cspserve.py` +
+`csptest.cjs`, sits next to it) and load /garage-9f3c/ (textures, no CSP errors); tell Gil (the room on laptops from Nov 19, next to his Black Friday
 countdown); the finish list's stops 2-6.
 Run the room: from this worktree's root `python3 -m http.server 4490 --bind 127.0.0.1` (this session left one running,
 pid 52126: `kill 52126` if it's in the way), then http://127.0.0.1:4490/tools/_home-opening/room.html. The scripts
 default to port 4471: pass the port.
 Loose ends: `home-bake` has the untracked, regenerable `bake/room/` + `bake/test-room/` (leave or delete).
+
+### 2026-11-11 — `danavivi-cc [172bce]` (the speed session) — direction 1 built on `feat/home-speed`: the models download 4.7 MB lighter, same look — MERGED into `feat/home-opening` and PUSHED TO MAIN 2026-11-11 on Dan's word, live and checked
+
+Claim: CLOSED 2026-11-11 (rv close); it was `danavivi-cc [172bce]` (Dan's Mac), worktree `.claude/worktrees/home-speed`, branch `feat/home-speed` (cut from
+`feat/home-opening` at `05e1a09`). Files: `tools/_home-opening/masters/**` (new), `tools/_home-opening/assets/models/*.glb`
+(now built files), `tools/_home-opening/models-kit/pack/**` (new), and two doc lines (`models-kit/README.md` "Into the room"
+step 2, `assets/models/SOURCES.md` intro). `room.html`, `MODELS`, every path and every node name are untouched.
+
+Request (Dan, 11-11, after the directions page https://claude.ai/artifact/4GNk8z5d4NUHhqJYwaxXps): "pull and Build 1" =
+direction 1, "same look, smaller files, for everyone".
+
+**Read this before you add or replace a model** (it changes the flow for every session):
+- The full-size originals now live in `tools/_home-opening/masters/models/` (83 files, a git rename) and `masters/pbr/`
+  (37 copies). They are not served and not copied to the live page (`tools/garagepage/integration.mjs` copies `assets` only).
+- `assets/models/*.glb` are **built** from them by `models-kit/pack/` (pictures inside → WebP, shapes → meshopt). Never edit
+  one by hand: the next pack overwrites it.
+- New or replaced model: put the raw .glb in `masters/models/` (one dropped into `assets/models/` out of habit is moved there
+  by the pack's first step), run `tools/_home-opening/models-kit/pack/pack.sh` (~10 min; Chrome; port 4618 or
+  `KIT_PORT=<free port>`), commit the master, the packed file and `need.json`. After the layout or the walk moves:
+  `./pack.sh check`. Full page: `models-kit/pack/README.md`.
+- Blender (and most tools) cannot open a packed file: open the one in `masters/models/`. `glbinfo.py` reads both.
+- The waiting drops of the builders (N17 `pedalboard.glb` and L20 `bass-natural.glb` replaced, N03 `lift-pump.glb` new, the
+  glossy `coupe.glb`) go in through `masters/models/` + `pack.sh`. When this branch meets a branch that replaced
+  `assets/models/<x>.glb` with a raw file, git reports a conflict on it: take the incoming raw file as
+  `masters/models/<x>.glb`, re-run `pack.sh`, commit what it builds.
+
+What the pack does to a model: every position, triangle and node comes out bit for bit as it went in (the build compares
+them and refuses to write a file that differs); normals are rounded to 12 bits, UVs to 14; colour pictures WebP q85, normal
+and roughness maps q90, the original's bytes kept when WebP isn't smaller; a picture shrinks only by the size levels the
+walk never reads (measured at 41 stops in four windows, half a level of headroom).
+
+Results (measured 11-11, this Mac):
+- Models 22.90 → 12.17 MB on disk; as downloaded (gzip, what the live server sends) 14.11 → 9.44 MB. A cold first visit
+  22.21 → 17.60 MB on the wire, 162 files as before. PBR maps unchanged (5.92 MB).
+- Cold first visit until the room is ready, today → packed (two interleaved passes through `perf/simserve.py`, gzip on,
+  40 ms round trip at 25 Mbps and up, 150 ms below; both passes shown where they differ): 100 Mbps 4.0 → 3.8 s ·
+  50 Mbps 5.7 / 5.6 → 4.9 s · 25 Mbps 9.0 / 8.9 → 7.7 / 7.4 s · 10 Mbps 19.5 / 20.0 → 15.9 / 16.1 s ·
+  5 Mbps 37.4 / 37.5 → 29.8 / 30.2 s · the stress line, 1.6 Mbps: 112.9 / 113.0 → 89.7 s (1:53 → 1:30).
+- Less than the directions page promised for direction 1 (15.2 MB, 77.8 s at 1.6 Mbps). Why: (1) the texture right-size
+  finds only 7 of 237 textures to drop (≈ 0.3 MB, the page expected ~3 MB): the models' maps are read with 8x anisotropic
+  filtering (`room.html` `dress()`), one level finer than the trial assumed, and the ultrawide + tablet windows count;
+  (2) the trial's tighter shape packing changed the picture, so it was dropped (next point).
+- Same look, proven: stills at walk 0 / 0.25 / 0.5 / 0.75 / 0.95 (1141x636 @2x, all lights), originals against packed:
+  mean difference 0.00-0.16 of 255 levels, under 0.01 % of pixels off by more than 24, nothing the eye finds at 6x zoom
+  (two renders of the originals are pixel-identical, so every difference is the pack's). The first recipe failed this test
+  twice and both causes are now excluded by the build: 8-bit normals moved the highlight on the car's paint at the door
+  (car area: mean 1.94 → 0.07 with 12 bits), and snapping positions to a 0.03 mm grid made a lit meter face on the studio
+  desk (`rack_glow`, 0.5 mm over its panel) come out half dark at walk 0.25 (max 181 → 11). Cost of keeping both exact:
+  0.6 MB.
+
+Checks, actual results:
+- `pack.sh check` end to end: `237 right-sized, 0 could shrink, 0 under-sized, 0 not packed, 0 without an original`.
+  The build is repeatable: 13 more runs of `node pack.mjs build`, 12 ended `0 files changed`. One (the first, started
+  the moment the timing run ended) stopped with a Node error whose text was not captured; the files were not touched
+  (the next run: `0 files changed`, `check` passes) and it did not come back in 12 tries. If `pack.sh` stops in the
+  build step, run it again and keep the error text.
+- `lights/check.mjs` (40 Mbit/s): no page errors; the hand-off picture is as far from the room as before (mean 5.20 levels
+  packed, 5.19 today), so `assets/lights/` needs no re-render. Phase shares 0.33 / 0.44 / 0.20 / 0.03 against `LOADW`
+  0.34 / 0.52 / 0.11 / 0.03: left as it is.
+- `layout-kit/check.mjs layout-kit/start-layout.json`: output byte-identical to today's room (no overlaps, same frame sizes).
+- The packed room under the proposed CSP (`csp-prop3`) in Chrome, WebKit 26.5 and Firefox 153: 1339 objects, 282 textures,
+  0 dropped, no errors, the same counts as the originals.
+
+🔴 **Do not put this on main before Yoni's CSP edit is live.** Under today's live policy the meshopt decoder (WebAssembly) is
+blocked: tested 11-11 in Chrome, the packed models do not appear at all (812 objects instead of 1339; today the live page
+shows them without their pictures). The word needed is the one already asked for: `'wasm-unsafe-eval'` in `script-src`
+(with `blob:` in `img-src` and `connect-src`): `collaboration/handoffs/2026-11-10-yoni-csp-room/handoff-yoni.md` in the
+shared repo. The live header on the morning of 11-11 still lacked all three.
+**Update 11-11 12:34: the edit is live** (Yoni + `revaudio-bf`, shared `collaboration/STATUS.md`): the header on
+https://revaudio.net/garage-9f3c/ now carries `'wasm-unsafe-eval'` in `script-src` and `blob:` in `img-src` and
+`connect-src` (read with `curl -sI`). The blocker is gone. Checked on the live domain after the main push (11-11, below):
+no CSP errors, every model textured.
+
+Not done / open:
+- Merged into `feat/home-opening` on Dan's word ("marge", 11-11 after the close): a fast-forward from `05e1a09`, pushed to
+  origin.
+- **On main, live** (Dan, 11-11: "push to main", then "send and sonnet - to marge to main"): a Sonnet subagent merged
+  `origin/feat/home-opening` into `origin/main` with `--no-ff` in this worktree, merge commit `833f632`, pushed
+  `200a599..833f632`. Deploy to GitHub Pages run 43007936331 and Smoke test run 43007936347: both success. The merge
+  touches only `tools/_home-opening/**` and `tasks/**` (215 files).
+- Live check by this session after the deploy, https://revaudio.net/garage-9f3c/?expose&capture=0 in Chrome 157 and
+  WebKit 26.5 (Playwright, headless): 1339 objects, 708 meshes, 282 textures, 0 empty, 0 dropped, 0 CSP violations,
+  no page errors, in both: the same counts as the local packed room. The live `assets/models/coupe.glb` is the packed
+  file (363,052 bytes); `masters/` is not on the live site (404), as intended. Not checked on live: Firefox, a real
+  phone, a look by eye at the walk (Dan's).
+- Direction 2 (the slow-line safety net) is not built. Other savings not built: the picture quality was not lowered, and
+  the PBR maps were left alone.
+- Not measured: real phones, Safari timings (the timings are Chrome on this Mac through `perf/simserve.py`).
+- `LOADW` not re-tuned (above). The trial builds, stills and timing logs are in this session's scratchpad only
+  (`/private/tmp/claude-501/-Users-danavivi/38d326b1-1855-4bfb-9b05-ed9017ee0743/scratchpad`: `stills6/`, `perf/final.txt`).
+
+Next: Dan looks at the room from this worktree (`python3 -m http.server 4618 --bind 127.0.0.1` at its root, then
+http://127.0.0.1:4618/tools/_home-opening/room.html) (he said merge before looking). Main: done 11-11, live check passed (above). What is left is Dan's own look at
+https://revaudio.net/garage-9f3c/ and, if he wants the slow lines faster, direction 2.
+This entry's update sits on `feat/home-speed` / `feat/home-opening` only: it rides to main with the next room push (a
+handoff-only push to main would run a deploy and a full Cloudflare purge for nothing).
+
+Session end 2026-11-11 (rv close, then a second close after the main push):
+- Dan's words on the build, in order: "marge" (into `feat/home-opening`), "push to main", "send and sonnet - to marge to
+  main". He got the live-check report and closed the session. He has not said he looked at the live room himself, and
+  has not answered on direction 2.
+- Stopped on Dan's word at close (both ports are free; Dan also confirmed the CSP edit is active). They were: `python3 -m http.server` on 127.0.0.1:4618 (pid 39650, this
+  worktree's root = the packed room) and on 127.0.0.1:4619 (pid 54424, a scratchpad copy of the originals = today's
+  room). `pack.sh` uses 4618 by default, or `KIT_PORT=<port>`.
+- The scratchpad is under `/private/tmp` and does not survive a restart: the stills and `perf/final.txt` are evidence
+  only, every number that matters is written above.
+- Git at the second close: `feat/home-speed` = `origin/feat/home-speed` = `origin/feat/home-opening` = `04d2b66` plus the one commit
+  that carries this block (0 ahead, 0 behind). `origin/main` = `833f632`: it holds everything here except `04d2b66` (the handoff note of the main push,
+  kept off main on purpose) and this block's last edit. The builders' local `home-opening` worktree was not touched
+  after the first fast-forward: it is behind origin by the handoff commits until its next pull. No servers and no test
+  browsers of this session are running.
+- After the merge `feat/home-speed` has nothing `feat/home-opening` lacks; work goes on in `feat/home-opening`. A branch cut
+  before the merge that replaced a model: see "Read this before you add or replace a model".
+
+### 2026-11-11 round 6 — `danavivi-cf [3dcc55]` (Dan's Mac) — mostly landed (state: SESSION END 2026-11-11 below): the plugins as objects, the props, the TV picture, the sign, the plate
+
+Dan, 11-11: "remove ... the drift on the right table ... the radio roulette on the top compressors and all those near
+the headphones. I want to make a 3D asset out of it ... the rev limiter [on the table] a 3D asset as well ... the rev
+effects on the left ... all the elements [still plain] I want to build them, like the box on the left in the beginning
+of the room, the boxes behind the guitars ... the main TV is not updated to the current TV ... the sign of Rev Audio
+on the left is not in the beginning of the loading screen." His picks (AskUserQuestion, all four the recommended ones):
+clear the compressor rack R06 and W10's shelf items too (the headphones N49 stay on their hook); the plugin objects
+built from code with each plugin's real UI as the face (0 credits); the REVAUDIO sign lit from the loading screen's
+first frame (its own circuit, like the GAS globes); roster: 2 Opus builders (DRIFT + RevFX, Radio Roulette +
+RevLimiter), 1 Sonnet builder (the 9 kinds of mess props + W10 bare), a Sonnet review per batch.
+Plan: M01-M04 become the plugins' objects in the CRTs' spots (M04 on the red chest R05 once R06 is out); the mess's
+9 kinds become models; W10 keeps its plank; the TV / nav / below pictures re-captured from the live homepage (they were
+11-02's: ALL 4, no GAS 2); the 3 waiting builds of round 5 (N17, L20, N03) ride along; then the loading pictures, the
+checks, a bench, and one push to main under Dan's room-only OK.
+Later the same day (Dan): "dont need to build drift object" -> M02 removed, no object in its place (cde1913); "the
+revaudio sign what about it?" -> his pick: build the REVAUDIO neon as a real 3D neon sign (tubes along Bebas Neue's
+outlines, a rail, standoffs, blockouts; the RevFX builder takes it after M01). Also built on his "all the elements":
+the door's last plain slots that wide screens see (N08 vending machine on its own circuit, N05 compressor, R01
+parts-store shelf); the never-seen slots behind the walk's first camera (L10 R04 R11 R12 R13 N04 N09 N22 N25) left plain.
+Then (Dan): "lets put the radio on the shelf where is the headphones" (M04 on W10, 07fb24f); "Put a plant over there"
+(N50 pothos on the red chest R05, 3ffc279). RevFX's lunchbox + the 3D neon landed (8155f0b); loading pictures
+re-rendered after them (uncommitted, stale again after 7c49ce8; re-render once the fixes land).
+Reviews (Workflow, 3 lenses + 3 skeptics per finding): props `wf_7d79ec52-688` done: crate, drum, papers, case, W10
+ship; coil (rebuild, dark rubber), tyre (OD 0.66), cone (black base), can (lid rings, plain band) back to the props
+builder, landed (a8ee864); the room's mess spots fixed + check.mjs tests the mess (7c49ce8). Heroes (M01 M03 M04
+SIGN) `wf_37a22192-28b` done: M01, M04 and SIGN ship; M03 needs its colours fixed (below). Seen by me: the neon's
+black electrode boots read as a strike-through at walk 0 (the review passed the sign: Dan judges).
+Dan, 11-11: "there is an asset of a license plate in one of the Rev Audio folders ... Let's put it in the back of
+the car" -> design-assets `3d-assets/revaudio-plate/revaudio-plate-1.0.0.glb` (145k tris, 16 MB: a Higgsfield
+image_to_3d build of our own art); builder B bakes a room copy (~2k tris, 1k maps) and measures its spot on the
+coupe's tail (R.car local frame); the RevLimiter plate beside it is the other option. Landed (923dc37); Dan: "nice".
+Files: `tools/_home-opening/**`, this entry.
+
+### SESSION END 2026-11-11 — `danavivi-cf [3dcc55]` — round 6 mostly landed; left: M03's colours, the pack, the loading pictures, the bench, the push
+
+State at session end: `feat/home-opening` PUSHED to origin on Dan's "push branch" (11-11), with the stopgap loading
+pictures and this entry; main untouched. Against origin/main: the branch has its round-6 commits main lacks, main 4
+the branch lacks.
+This session's commits: `e279e0f` claim · `9c68426` TV / nav / below pictures re-captured from the live homepage
+(new `tvcap.mjs`) · `1dac589` part 1: the sign on its own circuit, R06 out, the plugin-object and mess-model hooks,
+round 5 landed · `97e4f87` part 2: the mess's nine kinds as models, W10 bare · `347f2b7` part 3: N08 vending
+machine, N05 compressor, R01 parts-store shelf · `cde1913` M02 DRIFT out · `cd13d99` loading pictures · `3f135b8` M04
+Radio Roulette + M03 RevLimiter objects · `07fb24f` the radio up on W10 · `3ffc279` N50 the plant · `8155f0b` M01
+RevFX lunchbox + the 3D neon · `7c49ce8` the mess clear of the furniture + check.mjs tests the mess · `a8ee864` the
+props review's model fixes · `923dc37` the RevAudio plate on the coupe's tail.
+- `tools/_home-opening/assets/lights/*.webp` (12, the loading screen) committed as a STOPGAP (Dan: "push branch"):
+  rendered 15:51 after `8155f0b`, so slightly stale (before the mess moves, the props fixes and the plate, which shows
+  at walk 0). Re-render them once, last, after M03 + the pack and before main (NEXT 4).
+- Lasting copies (git-ignored; the scratchpad dies with the session): `/Users/danavivi/projects/revaudio/
+  revaudio-website/.claude/garage-bench-2026-11-11/`: the briefs, the three builders' `candidates/` + `work/` (scripts,
+  notes, stills), `look/` (pose.mjs, mbox.mjs, lightcap.mjs, loadseq.mjs, messvis.mjs/.py, messfree.mjs, depth.mjs),
+  `nocache_server.py`, both reviews' full JSON (`reviews/`), M03's hue tool + its reference still
+  (`review-heroes-m03/`), `sign-old-vs-new-loading.png`, `plate-in-room.png`.
+
+Unverified:
+- Dan's last open question, the sign in the loading screen ("I don't see any sign, any skeleton of a sign"): his
+  browser kept the old pictures; the local server now sends no-store. He hasn't said whether he sees it now (asked:
+  hard-reload with `?lights=demo`). The loading pictures now carry the 3D glass (base.webp: the first light).
+- Dan saw the plate ("nice"). Not seen by Dan: the RevFX lunchbox, the 3D neon, the props' fixes, the moved mess.
+- The neon, my own look: on every letter a 40 mm gap with black electrode boots on the raceway's line; in the
+  loading picture they read as a dashed strike-through (`sign-old-vs-new-loading.png`, 3x). The three-lens review
+  passed the sign ("reads REVAUDIO ... in the dark loading frame"). Dan judges on the bench.
+- The pack has not run: 22 raw files served (7.86 MB), the four heroes among them.
+
+Background processes:
+- `python3 nocache_server.py` (worktree root, Cache-Control: no-store), port 4641, pid 32988: Dan's local room
+  http://127.0.0.1:4641/tools/_home-opening/room.html. `kill 32988`.
+- `python3 -m http.server 4652` (the scratchpad's plate viewer), pid 56004: nothing needs it. `kill 56004`.
+- Both workflows are done; the three builders (A `a43ebdf684cb1ceed`, B `a9b2aa24849fc26ea`, props
+  `a523c8d41ab6d72d4`) are idle and reachable only from this session: a new session spawns a fresh builder with the
+  brief (lasting copy) and points it at the old builder's `work/`.
+
+NEXT, in order:
+1. M03 RevLimiter's colours (the heroes review's one confirmed model finding, 3 of 3): in the room its gold on black
+   renders rose-copper on maroon, salmon on top, right under the TV's gold RevLimiter card. The recipe:
+   `reviews/heroes-review-wf_37a22192-28b.json`, synth.perPiece M03.modelFixes. In short, change the model's colours,
+   not the desk light. Brass yellower at the same brightness: (206,160,84) -> (206,180,78), (150,110,52) ->
+   (150,130,50), (182,138,70) -> (182,159,68). The face picture's brass pixels +10° hue and its darks neutralised
+   (`prep_tex.py`). The top deck black satin leather (the June look). The lip quilt (92,22,26) -> (60,12,22). Toggle
+   bushings black. Keep the footprint 0.58 x 0.385, height 0.293, origin, node names, 4 materials. Builder B's
+   scripts: `b-plugB/work/prep_tex.py`, `build_rl.py`. Pass at walk 0.7 (1141x636, `review-heroes-m03/
+   skeptic-2-2-tools/hue.py`, boxes gauges 165,530,280,636 · topdeck 100,505,370,525 · tvcard 573,246,729,322): the
+   gauges' sat-top-5% hue >= 30° (today 23), the top deck black or burgundy (today salmon (168,77,61)).
+2. Land M03 into BOTH `masters/models/revlimiter.glb` and `assets/models/revlimiter.glb`: pack.sh's adopt step
+   moves raw assets/ copies onto masters/, so a stale raw copy would overwrite the new master.
+3. Pack: `cd tools/_home-opening/models-kit/pack && KIT_PORT=<free port> ./pack.sh` (~10 min), then
+   `./pack.sh check` (exit 0). The review expects the heroes 3.36 -> about 1.49 MB. Commit the masters, the packed
+   files and need.json by path.
+4. Loading pictures: `node tools/_home-opening/lights/render.mjs --port 4641 --check`, then `lights/check.mjs --port
+   4641` (today: hand-off blurred mean 3.40 p99 15; layers vs room mean 4.14 p99 22; README baseline 3.3 / 14 and
+   3.9 / 20). Then `layout-kit/check.mjs layout-kit/start-layout.json --port 4641` (0 overlaps; the drum listed as
+   tucked), `layout-kit/handoff.mjs` (baseline 1.05 / 0.68 / 0.45 / 2.57 %), drawcalls.mjs + fps.mjs (the heroes add
+   42 draw calls at walk 0: act only if walk-0 fps drops more than 10 %).
+5. The bench for Dan (`review-bench` skill; round 5's link https://claude.ai/artifact/54aorRBcCAvWJTrPHqaPZm,
+   personal account, pass `url`, collection `notes-r6`): the plugin objects (M01, M03, M04 on W10), the neon (+ the
+   strike-through question), the props, the plant N50, the plate, the TV picture, the loading screen.
+6. Push: the branch (`git pull --rebase && git push`), then main under Dan's standing room-only OK (the four limits
+   in SESSION END 2026-11-10 above): Deploy + Smoke test green, /garage-9f3c/ loads, Dan gets the link + one line.
+
+Decide / ask Dan:
+1. The neon's electrode boots: keep (the review passed them) or rebuild with each letter's gap at its foot, off the
+   raceway's line (builder A's `sign.py`).
+2. The neon's bare raceway (review nit): it runs 0.53 m past each end of the word to reach the room's wire points.
+   Shorter = a rebuild + the room's wires moved to ±0.85 + the cord re-aimed; or keep.
+3. The sign's size in the loading screen (~130 px wide at 1141): bigger or closer? Asked 11-11, no answer.
+4. A cone in the scatter: none shows (33 off since 11-10). Low priority.
+5. Unused model files: crt-casing.glb, vu-rack.glb, jack-creeper.glb, bass.glb, guitar-black.glb, guitar.glb (+ the
+   never-landed DRIFT pod, `b-plugA/candidates/M02/`): keep or delete.
+
+Suggested commits (after the steps): `feat(garage): RevLimiter's console in brass and black (review fix)`
+(masters + assets revlimiter.glb, SOURCES.md) · `perf(garage): pack round 6's models` (masters/models, assets/models,
+models-kit/pack/need.json) · `feat(garage): loading pictures for round 6` (assets/lights/*.webp) · the handoff.
+
+Cleanup: the review's optional SIGN early-fetch line in loadModels (tidies the load order, nothing visible).
+Memory written: none (all of it is this repo's state, here).
 
 ## 2026-11-09 — /revfx trial form sends the download at once (`gateWired: true`) (Claude Code `revaudio-0b [3311c0]`, Yoni's laptop 2) — branch `revfx-gate-on` — PUSHED TO MAIN 2026-11-09 on Yoni's "deploy" (worker deployed first, version `b31a75bd`)
 
@@ -486,6 +1254,35 @@ Claim: CLOSED 2026-11-09 `revaudio-0b`. Files: `src/data/revfx.ts` (`gateWired` 
   `/download/register` and the ok text "Download on its way by email." Not checked: a real sign-up (after deploy).
 - Open (not touched): `winReady: false` + the fine print "Open it on a Mac", though `revfx-win` is live in R2 since
   2026-11-09 16:07; the download email offers both.
+
+## 2026-11-11 — The car's bench + Dan's car look baked into the room (Claude Code `danavivi-ee [6acc6f]`, Dan's Mac) — on `feat/home-opening`, PUSHED 2026-11-11 on Dan's word (`5efaf80`), not on main
+
+Claim: CLOSED 2026-11-11 `danavivi-ee` (it held `tools/_home-opening/room.html` for the car look only, after `danavivi-cf`'s claim closed; the room's round 6 NEXT list above is untouched and still the next session's). Files: `tools/_home-opening/room.html` (one block + two lines), `tools/_home-opening/car-bench.html` (new), this entry.
+- Dan, 11-11: "a bench for the car ... control over wear, texture and other". His picks (AskUserQuestion): wear drawn by code, live, plus a slot for a painted texture; in the bench too: paint + lacquer, glass / chrome / wheels, decals, lamps + plate. He tuned it and pasted his settings the same day.
+- `room.html`, "the car's look": `CAR_DEF` (the coupe as built, every layer 0), `CAR_LOOK` (the room's car = Dan's pasted bench, verbatim: metallic black + fine flake, tread plate over the paint, cream twin stripes, gold wheels, mud 0.44, chips 0.44) and `createCarLook()`. The coupe has no UVs and flat colours, so the wear is drawn in its materials' shaders from the position in the car's own frame (`onBeforeCompile` on paint / black / glass / metal / plate): dust, mud, rain streaks, wash swirls, scratches, stone chips, peeling lacquer, rust (pitting on the chrome), metal flake, a picture from three sides, stripes, a door number, a sticker, the tail lamps (dark with Engine off, as before), the plate. `R.carLook` is made right after `loadModels()`; `frame()` calls its `tick`.
+- Inline, not a module file: main's `tools/garagepage/integration.mjs` copies only `street.js`, `lights/lights-on.js` and three folders to the live page, so an imported `car-look.js` would have been a 404 there and a dead room.
+- `car-bench.html` (the editor): runs the real room in a frame (`room.html?expose`) and drives `R.carLook`, so the car is judged in the room's light. Close-up (orbit, wheel zoom, Clear view = a near plane that hides what stands in front) or Visitor's view (the room's camera + walk). Presets, undo / redo, Hold: today's car (= `CAR_LOOK`), Copy settings -> paste -> replace `CAR_LOOK`. Its work light is never part of the look. It is not copied to the live page (not in the integration's list).
+- Run: the worktree root, `python3 -m http.server <port> --bind 127.0.0.1` -> `/tools/_home-opening/car-bench.html`.
+- Checks (Playwright 1141x636, real Chrome + WebKit): the room and the bench load with no page errors (the one 404 is the dev server's favicon); the room at walk 0 / 30 %: 60 / 60 fps Chrome, 57 / 60 WebKit, as before the look; Engine off still darkens the lamps; the bench's presets, undo / redo, hold, copy, reload and reset behave. Not checked: a phone, the live page.
+- The loading pictures were re-rendered the same day (Dan: "in the loading screen the picture not matching the 3d asset in all of the page. lets always chack it if the loeading screen matches the finel page"): `lights/check.mjs` before 4.52 / 43 (blurred mean / p99), after 3.28 / 15, back at the README's baseline. **Standing rule, for every room session: `lights/check.mjs` must print PASS before the room is shown to Dan or pushed** (it now ends with PASS / FAIL and exits 1 on FAIL: `layers.py --diff ... gate`, whole picture + area by area; rule in `lights/README.md`, lesson in `tasks/lessons.md`). Round 6's NEXT 4 still applies after M03 + the pack: the check will say FAIL, re-render then. The slow-connection still (`assets/still/`) is no longer used by room.html (README), so it was left.
+- Not done: the model has no head lamps to light; wheels and chrome share one material, tyres and trim another, so they tune together. `stk` is 1 with no picture in Dan's settings: no sticker shows (kept as pasted).
+- SESSION END 2026-11-11 (`danavivi-ee`, "rv close"). Dan on the room after the render: "looks very good just the main tv shop ... its not updated to what we have so we do it alter just rimind it". Checked: the loading screen and the room load the same TV file at every width (1141 / 1312 / 1440 / 1512 / 1728 / 1920), so the gap is the TV picture's content, not the loading screen. Parked on his word; in his Reminders (list Revaudio) + a Notes prompt "garage room: update the main TV shop picture (2026-11-11)". Ask him first what the TV should show: `tvcap.mjs` captures the LIVE homepage.
+  - Git at close: `feat/home-opening` level with origin; against origin/main the branch has 23 commits main lacks, main 10 the branch lacks (merge main before the room goes to main). Worktree clean. `feat/car-bench` and its worktree are gone (fast-forwarded into this branch).
+  - Processes: this session's server (4481) is stopped. Still running, `danavivi-cf`'s: `nocache_server.py` on 4641 (pid 32988), Dan's local room and bench.
+  - Lasting copies (git-ignored): `.claude/car-bench-2026-11-11/` in the main checkout: `bench.mjs` (bench shots: settings + view per shot), `check.mjs` (the bench's controls + fps, Chrome / WebKit), `roomcheck.mjs` (the room with the look: fps, Engine off), `tv.mjs` (loader vs room TV per width), `probe.mjs` (the car's parts and materials).
+  - Not started (Dan said "go" to the reminders, then "rvclose"): round 6's NEXT 1-3 above (M03's colours, the pack, then render + check). Also open: the car look on a phone; the sticker (on, no picture); the design hook's Inter waiver for `car-bench.html` did not persist (auto mode blocked `impeccable hooks ignore-value`), Dan has the line.
+- **Dan's word after the close (11-11), for the next car session:** "it's important to me that next time we will work on a car, then we'll have that bench and we can change the car as well, the type of the car". So: any car work starts in `car-bench.html`, never by hand in `room.html`; and the bench's first new control is the car's TYPE (a picker that swaps the model in the room, live). Not built. What is tied to the coupe today, so the next session knows the seams:
+  - One model, hard-wired: `CAR: { src: 'assets/models/coupe.glb', yaw, tail, plate: { at } }` in room.html's model list. A type = that record per car (file, yaw, the plate's place on its tail, tail lamps yes / no).
+  - The look finds its parts by material NAME: `CAR_ROLES = { paint, black, glass, metal, plate, plate_bolt }`. Another model needs its materials named so, or a name map per type; a part with no role gets no look. `.claude/car-bench-2026-11-11/probe.mjs` (main checkout) lists a model's parts and materials.
+  - The stripes, the door number and the sticker sit in metres in the car's own frame, so their places are per type; `CAR_LOOK` becomes one look per type, and Copy settings must carry the type.
+  - A new model file is fine for the live page (the integration copies the whole `assets` folder); new code still goes inline in `room.html`.
+  - A car swap shows at walk 0: re-render the loading pictures, `lights/check.mjs` must print PASS.
+  - Ask Dan first which cars (his team models them: Supra-inspired, no badges). No model is picked.
+  - **Dan again, same day: "I want the bench will actually like replace cars, and we'll have like saved cars and saved asset".** Three things, none built:
+    - Replace: the picker really swaps the car in the room (the model, its plate, its look), not a preview beside it.
+    - Saved cars: a named list in the bench (a car = its type + its whole look), save / load / rename / delete, and "put this one in the room". Today the bench keeps ONE working look in the browser (`localStorage` `carbench:v1`) and the room has ONE `CAR_LOOK`; presets are fixed in code. Saved cars must live in the repo (a file every laptop and the live page get), not in one browser.
+    - Saved assets: a shelf of the files a car uses, picked from a list instead of typed paths: car models, painted textures (`texSrc`), stickers (`stkSrc`, today only an upload kept in `localStorage` `carbench:pics:v1`, so it never reaches the room: the reason the sticker is "on, no picture"). My reading of "saved asset"; confirm with Dan what belongs on the shelf.
+    - Seam: data files under `tools/_home-opening/assets/` reach the live page (the whole folder is copied); a browser can't write repo files, so "save" = the bench hands the file / the settings over and the session lands it (as Copy settings does today), unless Dan wants a small local save server.
 
 ## 2026-11-09 — /revfx player: the die moves into the player and rolls Yoni's presets (Claude Code `revaudio-2f [e388a1]`, Yoni's laptop 2) — branch `feat/revfx-hear` — LIVE on main `81922f5` (2026-11-09, Yoni: "push deploy to the revfx page (dont add it to the index just like its now)")
 

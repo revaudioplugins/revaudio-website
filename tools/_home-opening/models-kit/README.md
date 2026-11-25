@@ -53,7 +53,8 @@ spec can add what `MODELS` can't yet.
 ## Into the room (the main session)
 
 1. Dan picks on a review bench (`team/bench-picks-template.html`: A / B / C flipped in place).
-2. Copy the .glb to `assets/models/`, add a row to `assets/models/SOURCES.md` and to `refs/licence-log.md`
+2. Copy the raw .glb to `masters/models/` and run `models-kit/pack/pack.sh` (`pack/README.md`): it builds the web-sized
+   file the room serves in `assets/models/`. Add a row to `assets/models/SOURCES.md` and to `refs/licence-log.md`
    (git-ignored, Dan's Mac).
 3. A line in `MODELS` (`room.html`): a block slot fits the model into its box (`fit: 'height'` keeps the shape); a prop
    slot (a group of drawn parts, e.g. E07) takes the model at real size where its parts stood; `stand:` adds a

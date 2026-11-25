@@ -20,7 +20,7 @@
  */
 
 export type PluginStatus = 'in-development' | 'beta' | 'live';
-export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx' | 'vocal';
+export type PluginCategory = 'limiter' | 'saturation' | 'panner' | 'eq' | 'multi-fx' | 'stereo' | 'vocal';
 
 /** A category on the home TV's plugin library (labels + order: src/data/library.ts). 'free' is never listed on a
  *  plugin: the library adds it from `isFree`, so "free" has one source. */
@@ -288,8 +288,9 @@ export const plugins: Plugin[] = [
       ],
       // Chain spot + redline meaning match the product page (Yoni 2026-10-07:
       // last on the master bus; redline = threshold, as in the plugin's DESIGN.md).
+      // the line break: Dan's bench edit 2026-11-24 (the TV's blurb keeps it, white-space: pre-line on laptops)
       blurb:
-        'Multiband compression, saturation and an adaptive limiter in one chain, built to sit last on your master bus. The redline is the threshold.',
+        'Multiband compression, saturation and an adaptive limiter in one chain, built to sit last on your master bus.\nThe redline is the threshold.',
       alt: 'RevLimiter plugin window: the rev gauge with its redline, the band controls and the meters',
     },
     trialUrl: 'https://revlimiter-license.revaudio.workers.dev/download',
@@ -611,9 +612,8 @@ export const plugins: Plugin[] = [
     statusLabel: 'Free trial',
     trialOpen: true,
     introPriceUsd: null,
-    regularPriceUsd: null,
-    // The cart's Paddle item. The /revfx buy key shows only once revfx.ts is phase 'released' with priceUsd
-    // (set regularPriceUsd here to the same price then): keep this id equal to revfx.ts paddlePriceId.
+    regularPriceUsd: 19, // = revfx.ts priceUsd (the cart's price; Paddle charges its own $19.00)
+    // The cart's Paddle item: keep this id equal to revfx.ts paddlePriceId.
     paddlePriceId: 'pri_01m5a2rfk2kcb3tpm2j87kfgh9',
     checkoutPaused: false,
     demoUrl: null,
@@ -626,10 +626,74 @@ export const plugins: Plugin[] = [
       { name: 'Four snapshots', desc: 'Hold to save, click to recall. FX Scene is automatable, so your DAW can switch them.' },
     ],
     audioDemos: [],
-    // RevFX 1.2.0: Mac universal, macOS 10.13 floor (CMakeLists.txt); no AAX (no PACE wcguid yet), no Windows build yet.
-    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU on Mac' },
+    // RevFX 1.3.9: Mac universal, macOS 10.13 floor (CMakeLists.txt), PACE-signed AAX in the pkg; no Windows build yet.
+    systemReq: { ...baseSystemReq, os: 'macOS 10.13+ (Apple silicon + Intel)', formats: 'VST3 + AU + AAX on Mac' },
     reviewsCount: 0,
     reviewsAvg: 0,
+    library: {
+      cats: ['vocals', 'creative', 'reverb', 'modulation'],
+      typeWord: 'multi-effect rack',
+      words: [
+        { w: 'Wide',     o: 0.5 },
+        { w: 'Spacious', o: 0.72 },
+        { w: 'Stacked',  o: 1, hot: true },
+        { w: 'Shimmery', o: 0.72 },
+        { w: 'Glued',    o: 0.5 },
+      ],
+      blurb:
+        'Pitch, echo, reverb, halo and glue comp in one rack. Drag them into any order, or roll the dice for a whole scene.',
+      alt: 'RevFX plugin window: the Pitch, Echo, Reverb, Halo and Glue Comp strips side by side under the snapshots, the dice log and RANDOMIZE',
+    },
+  },
+  {
+    // WIDE BEAM: on sale 2026-11-23 (Gil). Keep paddlePriceId and introPriceUsd equal to src/data/widebeam.ts
+    // (paddlePriceId, priceUsd). 'live' puts it on /support, /buy/widebeam and the cart; `library` puts it on the
+    // home TV. The /widebeam page is its own route ([slug].astro OWN_ROUTE).
+    slug: 'widebeam',
+    name: 'WIDE BEAM',
+    category: 'stereo',
+    tagline: 'Stereo width control',
+    oneLiner: 'Open the stereo image. Keep the bass on the centre line.',
+    plainHook: 'Wider, not weaker.',
+    plainWhat:
+      'A stereo widener fronted by a pair of classic headlights: open the image, keep the low end in mono, check it with the correlation needle.',
+    longPitch:
+      'WIDTH opens the side, LOW FOCUS keeps the bass on the centre line, HIGH BEAM adds a decorrelated shine on top and TILT leans it bright or dark. The correlation needle and MONO check keep it safe for every speaker.',
+    status: 'live',
+    statusLabel: 'Available now',
+    trialOpen: true,
+    introPriceUsd: 9, // = widebeam.ts priceUsd (the cart's price; Paddle charges its own $9.00)
+    regularPriceUsd: null,
+    paddlePriceId: 'pri_01m7vhcdt6t1dtpbyn9g1mx00m',
+    checkoutPaused: false,
+    demoUrl: null,
+    releaseTarget: '2026',
+    heroImage: 'widebeam-hero.png',
+    galleryImages: [],
+    features: [
+      { name: 'WIDTH + LOW FOCUS', desc: 'Open the side, keep everything under the LOW FOCUS split in mono.' },
+      { name: 'HIGH BEAM', desc: 'A decorrelated shine on the side, as far as REACH sends it.' },
+      { name: 'Correlation needle', desc: 'Watch mono safety live; MONO and SIDE check it by ear.' },
+    ],
+    audioDemos: [],
+    // = widebeam.ts formatsLine(): macOS 11+ universal, Windows x64 VST3 (WebView2); AAX on Mac only
+    systemReq: { ...baseSystemReq, os: 'Windows 10/11 64-bit, macOS 11+', formats: 'VST3 + AU + AAX on Mac, VST3 on Windows' },
+    reviewsCount: 0,
+    reviewsAvg: 0,
+    library: {
+      cats: ['modulation'],
+      typeWord: 'stereo widener',
+      words: [
+        { w: 'Open',     o: 0.5 },
+        { w: 'Mono-safe', o: 0.72 },
+        { w: 'Wider',    o: 1, hot: true },
+        { w: 'Centred',  o: 0.72 },
+        { w: 'Clean',    o: 0.5 },
+      ],
+      blurb:
+        'One big WIDTH knob opens the stereo image, and a steep split keeps the bass in mono. HIGH BEAM throws a mono source wide.',
+      alt: "WIDE BEAM plugin window: the big WIDTH knob, LOW FOCUS, MIX, TILT, the HIGH BEAM switch and the correlation needle",
+    },
   },
   {
     // OBDTUNE (2026-11-19): in the catalog for the cart only (its Paddle price; keep paddlePriceId and

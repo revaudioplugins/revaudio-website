@@ -37,7 +37,8 @@ const path = Astro.url.pathname.replace(/\/$/, '');
 // /drift: the season page has ONE ask, the beta (review Decision 17); /drift/feedback: testers mid-form (Dan 10-08).
 // /buy/<slug>: an email buy link lands with the cart open; its one ask is checkout.
 // /review: the page's own ask is the review, which earns its own 10% code (2026-11-03).
-const excluded = path === '/gas' || path === '/thank-you' || path === '/review' || path === '/drift' || path === '/revfx' || path === '/obdtune' || path.startsWith('/drift/') || path.startsWith('/buy/');
+// /widebeam: one ask too, the trial beside BUY (2026-11-23). /obdtune: the same, the trial beside BUY.
+const excluded = path === '/gas' || path === '/thank-you' || path === '/review' || path === '/drift' || path === '/revfx' || path === '/widebeam' || path === '/obdtune' || path.startsWith('/drift/') || path.startsWith('/buy/');
 ---
 
 {!excluded && (
@@ -116,6 +117,7 @@ const excluded = path === '/gas' || path === '/thank-you' || path === '/review' 
       if (fired || !armed || suppressed()) return;
       if (performance.now() - lastScroll < 500) return; // stale post-scroll event
       if (document.querySelector('dialog[open]')) return; // never stack dialogs
+      if (html.classList.contains('ho-on') && !html.classList.contains('ho-locked')) return; // never over the garage's loading or walk (HomeOpening.astro)
       const ae = document.activeElement;
       if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || (ae as HTMLElement).isContentEditable)) return;
 

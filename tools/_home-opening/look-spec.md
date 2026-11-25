@@ -34,6 +34,23 @@ everywhere.
 - Chrome and tool handles catch the neon (09). Concrete with a long soft reflection, never a mirror (32).
 - The REVAUDIO neon: crooked, warm, not in your face. Any flicker: 3 flashes a second or fewer.
 
+## The look on top (Dan, 2026-11-18)
+
+The room is shown through a VHS look (room.html `LOOKS.vhs`, `LOOK_DEFAULT`), Dan's pick on the comparison page over
+film and 16 mm, for its look and its speed. It draws the room at a lower resolution, without the wet floor's reflection or
+the bloom, then lays a soft halation, a tape's colour bleed, a grade, a vignette, still scanlines and a fine grain over
+it. The look eases off to today's finish before the TV, so the hand-off to the page is unchanged. So under the look, the
+"long soft reflection" above is left out; the room itself keeps it (`?look=today`).
+
+Lighter (Dan, 2026-11-18, on the first VHS build: "way too much", "I can't read the RevAudio neon sign", the move to
+the page "too far apart"): the room is drawn at 0.55 per side with 4x MSAA, so the thin neon tubes stay whole and the
+REVAUDIO sign reads from the door; the bleed, scanlines, vignette and grade are a notch from neutral. The sign is x1.4
+(`signScale` 1.61) at Dan's own spot on the end wall. The look eases off from 60 % of the walk and the picture is sharp
+by 88 %, before the TV fills the screen (`LOOKS.vhs` `off`, `sharp`). The sign is lit from the loading screen's first
+frame (its own picture, `lights/README.md`). Dan, 2026-11-20 (in Hebrew): the sign reads now; said of the build where
+a clamp still held the sign 0.62 m nearer the TV, before it went back to his spot. `?look=vhs-more` is one notch
+stronger, for comparing.
+
 ## Materials
 
 - Floor: dark sealed concrete, oil stains, a soft sheen (14, 32).
@@ -54,7 +71,8 @@ everywhere.
 
 ## "We make plugins here"
 
-- The plugins are the point: their CRT screens (must stay), a plugin being built on the bench (46, 52), sketches and
+- The plugins are the point: the plugins themselves as real objects, each where its CRT stood (Dan 11-11: the CRT
+  screens came out; RevLimiter, DRIFT, Radio Roulette and RevFX built from code with their real UIs as faces), a plugin being built on the bench (46, 52), sketches and
   schematics pinned up (48), test gear with live traces (23, 50, 51), pedal and amp benches (45, 47), a home lab lit by
   one lamp and a screen (49), boxes and prototypes, a covered COMING SOON object.
 - Our names and marks only (RevAudio, RevLimiter, DRIFT, Radio Roulette, RevFX, GAS 2). No third-party brands or

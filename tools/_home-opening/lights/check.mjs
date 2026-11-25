@@ -2,7 +2,11 @@
 //  1. a cold first visit over a throttled line (--mbps, default 40): when each load phase ends (the LOADW weights in
 //     room.html should match these shares) and when each bank came on; page errors
 //  2. the hand-off: the loading screen's last picture (?lights=hold) vs the live room at the same moment
-//     (?capture=0&lights=<all>: every bank on, the TV off), pixels apart
+//     (?capture=0&lights=<all>: every bank on, the TV off), pixels apart, then PASS / FAIL (exit 1 on FAIL): run it
+//     after every change to the room and before every push of it. Its sharpness line is not blurred: how sharp the
+//     loading picture is against the live room (the gate blurs 4 px and cannot see a hand-off that snaps into focus;
+//     the live capture holds a little grain, so the fine detail reads a few % under 1 on a matching picture). Run it at
+//     each set's own screen: --w 1141 --h 636 --dpr 2, --w 1440 --h 900 --dpr 2, and --w 1920 --h 1080 --dpr 1
 //   node tools/_home-opening/lights/check.mjs --port 4471 [--w 1141 --h 636 --dpr 2] [--mbps 40] [--out dir]
 import { createRequire } from 'module';
 import { execFileSync } from 'child_process';
@@ -43,14 +47,16 @@ const fresh = () => browser.newContext({ viewport: { width: W, height: H }, devi
   const a = await ctx.newPage(); await a.goto(url('?lights=hold'), { waitUntil: 'load', timeout: 120000 });
   await a.waitForFunction(() => window.lightsOn.log.some(([, w]) => w === 'ready'), null, { timeout: 120000 });
   await a.waitForTimeout(400); await a.screenshot({ path: path.join(out, 'loader.png') });
-  const n = await a.evaluate(() => window.LIGHT_BANKS.length);
+  const n = await a.evaluate(() => window.LIGHT_BANKS.length), set = await a.evaluate(() => window.lightsOn.set);
   const b = await ctx.newPage(); await b.goto(url(`?capture=0&lights=${n}`), { waitUntil: 'load', timeout: 120000 });
   await b.waitForFunction(() => window.__lightsReady, null, { timeout: 120000 });
   await b.waitForTimeout(2500); await b.screenshot({ path: path.join(out, 'live.png') });
-  console.log(`the hand-off at ${W}x${H} @${DPR}x (${out}):`);
+  console.log(`the hand-off at ${W}x${H} @${DPR}x, the pictures' set ${set || '(one)'} (${out}):`);
   // under the nav (the capture hides it), clear of the bench button
   const band = [41, 200, 45].map((v) => String(v * DPR));
-  execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(out, 'loader.png'), path.join(out, 'live.png'), ...band], { stdio: 'inherit' });
+  // the gate (Dan 2026-11-11: always check that the loading screen matches the final page): PASS / FAIL, exit 1 on FAIL
+  try { execFileSync('python3', ['-I', path.join(here, 'layers.py'), '--diff', path.join(out, 'loader.png'), path.join(out, 'live.png'), ...band, 'gate'], { stdio: 'inherit' }); }
+  catch (e) { process.exitCode = 1; }
   await ctx.close();
 }
 await browser.close();

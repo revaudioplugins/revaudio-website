@@ -16,6 +16,7 @@ const STATIC_PAGES = [
   '/accessibility',
   '/gas',
   '/thank-you',
+  '/widebeam', // the WIDE BEAM page (unlisted until launch): 200 and no console errors; tests/widebeam.spec.ts holds its own assertions
 ];
 
 const PLUGIN_SLUGS = ['revlimiter', 'radio-roulette', 'gas', 'drift', 'the-ac'];
@@ -33,9 +34,12 @@ async function collectPageErrors(page: Page) {
     })
   );
   const errors: string[] = [];
+  // The one known dev-only noise: the Astro dev toolbar's script answers 403 on a dev server. A built preview (the house config) has no such request,
+  // so this filter is off unless the scratch gate config (which runs against `astro dev`) sets WB_DEV_NOISE=1.
+  const devNoise = (url: string) => process.env.WB_DEV_NOISE === '1' && /dev-toolbar|\/@astro\//.test(url);
   page.on('pageerror', (err) => errors.push(err.message));
   page.on('console', (msg) => {
-    if (msg.type() === 'error') errors.push(msg.text());
+    if (msg.type() === 'error' && !devNoise(msg.location().url)) errors.push(msg.text());
   });
   return errors;
 }

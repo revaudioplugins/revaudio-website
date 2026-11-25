@@ -31,6 +31,10 @@
   .nav img, .stage-nav img { display: block; width: 100%; height: 100%; }
   .opening { position: relative; height: calc(var(--vh) + var(--walk-px)); }
   .cam { position: sticky; top: 0; height: var(--vh); overflow: hidden; background: #060509; transition: background .35s; }
+  /* ?embed: the room inside the home page (HomeOpening.astro): the page's own nav, TV and sections are real, so the
+     room's pictures of them stay out, and the page's scroll drives the walk (nothing scrolls in here) */
+  html.embed, html.embed body { overflow: hidden; }
+  html.embed .nav, html.embed .stage-nav, html.embed .below, html.embed .tv-live, html.embed .bench-open { display: none; }
 
   /* the page as the visitor sees it; with the bench open it shrinks beside it, whole */
   .stage { position: absolute; left: 0; top: 0; width: var(--vw); height: var(--vh); overflow: hidden; transform-origin: 0 0;
@@ -62,9 +66,12 @@
   .lights { position: absolute; inset: 0; background: #000; isolation: isolate; overflow: hidden; pointer-events: none; transition: opacity .5s ease; }
   .lights.is-off { opacity: 0; }
   .lights img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
+  .lights .lo-sign { opacity: 1; will-change: auto; } /* the sign: lit from the first frame, the dark room fades up over it (the same sign) */
   .lights .lo-bank, .lights .lo-flare, .lights .lo-grain { mix-blend-mode: plus-lighter; }
   .lights.no-plus .lo-bank, .lights.no-plus .lo-flare, .lights.no-plus .lo-grain { mix-blend-mode: screen; }
   .lights .lo-grain { position: absolute; inset: -96px; background-size: 192px 192px; opacity: 0; transition: opacity .9s ease; will-change: transform, opacity; }
+  /* the look's vignette and scanlines over the loading pictures (room.html lookOverlay): multiplied, like the finish */
+  .lights .lo-look { position: absolute; inset: 0; z-index: 1; mix-blend-mode: multiply; background-blend-mode: multiply; }
   html.lights-loading, html.lights-loading body { overflow: hidden; }
   html.lights-loading { scrollbar-gutter: stable; } /* (Windows: the scrollbar's room kept, so the hand-off doesn't re-lay the room) */
   .tv-live { position: absolute; left: 0; top: var(--nav-h); width: 100%; height: calc(var(--vh) - var(--nav-h)); display: block;
@@ -128,7 +135,8 @@
     <div class="cam">
       <div class="stage" id="stage">
         <canvas id="gl" aria-hidden="true"></canvas>
-        <div class="lights" id="lights" data-dir="assets/lights/" aria-hidden="true"></div>
+        <!-- (the REVAUDIO sign's own picture, on from the first painted frame: lights/lights-on.js, lights/render.mjs) -->
+        <div class="lights" id="lights" data-dir="assets/lights/" aria-hidden="true"><img class="lo-sign" src="assets/lights/sign.webp" alt="" fetchpriority="high"></div>
         <script>/* the loading screen (lights/README.md): the dark room's lights come on bank by bank as the page loads, in this
           order, front to back toward the TV. Each bank is one picture rendered from this room (lights/render.mjs); kind = how
           it comes on (lights/lights-on.js): a tube strikes, a neon buzzes on, a bulb warms up, the gear powers on. props =
@@ -143,8 +151,17 @@
             { id: 'lamp1', kind: 'bulb', props: ['N12'], w: 1.4 }, // the clamp lamp over the bench
             { id: 'lamp2', kind: 'bulb', w: 1.4 },
             { id: 'lamp3', kind: 'bulb', w: 0.6 },                 // over the desk
-            { id: 'gear', kind: 'gear', w: 0.3 },                  // the REVAUDIO sign, the CRTs, the racks' LEDs and meters, the floor strips
-          ];</script>
+            { id: 'gear', kind: 'gear', w: 0.3 },                  // the CRTs, the racks' LEDs and meters, the floor strips (the REVAUDIO sign is on its own circuit: lit from the first frame, Dan 11-11)
+          ];
+          /* the pictures come in sets, one per kind of screen (2026-11-20; one set for every screen sharpened at the hand-off on
+             the larger retina laptops). tag = its folder in assets/lights; ref = the screen it is drawn for (CSS width,
+             height, pixel ratio): its pictures carry the look at the resolution the live room draws there. What counts is
+             the rows of the room's drawing buffer (the height x roomRatio): 1113 on a 1141x636 @2x laptop and 1080 on a
+             1920x1080 @1x screen, so those two share the first set; 1520 at 1440x900 @2x (the retina laptops, 1440p and 4K
+             screens). lights-on.js takes the set nearest this screen's rows. All sets keep one wide shape (2560x1080) */
+          window.LIGHT_SETS = [{ tag: '1141', ref: [1141, 636, 2] }, { tag: '1440', ref: [1440, 900, 2] }];
+          /* the room's device pixels per CSS px on a screen (setBuffer's rule: the recipe's laptop budget, 3.7 MP at most) */
+          window.roomRatio = (vw, vh, dpr) => Math.min(dpr || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)));</script>
         <script src="lights/lights-on.js"></script>
         <img class="tv-live" id="tvLive" src="assets/tv-1141x636.webp" alt="The plugin TV">
         <div class="read-b" id="readB">
@@ -218,6 +235,11 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { buildStreet } from './street.js'; // the night outside the door: the station across the road (Dan, round 4)
+// speed (2026-11-18, O-1): a lamp's lighting maths is skipped wherever it adds exactly nothing (outside a spot's cone, or
+// fully in its shadow): the same picture, a much lighter frame (the spot lamps' maths ran on every lit pixel of the room).
+// Patched once here, before any shader compiles; a three.js whose chunk reads differently is left as it is
+{ const RE = 'RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );', ch = THREE.ShaderChunk.lights_fragment_begin;
+  if (ch.split(RE).length === 4) THREE.ShaderChunk.lights_fragment_begin = ch.split(RE).join(`if ( directLight.visible && dot( directLight.color, vec3( 1.0 ) ) > 0.0 ) ${RE}`); }
 
 // ---------- settings (the bench; COPY SETTINGS bakes them) ----------
 const DEF = {
@@ -239,8 +261,8 @@ const DEF = {
   doorW: 4, doorH: 3.5, doorOpen: 0.9, outside: 3,
   // the REVAUDIO neon: off the aisle (Dan 2026-11-02: "not in your face"), then on the end wall, right of the TV (11-03)
   signWall: 'endLeft', signF: 0.52, signX: -1.47, signY: 3.09,  // the wall in front of you, top right (Dan 11-03, placed 11-04, nudged on his room bench of 11-09)
-  signScale: 1.15, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04)
-  ver: 22,                               // settings version (22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
+  signScale: 1.61, signTilt: -2,        // hung a little crooked on two wires (Dan 11-03; sized 11-04; x1.4 on 11-18: read from the door through the VHS look)
+  ver: 28,                               // settings version (28 = the sign x1.4, Dan 11-18; 27 = RevFX's lunchbox on L09; 26 = N26 6 cm out for the plant N50; 25 = the radio up on the shelf W10; 24 = round 6: M03 / M04 hold the plugins' objects, their spots moved; 23 = round 5 landed: N03 the lift's pump on its own row, its move gone (11-11); 22 = batch 7, the far end: N42's tray hangs under the trusses on its own height (h 1.565, x -2.05 clear of the neon's lights); N29's narrower blankets fit Dan's spot (w 1.444, h 2.145, d 0.136); L17's pegboard v2, its tools in the gaps round the bass wall, d 0.085 (a thin board); N39 0.4 m along its truss + glow 0.7 (out of the neon's wash, deeper lamp colour); N18's board on the pegboard's face (on 0.02); N49 hung under W10's plank, 11-10; 21 = batch 6, the left wall: N12's box grows for its real 2x4, 11-10; 20 = batch 5, the car side: N43 out from under the lift's plate, N11 onto it, 11-10; 19 = batch 4 + the round-2 instruments: N02 on chains, N41/N39 onto the truss, the ukulele's hanger level with the banjo's; the round-3 checks: the rack 1.75 m out, the rims on the tyre rack, the sketch wall off the bass, 11-09; 18 = Dan's round-2 build notes, 11-09; 17 = the big line + the engine back on, Dan 11-09; 16 = his room bench of 11-09: the end wall rearranged; 15 = much less dust, Dan 11-09; 14 = the drum N06 moved, Dan's build bench of 11-09; 5 = Dan's bench of 11-03 baked, 6 = his third, with the pegboard move, 7 = back to the bare set; his bench of 11-04 needed no bump; 8 = the snap off; 9 = B + A's moves as the room; 10 = the look pass, 11 = its first fix round, 12 = his bench of 11-08 + two nudges, 13 = his neon pick): 2 moved the sign to the end wall, 3 made it bigger + crooked, 4 took the road off the floor
   // the look pass (2026-11-08, todo 1b): real materials and night light on the same set (Skeleton = the grey labelled
   // blocks); tone = the tone mapping (AgX), exposure its exposure; probe = how much the room shows in its own shiny
   // things (chrome, paint, the floor); shafts = the haze under the lamps
@@ -249,7 +271,7 @@ const DEF = {
   // (both off, Dan 2026-11-03 after the one-shot film: "lets go back to the skelton this is not what i want")
   // per-object moves from the move tool: { id: { f, x, y, side, s, r } }; Dan's pick of 2026-11-05 (layouts/b-plus-a.json)
   moves: {
-    "M03": {"f": 0.0771, "x": -0.8, "s": 1.15},  // f kept its spot on the desk when the room grew to 20.9 m (11-08)
+    "M03": {"f": 0.063, "x": -0.8},  // round 6: RevLimiter's console (0.58 x 0.385 m) back to z 0.97, 3.5 cm clear of the scope, off the mug (N35)
     "N26B": {"x": -2.2, "s": 0.8},
     "N30": {"x": 2.2, "s": 0.85},
     "N36": {"x": -0.01, "y": 2.28},  // ON AIR centred over the TV (Dan's room bench, 11-09)
@@ -284,7 +306,7 @@ const DEF = {
     "L09": {"f": 0.8299},
     "L01": {"f": 0.8299},
     "L12": {"f": 0.8299},
-    "M01": {"f": 0.7778, "x": -2.81, "s": 1.1},
+    "M01": {"f": 0.7695, "x": -2.975},  // round 6: RevFX's lunchbox on the bench L09 (at the CRT's -2.81 it hung 11 cm over the edge and the test gear hid PITCH)
     "W01": {"f": 0.816},
     "W05": {"f": 0.8507},
     "W02": {"f": 0.8854},
@@ -302,16 +324,14 @@ const DEF = {
     "R16": {"f": 0.3299},
     "N24": {"f": 0.3299, "x": 2.3},
     "N29": {"f": 0.3278, "y": 2.07, "s": 0.9}, // 7 cm up (11-10): the taller v3 set's hem clears the drum kit's block, as his 1.5 m block did
-    "N26": {"f": 0.4062, "x": 2.5, "s": 0.85},
+    "N26": {"f": 0.4062, "x": 2.44, "s": 0.85},  // 6 cm toward the aisle (11-11): clear of the plant N50's vines on the red chest
     "P02": {"f": 0.2083, "y": 2.85},
     "R04": {"f": 1.2847, "y": 2.75, "side": 1},
     "R05": {"f": 0.4132},
-    "R06": {"f": 0.4132},
-    "M04": {"f": 0.4132, "x": 2.85, "s": 1.15},
+    "M04": {"f": 0.4058, "x": 3.175, "r": -35},  // round 6: the radio on the shelf W10, TV side of the headphones, facing the aisle 10 degrees toward the door (on its 0.338 m plank: 0.324 deep)
     "W10": {"f": 0.4132, "y": 2.6},
     "R07": {"f": 0.5243},
     "R09": {"f": 0.5243},
-    "M02": {"f": 0.4847, "x": 2.81, "s": 1.15},
     "W06": {"f": 0.5313},
     "N15": {"f": 0.5764},
     "R15": {"f": 0.6438, "y": 1.98, "s": 0.85},  // off the tool pegboard, over the tyre rack (Dan, round 2: "put them somewhere else")
@@ -319,7 +339,6 @@ const DEF = {
     "L15": {"f": 0.6389, "side": 1},
     "R17": {"f": 0.6215, "y": 2.85},
     "N06": {"f": 0.5723, "x": 2.2}, // Dan 11-09: "move it a bit to 2" (his pin by the parts bench)
-    "N03": {"f": 0.8472, "x": 1.6},
     "N11": {"f": 0.8194, "x": 2.4, "y": 0.085},
     "N43": {"f": 0.8472, "x": 0.85, "s": 0.75},
     "N02": {"f": 0.8056, "x": 2.4, "y": 4.3},
@@ -355,6 +374,30 @@ const CAPTURE = new URLSearchParams(location.search).get('capture'), CAPTURE_PAI
 // &lights=<k>: the loading screen's picture of the room with its first k light banks on (BANKS; lights/render.mjs)
 const LIGHTS = CAPTURE != null ? new URLSearchParams(location.search).get('lights') : null;
 const TVCAP = CAPTURE != null ? new URLSearchParams(location.search).get('tvcap') : null; // &tvcap=<CAPS tag>: the TV's picture for that screen width
+// ?embed: the room on the home page (src/components/HomeOpening.astro; Dan 2026-11-18: live on Nov 19 to half the
+// laptop visitors). The page's scroll drives the walk through window.__garage.to(p); &nav=<px> = the page's nav (+ the
+// sale strip) height, so the lock lands on the real TV; the room tells the page its walk length and when it is ready
+// The home page runs this file as its frame's srcdoc (the site sends X-Frame-Options: DENY and a frame-src without
+// 'self', so a framed URL is refused) with <base href="/garage-9f3c/"> and window.__EMBED = { nav } set first
+const EMBED = CAPTURE == null && (new URLSearchParams(location.search).has('embed') || !!window.__EMBED);
+const EMBED_NAV = EMBED ? Math.round(+(window.__EMBED?.nav ?? new URLSearchParams(location.search).get('nav'))) || 0 : 0;
+// __EMBED.sale = the page's sale strip over the nav ('soon' | 'bf' | 'cm', src/data/sale.ts): the home TV sits under it,
+// laid out for a shorter screen, so the TV's picture is its own capture (tvcap.mjs --suffix sale; the three show the same TV)
+const EMBED_SALE = EMBED && ['soon', 'bf', 'cm'].includes(window.__EMBED?.sale) ? 'sale' : '';
+// the room's look (LOOKS, below the finish): LOOK_DEFAULT (Dan 2026-11-18, his pick on the comparison page: "VHS"), or
+// the one ?look=<id> asks for (the home page: __EMBED.look); ?look=today = today's look, without one (for comparing: the
+// loading screen's pictures stay the default look's)
+const LOOK_DEFAULT = 'vhs';
+const LOOK_ID = (EMBED ? window.__EMBED?.look : null) || new URLSearchParams(location.search).get('look') || LOOK_DEFAULT;
+// &flat (lights/render.mjs): the loading screen's pictures, drawn in the look without the marks that screen lays over them
+// itself (the vignette and the scanlines: lookOverlay) or the grain, at the look's resolution as the screen it names shows
+// them: &flat=<w>x<h>@<dpr> (CSS px and its pixel ratio; a 1141x636 @2x laptop if it names none). LOOK_FLAT = [w, h, dpr]
+const LOOK_FLAT = CAPTURE != null && new URLSearchParams(location.search).has('flat')
+  ? (/^(\d+)x(\d+)@([\d.]+)$/.exec(new URLSearchParams(location.search).get('flat')) || [0, 1141, 636, 2]).slice(1).map(Number) : null;
+const embed = { y: 0, to: 0, paused: false };
+const embedSay = (ev, data) => { if (EMBED && parent !== window) parent.postMessage({ garage: ev, ...data }, '/'); };
+embedSay('boot'); // (the page falls back when this never comes: a script that failed to load)
+if (EMBED) { document.documentElement.classList.add('embed'); for (const t of ['error', 'unhandledrejection']) addEventListener(t, () => embedSay('error')); } // the page falls back to its TV if this comes before 'ready'
 // the station across the road outside the door (street.js), in G1 (dark): Dan's pick on bench round 5, card 1 (11-10).
 // ?street=G2 previews the darker grade, ?street=none today's old night
 const STREET_GRADE = 'G1';
@@ -362,11 +405,11 @@ const STREET = ((q) => (q === 'none' || q === 'off' ? null : q || STREET_GRADE))
 const S = { ...DEF, moves: structuredClone(DEF.moves) };
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
-Object.assign(S, stored);
+if (!EMBED) Object.assign(S, stored); // a visitor on the home page sees the committed room, never a bench's saved settings
 if (!S.moves || typeof S.moves !== 'object') S.moves = {};
 delete S.roomLen; delete S.mirror; // older benches stored these
 // Dan's changes reach a bench saved before them, once
-const sv = Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
+const sv = !EMBED && Object.keys(stored).length ? (stored.ver || 1) : DEF.ver;
 if (sv < 2) Object.assign(S, { signWall: DEF.signWall, signX: DEF.signX, signY: DEF.signY });
 if (sv < 3) Object.assign(S, { signScale: DEF.signScale, signTilt: DEF.signTilt });
 if (sv < 4) Object.assign(S, { floorLines: 0, ledStrip: 0 });
@@ -392,6 +435,12 @@ if (sv < 20) for (const id of ['N43', 'N11']) S.moves[id] = { ...DEF.moves[id] }
 if (sv < 21) S.moves.N12 = { ...DEF.moves.N12 }; // batch 6: the clamp lamp's 2x4 against the wall (11-10)
 if (sv < 22) for (const id of ['N29', 'N39']) S.moves[id] = { ...DEF.moves[id] }; // batch 7: N29's taller set 7 cm up, clear of the drums; N39 out of the neon's wash (11-10)
 if (sv < 22) delete S.moves.N42; // batch 7: the tray hangs under the trusses at its own height (the designers' 4.32 was for the flat placeholder) (11-10)
+if (sv < 23) delete S.moves.N03; // round 5 landed (11-11): the lift's pump unit stands where its row puts it
+if (sv < 24) for (const id of ['M03', 'M04']) S.moves[id] = { ...DEF.moves[id] }; // round 6 (11-11): the plugins' objects on the desk and the red chest
+if (sv < 25) S.moves.M04 = { ...DEF.moves.M04 }; // the radio up on the shelf where the headphones hang (Dan 11-11)
+if (sv < 26) S.moves.N26 = { ...DEF.moves.N26 }; // the boom stand 6 cm out, clear of the plant (11-11)
+if (sv < 27) S.moves.M01 = { ...DEF.moves.M01 }; // RevFX's lunchbox on the bench (11-11)
+if (sv < 28) S.signScale = DEF.signScale; // the sign x1.4, read from the door through the VHS look (Dan 11-18)
 // (migrations run oldest first: put a new version's lines at the bottom, so a later one can undo an earlier one)
 S.ver = DEF.ver;
 // ?layout=<name>: a proposed layout (layouts/<name>.json, the bench's Copy-settings format) over the defaults, to walk
@@ -417,7 +466,7 @@ function remember() {
   if (hist.length > 200) hist.shift();
   histAt = hist.length - 1; undoUi();
 }
-const save = () => { if (CAPTURE != null) return; if (LAYOUT) { remember(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
+const save = () => { if (CAPTURE != null || EMBED) return; if (LAYOUT) { remember(); return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} remember(); };
 
 // the live TV, captured per screen size (r = the bezel's corner radius, px)
 const CAPS = [
@@ -462,13 +511,14 @@ function liveScreen(m) { // an opaque screen: its pixels skip the tone mapping
 // the finish: the room tone-mapped (bench: tone, exposure) and dithered against banding in the dark; the screens as they are
 const TONES = { none: 0, agx: 1, neutral: 2, aces: 3 };
 const FINISH = {
-  uniforms: { tDiffuse: { value: null }, toneMappingExposure: { value: 1 }, uTone: { value: 1 } },
+  uniforms: { tDiffuse: { value: null }, tBloom: { value: null }, toneMappingExposure: { value: 1 }, uTone: { value: 1 } },
   vertexShader: /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse; uniform float uTone; varying vec2 vUv;
+    uniform sampler2D tDiffuse, tBloom; uniform float uTone; varying vec2 vUv;
     #include <tonemapping_pars_fragment>
     void main() {
       vec4 c = texture2D(tDiffuse, vUv);
+      c.rgb += texture2D(tBloom, vUv).rgb; // the glow (O-4, see bloomPass): added to the colour, the frame's alpha left as it is
       vec3 room = uTone < 0.5 ? clamp(c.rgb * toneMappingExposure, 0.0, 1.0) : uTone < 1.5 ? AgXToneMapping(c.rgb)
         : uTone < 2.5 ? NeutralToneMapping(c.rgb) : ACESFilmicToneMapping(c.rgb);
       room = sRGBTransferOETF(vec4(room, 1.0)).rgb + (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
@@ -476,16 +526,170 @@ const FINISH = {
       gl_FragColor = vec4(mix(screen, room, clamp(c.a, 0.0, 1.0)), 1.0);
     }`,
 };
+// ---------- the vintage looks (?look=<id>; 2026-11-18 speed run, Dan: "less modern, more vintage") ----------
+// A look is cheaper because of what it drops, not what it adds: the room is drawn into a corner of the composer's
+// target at a lower resolution (k: the scene pass's share of today's pixels per side, capped at dpr device px per
+// CSS px), without the wet floor (a second drawing of the room), without UnrealBloom (its five blur levels) and with
+// msaa samples (0 = none); the finish then lays the look over at the canvas's full size: a halation from the target's
+// mip levels in place of the bloom, a grade (lift, gain, saturation, contrast), a vignette, grain seeded per frame,
+// soft scanlines and a chroma bleed (vhs). No flashing, rolling or jitter (WCAG 2.3.1). Every look eases off to
+// today's finish between off[0] and off[1] of the walk, its resolution back to full, so the real TV takes over the
+// same picture (the hand-off gate). move: the 16mm look draws softer while the walk moves (k x move), sharp at rest.
+// sharp: the softness on its own curve (2026-11-20; Dan 11-18: the move from the room to the page "as seamless as
+// possible"). Eased with the grade, the TV filled the screen still soft and snapped sharp in the last 1 % of the walk:
+// any scale under 1 is resampled, so the picture stayed about as soft as the full look until the scale was exactly 1,
+// and scales just under 1 swept soft and sharp bands over the TV's fine lines. So the draw scale rises between
+// sharp[0] and sharp[1] only as far as LOOK_SNAP; from there the room is drawn at the target's full size (while the
+// camera still moves) and what softness is left is a blur from the target's first mip level (soft: its level at the
+// switch: 0.4 measures as soft as a 0.9 scale, edge energy 0.72 of today's against 0.70 to 0.73, stills at 80 and 90 %
+// of the walk), fading to none at sharp[1]. Without sharp, as before: with the grade.
+// On the faster room (O-3, O-4): lookFrame() runs before frame() decides on the floor's reflection, so hiding R.wet
+// there drops the top-level draw too; and a look's finish never reads tBloom (the glow pass is off, lookInit).
+const LOOKS = {
+  film: { name: '1970s film', k: 0.8, dpr: 1.0, msaa: 0, off: [0.9, 0.99],
+    halo: { px: 7, thr: 0.35, k: 0.55, tint: [1.0, 0.42, 0.22] }, lift: [0.032, 0.022, 0.026], gain: [1.03, 0.985, 0.9], sat: 0.86, con: 0.18,
+    vig: 0.42, grain: 0.05, grainPx: 1.1, scan: 0, bleed: 0 },
+  '16mm': { name: '16 mm', k: 0.7, dpr: 0.85, move: 0.7, msaa: 0, off: [0.9, 0.99],
+    halo: { px: 9, thr: 0.3, k: 0.7, tint: [1.0, 0.5, 0.3] }, lift: [0.04, 0.03, 0.036], gain: [1.02, 0.99, 0.92], sat: 0.8, con: 0.24,
+    vig: 0.6, grain: 0.07, grainPx: 1.6, scan: 0, bleed: 0 },
+  // VHS, lighter (Dan 11-18 on the first VHS: "way too much", the sign unreadable, the move to the page too far apart):
+  // drawn at 0.55 per side with 4x MSAA (the thin neon tubes stay whole; door 5.8 ms vs the faster room's 12.2, Chrome
+  // uncapped 1141x636@2), a light tape bleed, faint scanlines, a near-neutral grade; it eases off from 60 % of the walk,
+  // the grade gone by 92 %, the picture sharp by 88 % (sharp, above), before the TV fills the screen
+  vhs: { name: 'VHS', k: 0.55, dpr: 3, msaa: 4, off: [0.6, 0.92], sharp: [0.6, 0.88], soft: 0.4,
+    halo: { px: 6, thr: 0.3, k: 0.45, tint: [1.0, 0.8, 0.85] }, lift: [0.03, 0.024, 0.034], gain: [0.99, 0.98, 1.0], sat: 0.95, con: 0.08,
+    vig: 0.24, grain: 0.025, grainPx: 1.0, scan: 0.05, bleed: 0.6 },
+  'vhs-more': { name: 'VHS, a notch more', k: 0.45, dpr: 3, msaa: 4, off: [0.6, 0.92], sharp: [0.6, 0.88], soft: 0.4, // (for comparing: ?look=vhs-more)
+    halo: { px: 6, thr: 0.3, k: 0.45, tint: [1.0, 0.8, 0.85] }, lift: [0.035, 0.028, 0.04], gain: [0.99, 0.98, 1.0], sat: 0.93, con: 0.09,
+    vig: 0.28, grain: 0.03, grainPx: 1.0, scan: 0.08, bleed: 1.0 },
+};
+const LOOK_ON = Object.hasOwn(LOOKS, LOOK_ID || '') ? LOOKS[LOOK_ID] : null;
+const LOOK_SNAP = 0.9; // sharp: from this draw scale on, the full target and a mip blur (a scale between here and 1 only beats against the canvas's pixels)
+const LK = { n: 0, p: null, hold: 0, m: 0 }; // the grain's frame count; the walk's last place, how much it moves (16mm)
+const lookFinish = (lk) => ({ // FINISH with the look on top; at uAmt 0 and uK 1 it is FINISH's own arithmetic (less the glow)
+  uniforms: { ...FINISH.uniforms, uK: { value: new THREE.Vector2(1, 1) }, uAmt: { value: 1 }, uSoft: { value: 0 }, uSeed: { value: 0 }, uLod: { value: 3 }, uCss: { value: 1 },
+    uLift: { value: new THREE.Vector3(...lk.lift) }, uGain: { value: new THREE.Vector3(...lk.gain) }, uHalo: { value: new THREE.Vector3(...lk.halo.tint) },
+    uG: { value: new THREE.Vector4(lk.sat, lk.con, lk.vig, lk.halo.k) }, uF: { value: new THREE.Vector4(lk.grain, lk.grainPx, lk.scan, lk.bleed) }, uThr: { value: lk.halo.thr } },
+  vertexShader: FINISH.vertexShader,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse; uniform float uTone, uAmt, uSoft, uSeed, uLod, uCss, uThr; uniform vec2 uK; uniform vec3 uLift, uGain, uHalo;
+    uniform vec4 uG, uF; varying vec2 vUv;
+    #include <tonemapping_pars_fragment>
+    float h12(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
+    float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(h12(i), h12(i + vec2(1.0, 0.0)), f.x), mix(h12(i + vec2(0.0, 1.0)), h12(i + vec2(1.0, 1.0)), f.x), f.y); }
+    vec3 halo(vec2 uv, float lod, vec2 ts) { vec2 o = 0.5 * exp2(lod) / ts; // four taps half a texel of that level apart: a tent, not its blocks
+      return 0.25 * (textureLod(tDiffuse, uv + vec2(o.x, o.y), lod).rgb + textureLod(tDiffuse, uv + vec2(-o.x, o.y), lod).rgb
+        + textureLod(tDiffuse, uv + vec2(o.x, -o.y), lod).rgb + textureLod(tDiffuse, uv - o, lod).rgb); }
+    void main() {
+      vec2 ts = vec2(textureSize(tDiffuse, 0)), uv = uK.x < 1.0 ? min(vUv * uK, uK - 0.5 / ts) : vUv;
+      vec4 c = textureLod(tDiffuse, uv, uSoft); // (uSoft: the last of the look's softness, at the full size; 0 = the target's own pixels)
+      vec3 hdr = c.rgb;
+      if (uAmt > 0.0) {
+        if (uF.w > 0.0) { // the tape's colour smeared from the left, its brightness kept
+          vec2 d = vec2(uF.w / ts.x, 0.0);
+          vec3 s = 0.4 * hdr + 0.3 * textureLod(tDiffuse, uv - d, uSoft).rgb + 0.2 * textureLod(tDiffuse, uv - 2.0 * d, uSoft).rgb + 0.1 * textureLod(tDiffuse, uv - 3.0 * d, uSoft).rgb;
+          vec3 Y = vec3(0.299, 0.587, 0.114);
+          hdr = mix(hdr, (s + 0.002) / (dot(s, Y) + 0.002) * dot(hdr, Y), uAmt); // (the smeared hue at this pixel's brightness)
+        }
+        vec3 b = 0.5 * halo(uv, uLod, ts) + 0.3 * halo(uv, uLod + 1.0, ts) + 0.2 * halo(uv, uLod + 2.0, ts);
+        float bl = max(max(b.r, b.g), b.b);
+        hdr += b * clamp((bl - uThr) / max(bl, 1e-4), 0.0, 1.0) * uHalo * uG.w * uAmt; // the light that spread in the emulsion: red-orange round the lamps and tubes
+      }
+      vec3 room = uTone < 0.5 ? clamp(hdr * toneMappingExposure, 0.0, 1.0) : uTone < 1.5 ? AgXToneMapping(hdr)
+        : uTone < 2.5 ? NeutralToneMapping(hdr) : ACESFilmicToneMapping(hdr);
+      room = sRGBTransferOETF(vec4(room, 1.0)).rgb + (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+      vec3 screen = sRGBTransferOETF(vec4(clamp(c.rgb, 0.0, 1.0), 1.0)).rgb;
+      vec3 o = mix(screen, room, clamp(c.a, 0.0, 1.0));
+      if (uAmt > 0.0) {
+        vec3 g = clamp(o, 0.0, 1.0); float l = dot(g, vec3(0.2126, 0.7152, 0.0722));
+        g = mix(vec3(l), g, uG.x);                     // saturation
+        g = mix(g, g * g * (3.0 - 2.0 * g), uG.y);     // a print's S-curve
+        g = uLift + g * (uGain - uLift);               // lifted, tinted blacks; warm highlights
+        vec2 q = (vUv - 0.5) * vec2(1.0, 0.8);
+        g *= 1.0 - uG.z * smoothstep(0.12, 0.62, dot(q, q) * 2.0); // the lens's falloff
+        if (uF.z > 0.0) g *= 1.0 - uF.z * (0.5 - 0.5 * cos(6.2832 * gl_FragCoord.y / (3.0 * uCss))); // soft scanlines, still (every 3 CSS px)
+        float n = vnoise(gl_FragCoord.xy / (uCss * uF.y) + fract(uSeed * vec2(0.6180, 0.7548)) * 512.0) * 2.0 - 1.0;
+        g += n * uF.x * (0.35 + 2.6 * l * (1.0 - l)); // grain: mostly in the mid-tones, a little in the dark
+        o = mix(o, g, uAmt);
+      }
+      gl_FragColor = vec4(o, 1.0);
+    }`,
+});
+// set the look's targets and passes up (once, before the first frame)
+function lookInit() {
+  bloomPass.enabled = false;
+  for (const rt of [composer.renderTarget1, composer.renderTarget2]) { rt.texture.generateMipmaps = true; rt.texture.minFilter = THREE.LinearMipmapLinearFilter; } // the halation's levels
+  if (LOOK_FLAT) { const u = finishPass.uniforms; u.uG.value.z = 0; u.uF.value.x = 0; u.uF.value.z = 0; } // (&flat: no vignette, grain or scanlines)
+}
+// the loading screen in the look (lights/lights-on.js): its pictures are drawn &flat, and the vignette and the scanlines
+// lie over them here the way the finish lays them over the room: the same factors (multiplied, as the finish multiplies
+// its colour), in the screen's own CSS pixels, the scanlines counted from the bottom edge like gl_FragCoord. So the
+// hand-off shows the same picture. They leave with the loading screen
+function lookOverlay(lk) {
+  const grey = (v) => { const c = (255 * v).toFixed(1); return `rgb(${c} ${c} ${c})`; }, layers = [];
+  if (lk.scan) { // 1 - scan (0.5 - 0.5 cos(2 pi y / 3)), y in CSS px up from the bottom
+    const st = []; for (let i = 0; i <= 12; i++) { const y = i / 4; st.push(`${grey(1 - lk.scan * (0.5 - 0.5 * Math.cos(2 * Math.PI * y / 3)))} ${y}px`); }
+    layers.push(`repeating-linear-gradient(to top, ${st.join(', ')})`);
+  }
+  if (lk.vig) { // 1 - vig smoothstep(0.12, 0.62, 2|q|^2), q = (uv - 0.5)(1, 0.8): r^2 = 2|q|^2 on an ellipse of radii W/sqrt2, H/(0.8 sqrt2)
+    const st = [`${grey(1)} 0%`]; for (let i = 0; i <= 16; i++) { const r2 = 0.12 + 0.5 * i / 16, t = (r2 - 0.12) / 0.5; st.push(`${grey(1 - lk.vig * t * t * (3 - 2 * t))} ${(100 * Math.sqrt(r2)).toFixed(2)}%`); }
+    layers.push(`radial-gradient(${(100 / Math.SQRT2).toFixed(3)}% ${(100 / (0.8 * Math.SQRT2)).toFixed(3)}% at 50% 50%, ${st.join(', ')})`);
+  }
+  return layers.join(', ');
+}
+// each frame, before the composer: how strong the look is here, what share of the target the room is drawn into
+function lookFrame(now) {
+  // (W, H: the real drawing buffer, whole pixels, which the composer's target has too; its own width and height are
+  // fractions on most screens, and a viewport rounded from those was a pixel off the target, so the picture was still
+  // resampled with the look fully off: softer at the lock on a 1440x900 screen)
+  const lk = LOOK_ON, u = finishPass.uniforms, gl = renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+  const pr = renderer.getPixelRatio() * (LOOK_FLAT ? innerHeight / LOOK_FLAT[1] : 1); // (&flat: the picture's pixels per CSS px on its screen, object-fit cover)
+  const amt = 1 - smooth(lk.off[0], lk.off[1], progress);
+  // under the governor (GOV.k < 1: a weak machine's smaller buffer) the room keeps the pixels per CSS px this screen
+  // had before the step, up to the whole target (2026-11-20): a step shrinks the finish, not the room, or the sign went
+  // back to mush on the very machines that step. No step, no change
+  // (&flat: the share of the picture that gives the room the pixels per CSS px it has live on that screen)
+  const k0 = LOOK_FLAT ? lk.k * window.roomRatio(...LOOK_FLAT) / pr : lk.k;
+  let kk = Math.min(1, Math.min(k0, lk.dpr * GOV.k / pr) / GOV.k);
+  if (lk.move) { // the walk moving (it moved in the last 8 frames): softer, easing in and out over a few frames
+    LK.hold = LK.p != null && Math.abs(progress - LK.p) > 2e-4 && CAPTURE == null ? 8 : Math.max(0, (LK.hold || 0) - 1); LK.p = progress;
+    LK.m += ((LK.hold > 0 ? 1 : 0) - LK.m) * 0.2;
+    kk *= 1 - (1 - lk.move) * LK.m;
+  }
+  const v = 1 + (kk - 1) * (lk.sharp ? 1 - smooth(lk.sharp[0], lk.sharp[1], progress) : amt); // the scale the softness asks for here
+  const full = v >= (lk.sharp ? LOOK_SNAP : 1), k = full ? 1 : v; // (full: the whole target, exactly: uK (1, 1), today's own arithmetic)
+  const w = full ? W : Math.max(1, Math.round(W * k)), h = full ? H : Math.max(1, Math.round(H * k));
+  for (const t of [composer.renderTarget1, composer.renderTarget2]) t.viewport.set(0, 0, w, h);
+  u.uK.value.set(w / W, h / H); u.uAmt.value = amt; u.uCss.value = pr;
+  u.uSoft.value = full && lk.sharp ? lk.soft * (1 - v) / (1 - LOOK_SNAP) : 0;
+  u.uSeed.value = CAPTURE != null || reduced ? 1 : (LK.n = (LK.n + 1) % 8192); // a still (and reduced motion) holds one grain; the walk's grain moves every frame
+  u.uLod.value = Math.log2(Math.max(1, lk.halo.px * pr * (h / H)));
+  R.dust.mat.size = 0.02 * (h / H); // (a point's size follows the canvas, not the corner it is drawn in)
+  R.wet.visible = false; // dropped: the floor keeps its own highlights
+}
 // half floats with 4x MSAA (the edges of a room full of thin things), the glow, the finish
-const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: LOOK_ON ? LOOK_ON.msaa : 4 }));
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(512, 512), S.bloom, 0.32, 0.9);
 keepAlpha(bloomPass.blendMaterial, true);
 bloomPass.blendMaterial.blendSrc = THREE.OneFactor; // its glow is premultiplied: x its alpha again squared the halos (the alpha factors still keep the frame's)
-const finishPass = new ShaderPass(FINISH);
+const finishPass = new ShaderPass(LOOK_ON ? lookFinish(LOOK_ON) : FINISH);
 finishPass.needsSwap = false; // it draws to the canvas; a swap after it kept a second MSAA half-float target alive
+// speed (2026-11-18, O-4; the 11-10 study's O4): the glow joins in the finish (tBloom) instead of being blended back into
+// the 4x MSAA target, which then had to be resolved a second time: the same sum (the glow is premultiplied and added as
+// it is; the frame's alpha stays), one full-size draw and one resolve fewer every frame. So the pass's last draw, that
+// blend, is skipped, only when three.js's bloom still works the way this assumes (its quad and composite target)
+if (bloomPass._fsQuad && bloomPass.renderTargetsHorizontal?.[0] && bloomPass.blendMaterial) {
+  const bloomQuadRender = bloomPass._fsQuad.render;
+  bloomPass._fsQuad.render = function (r) { if (this.material !== bloomPass.blendMaterial) bloomQuadRender.call(this, r); };
+  finishPass.uniforms.tBloom.value = bloomPass.renderTargetsHorizontal[0].texture; // the glow's composite (the same texture after a resize)
+} else finishPass.uniforms.tBloom.value = new THREE.DataTexture(new Uint8Array(4), 1, 1); // (old path: black, nothing added twice)
 composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloomPass); composer.addPass(finishPass);
+if (LOOK_ON) lookInit();
+if (LOOK_ON && (LOOK_ON.vig || LOOK_ON.scan) && $('lights')) { const d = document.createElement('div'); d.className = 'lo-look'; d.style.backgroundImage = lookOverlay(LOOK_ON); $('lights').append(d); }
 const loader = new THREE.TextureLoader();
 const picture = (name) => PICS[name]; // the posters and the CRT screens, preloaded with the texture sets (loadTextures)
+const isUnit = (s) => !!(MODELS[s.id] && !MODELS[s.id].crt); // a monitor slot that holds its plugin's own object (round 6): no screen, so no screen picture to load
 
 let cap = null;
 const L = {};      // layout numbers
@@ -607,10 +811,11 @@ function labelSprite(text, cat, k = 1) {
 }
 // the REVAUDIO neon, drawn on black and added onto the wall (R.signMat): its glow laid by hand in wide, faint strokes,
 // the same in every engine (Safari draws shadowBlur twice as heavy, and a see-through canvas uploads speckled there)
-const signTex = () => canvasTex(1400, 340, (g) => {
+const signTex = (halo) => canvasTex(1400, 340, (g) => { // halo: only the glow round the tubes (the 3D glass draws the tubes, round 6)
   g.fillStyle = '#000'; g.fillRect(0, 0, 1400, 340);
   g.font = '400 250px "Bebas Neue", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
   g.strokeStyle = 'rgba(255,90,40,0.05)'; for (let i = 9; i >= 1; i--) { g.lineWidth = 16 + i * 9; g.strokeText('REVAUDIO', 700, 180); }
+  if (halo) return;
   g.strokeStyle = '#ff5a2a'; g.lineWidth = 16; g.strokeText('REVAUDIO', 700, 180);
   g.strokeStyle = '#ffd9c4'; g.lineWidth = 5; g.strokeText('REVAUDIO', 700, 180);
 }, false);
@@ -633,10 +838,10 @@ async function loadTextures() {
   const one = (url, fix) => new Promise((done) => { const ok = () => { loaded('tex'); done(); }; fix(loader.load(url, ok, undefined, () => { console.warn('texture missing:', url); ok(); })); });
   const sets = ['floor', 'wall', 'shutter', 'wood', 'plate', 'carpet', 'rust', 'enamel', 'tolex', 'fabric', 'rubber', 'cardboard']
     .flatMap((k) => ['col', 'nrm', 'arm'].map((m) => [k, m])).concat([['steel', 'col']]);
-  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.length + (STREET ? 1 : 0);
+  loadP.tex[1] = sets.length + POSTERS.length + MONITORS.filter((s) => !isUnit(s)).length + (STREET ? 1 : 0);
   await Promise.all([
     ...sets.map(([k, m]) => one(`assets/pbr/${k}_${m}.webp`, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (m === 'col') t.colorSpace = THREE.SRGBColorSpace; (PBR[k] ||= {})[m] = t; })),
-    ...[...POSTERS, ...MONITORS].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
+    ...[...POSTERS, ...MONITORS.filter((s) => !isUnit(s))].map((s) => one(`assets/pics/${s.pic}.webp`, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS[s.pic] = t; })),
     ...(STREET ? [one('assets/pics/street-atlas.webp', (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; PICS.streetAtlas = t; })] : []), // the street's signs (street-atlas.mjs)
   ]);
 }
@@ -704,7 +909,7 @@ const LOOK = {
   L01: 'pegboard', L04: 'tolex', L05: 'enamel', L06: 'gear', L07: 'enamel', L08: 'gear',
   L09: 'wood', L10: 'gear', L11: 'gear', L12: 'shelf', L13: 'tolex', L14: 'tolex', L15: 'rubber', L16: 'gear',
   L17: 'pegboard', L19: 'wood', R01: 'shelf', R02: 'tolex', R03: 'lacquer', R04: 'shelf', R05: 'enamel',
-  R06: 'gear', R07: 'wood', R08: 'gear', R09: 'pegboard', R10: 'lacquer', R11: 'tolex', R12: 'enamel', R13: 'rubber',
+  R07: 'wood', R08: 'gear', R09: 'pegboard', R10: 'lacquer', R11: 'tolex', R12: 'enamel', R13: 'rubber',
   R14: 'rust', R15: 'chrome', R16: 'lacquer', R17: 'chrome', R18: 'tolex', R19: 'paper', N03: 'enamel', N04: 'enamel',
   N05: 'enamel', N06: 'rust', N07: 'enamel', N08: 'enamel', N09: 'chalk', N10: 'enamel', N11: 'steel', N12: 'steel',
   N13: 'cardboard', N15: 'steel', N16: 'lacquer', N17: 'gear', N18: 'rubber', N22: 'tolex', N23: 'fabric', N24: 'carpet',
@@ -713,6 +918,16 @@ const LOOK = {
   W09: 'cardboard', W10: 'shelf', E01: 'gear', E02: 'tolex', E03: 'tolex', E04: 'gear', E05: 'pegboard', E06: 'shelf',
   N24B: 'carpet', N26B: 'steel', N30: 'steel', N31: 'wood', N32: 'wood', N33: 'gear', N34: 'tolex', N35: 'gear',
   L20: 'lacquer', N46: 'tolex', N47: 'steel', N48: 'steel', N49: 'gear', // Dan's round-2 notes
+  N50: 'fabric', // round 6: the plant (its block only shows if the model can't load)
+};
+// the mess's kinds as real models (Dan 11-11: "all the elements [still plain] I want to build them"): each kind loads
+// once and every piece of it shows a copy where its primitive stands (placeMess keeps them in step); a kind not listed
+// keeps its primitive
+const SIGN_MODEL = 'assets/models/revaudio-neon.glb'; // the REVAUDIO neon's glass, rail and transformer (round 6, builder A; sign.py)
+const MESS_MODELS = { // round 6, ours from code (the props builder, 11-11)
+  crate: 'assets/models/mess-crate.glb', toolbox: 'assets/models/mess-toolbox.glb', can: 'assets/models/mess-can.glb',
+  drum: 'assets/models/mess-drum.glb', tyre: 'assets/models/mess-tyre.glb', coil: 'assets/models/mess-coil.glb',
+  papers: 'assets/models/mess-papers.glb', cone: 'assets/models/mess-cone.glb', case: 'assets/models/mess-case.glb',
 };
 const MESS_LOOK = { cardboard: 'cardboard', rust: 'enamel', paint: 'steel', oil: 'rust', rubber: 'rubber', paper: 'paper', case: 'tolex' };
 // (only three of them light the room live: each live light costs every pixel, ~1.7 ms at 2 MP; the globes glow past the
@@ -770,18 +985,18 @@ const MODELS = {
   L15: { src: 'assets/models/tyre-rack.glb', yaw: -Math.PI / 2 },
   R07: { src: 'assets/models/parts-bench.glb', yaw: -Math.PI / 2 },
   R09: { src: 'assets/models/pegboard-tools.glb', yaw: -Math.PI / 2 },
-  N03: { src: 'assets/models/jack-creeper.glb', yaw: -Math.PI / 2 },
+  N03: { src: 'assets/models/lift-pump.glb', yaw: Math.PI / 10, fitNode: 'lift_pump' }, // the lift's own hydraulic power unit (Dan's round-5 pick), square to the lift; its hose (pump_hose) runs out of the slot into the side of the lift's base plate
   // the far end + overhead
   E05: { src: 'assets/models/pegboard-cables.glb' },
   E06: { src: 'assets/models/oil-shelf.glb' },
   N23: { src: 'assets/models/couch.glb', yaw: Math.PI / 2 },
   A03: { src: 'assets/models/ceiling-cloud.glb' },
-  CAR: { src: 'assets/models/coupe.glb', yaw: Math.PI, tail: true }, // Dan's pick (11-09): A, our coupe (the glossy build replaces this file)
+  CAR: { src: 'assets/models/coupe.glb', yaw: Math.PI, tail: true, plate: { src: 'assets/models/revaudio-plate.glb', at: [0, 0.5385, 2.18] } }, // Dan's pick (11-09): A, our coupe (the glossy build replaces this file); the RevAudio plate on its tail's plate panel (Dan 11-11), `at` in the car's own frame R.car (re-measure it if the coupe is rebuilt)
   // the builders' batch 2 (11-09); left wall +pi/2, right wall -pi/2 (the file's front to the aisle)
   W07: { src: 'assets/models/test-desk.glb', yaw: Math.PI / 2 },
   N07: { src: 'assets/models/gas2-pump.glb', yaw: Math.PI / 2 },
   L19: { src: 'assets/models/guitar-rack.glb', yaw: Math.PI / 2 },
-  L20: { src: 'assets/models/bass-natural.glb', yaw: Math.PI / 2 }, // natural ash, so the two new basses differ
+  L20: { src: 'assets/models/bass-natural.glb', yaw: Math.PI / 2 }, // round 5: a real 34-inch bass in natural ash (Dan 11-10: "make it a bass gtr")
   R03: { src: 'assets/models/banjo.glb', yaw: -Math.PI / 2 },   // Dan, round 2: "make this a bingo"
   R10: { src: 'assets/models/ukulele.glb', yaw: -Math.PI / 2 }, // Dan, round 2: "make this ukilayly"
   N16: { src: 'assets/models/guitar-repair.glb', yaw: Math.PI / 2 },
@@ -790,10 +1005,9 @@ const MODELS = {
   R05: { src: 'assets/models/tool-chest.glb', yaw: -Math.PI / 2 },
   L04: { src: 'assets/models/amp-stack.glb', yaw: Math.PI / 2 },
   R17: { src: 'assets/models/exhaust-pipes.glb', yaw: -Math.PI / 2 },
-  R06: { src: 'assets/models/vu-rack.glb', yaw: -Math.PI / 2 },
   L06: { src: 'assets/models/vu-rack.glb', yaw: -Math.PI / 2 },
   L08: { src: 'assets/models/vu-rack.glb', yaw: Math.PI / 2 },
-  W10: { src: 'assets/models/repair-shelf.glb', yaw: -Math.PI / 2 },
+  W10: { src: 'assets/models/repair-shelf.glb', yaw: -Math.PI / 2 }, // round 6: the plank and brackets only, its things off (Dan 11-11); the headphones N49 still hang under it
   N02: { src: 'assets/models/shop-light.glb', yaw: -Math.PI / 2, glow: 0.9 }, // 10 % down (Dan, round 2); hung on two chains to the ceiling
   R15: { src: 'assets/models/rims-wall.glb', yaw: -Math.PI / 2 },
   N15: { src: 'assets/models/grinder-drill.glb', yaw: -Math.PI / 2 },
@@ -842,32 +1056,69 @@ const MODELS = {
   // batch 6, the left wall (11-10)
   W05: { src: 'assets/models/solder-station.glb', yaw: Math.PI / 2, anim: [['smoke_wisp', 'y', 'osc', [0.12, 0.7]]], wisp: 'smoke_wisp' }, // 350 degrees, a fume extractor, its smoke rising (frame)
   W04: { src: 'assets/models/parts-bins.glb', yaw: Math.PI / 2 },   // KNOBS, FADERS, VU METERS
-  N17: { src: 'assets/models/pedalboard.glb', yaw: Math.PI / 2 },   // our plugins as pedals, footswitches to the aisle; the front row's first two are RevAmp's GREENLINE + REDLINE (Dan's round-4 pins)
+  N17: { src: 'assets/models/pedalboard.glb', yaw: Math.PI / 2 },   // RevAmp's board: nine of its pedals + its wordmark plate, footswitches to the aisle (Dan's round-5 note; GREENLINE + REDLINE from his round-4 pins)
   N18: { src: 'assets/models/cable-hooks.glb', yaw: Math.PI / 2 },  // coiled cables on a board, flat on the wall
   L11: { src: 'assets/models/drum-machine.glb', yaw: Math.PI / 2 }, // on the amp head, beside its lamp
   // batch 7, the far end + overhead (11-10; N20 globe, N39 traffic light and the A01/A02 traps reworked in place)
   N28: { src: 'assets/models/mini-fridge.glb', yaw: Math.PI / 2 },    // a cream bar fridge under our stickers
   L17: { src: 'assets/models/pegboard-hoses.glb', yaw: Math.PI / 2 }, // v2: screwdrivers, a shadow board, hoses, only in the gaps round L02 / L03 / L18 (which Dan took out on round 5), the N18 cable bar and the amp
   N42: { src: 'assets/models/cable-tray.glb' },                       // the ladder tray along the trusses; v2: the cords end in it under a matte end cap (nothing hangs over the sign), a socket box on its cord at z 6.8
-  M01: { src: 'assets/models/crt-casing.glb', crt: true }, // the CRTs: a casing around each live screen
-  M02: { src: 'assets/models/crt-casing.glb', crt: true },
-  M03: { src: 'assets/models/crt-casing.glb', crt: true },
-  M04: { src: 'assets/models/crt-casing.glb', crt: true },
+  // round 6 (11-11): the plain slots by the door that wide screens see at the walk's start (Dan: "all the elements ... I want to build them")
+  N08: { src: 'assets/models/vending-machine.glb', yaw: Math.PI / 2, own: 1, glow: 0.6 }, // our GAS 2 FUEL machine, its sign + bottle window lit dim (vending_glow); own: its own circuit, lit from the first frame like the drawn one (no bank)
+  N05: { src: 'assets/models/air-compressor.glb', yaw: Math.PI / 2, anim: [['gauge_needle', 'z', 'osc', [0.05, 0.7]]] }, // its needle quivers about mid-scale (still in reduced motion)
+  R01: { src: 'assets/models/parts-store-shelf.glb', yaw: -Math.PI / 2 }, // steel shelving: boxed parts, oil, filters, mufflers (not L12's parts-shelf.glb)
+  N50: { src: 'assets/models/potted-plant.glb', yaw: -Math.PI / 2 }, // a trailing pothos in a terracotta pot on the red chest, its vines over the chest's aisle face (Dan 11-11: "put a plant over there")
+  M01: { src: 'assets/models/revfx-lunchbox.glb' }, // round 6: RevFX as a five-module lunchbox, its real UI the face (Dan 11-11; the CRTs are gone: crt-casing.glb unused)
+  M03: { src: 'assets/models/revlimiter.glb' },     // round 6: RevLimiter as a brass / walnut / oxblood desk console, its real UI the face (Dan 11-11)
+  M04: { src: 'assets/models/radio-roulette.glb' }, // round 6: Radio Roulette as a 1950s tabletop radio, its real UI the face (Dan 11-11)
 };
 for (const q of new URLSearchParams(location.search).getAll('model')) {
   const [id, src, yaw, fit] = q.split(':');
   if (/^assets\/models\/[\w\-/.]+\.glb$/.test(src || '') && !src.includes('..')) MODELS[id] = { src, yaw: +yaw || 0, fit };
 }
+// the models' bytes start the moment the textures are in (they waited for the fonts and the room as well before), and
+// each file is parsed as it lands, while the room is built; loadModels places them at the same point as before, so
+// nothing enters the room earlier. Started alongside the textures instead, they took the textures' line and the room
+// waited for them (measured 11-11: 1 s slower at 50 Mbit/s).
+// The loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
+// lights waited and then came in a rush), a file without a length when it lands; capped below 1, as gzip makes the
+// decoded bytes outrun Content-Length
+const modelBytes = {}, modelFiles = {}, got = {}, tellModels = () => loaded('models', Object.values(got).reduce((s, x) => s + x, 0));
+let gltfKit = null; // the loader and the meshopt decoder, fetched with the models
+function prefetchModels() {
+  gltfKit = Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
+  const srcs = new Set([...Object.values(MODELS).flatMap((m) => [m.src, m.stand, m.plate && m.plate.src]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean));
+  loadP.models[1] = srcs.size;
+  for (const src of srcs) modelBytes[src] = (async () => {
+    const res = await fetch(src, { priority: 'low' });
+    if (!res.ok) throw new Error(`${res.status} ${src}`);
+    const total = +res.headers.get('content-length'), reader = res.body.getReader(), parts = [];
+    let n = 0;
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      parts.push(value); n += value.length;
+      if (total) { got[src] = Math.min(0.95, 0.95 * n / total); tellModels(); }
+    }
+    const buf = new Uint8Array(n); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; }
+    return buf.buffer;
+  })();
+  for (const p of Object.values(modelBytes)) p.catch(() => {}); // a failed prefetch loads again in loadModels (and warns there)
+  const parser = gltfKit.then(([{ GLTFLoader }, { MeshoptDecoder }]) => new GLTFLoader().setMeshoptDecoder(MeshoptDecoder));
+  for (const src of srcs) {
+    modelFiles[src] = Promise.all([parser, modelBytes[src]]).then(([loader, buf]) => loader.parseAsync(buf, src.replace(/[^/]*$/, '')));
+    modelFiles[src].catch(() => {});
+  }
+}
 async function loadModels() {
+  if (!gltfKit) prefetchModels();
   const ids = Object.keys(MODELS).filter((id) => R.items.some((it) => it.id === id));
   if (!ids.length) { loaded('models', 1, 1); return []; }
-  loadP.models[1] = new Set(ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand]).filter(Boolean)).size;
-  const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/libs/meshopt_decoder.module.js')]);
+  loadP.models[1] = new Set([...ids.flatMap((id) => [MODELS[id].src, MODELS[id].stand, MODELS[id].plate && MODELS[id].plate.src]), ...Object.values(MESS_MODELS), SIGN_MODEL].filter(Boolean)).size;
+  const [{ GLTFLoader }, { MeshoptDecoder }] = await gltfKit;
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), maps = [], files = {};
-  // the loading screen hears each file's bytes as they come (the files load side by side: counting finished ones, the
-  // lights waited and then came in a rush), a file without a length when it lands
-  const got = {}, tell = () => loaded('models', Object.values(got).reduce((s, x) => s + x, 0));
-  const fetchModel = (src) => loader.loadAsync(src, (e) => { if (e.lengthComputable && e.total) { got[src] = 0.95 * e.loaded / e.total; tell(); } }).finally(() => { got[src] = 1; tell(); });
+  const fetchModel = (src) => (modelFiles[src] || Promise.reject()).catch(
+    () => loader.loadAsync(src, (e) => { if (e.lengthComputable && e.total) { got[src] = 0.95 * e.loaded / e.total; tellModels(); } }))
+    .finally(() => { got[src] = 1; tellModels(); });
   const get = async (src) => (await (files[src] ||= fetchModel(src))).scene.clone(true); // a file used by several slots loads once; copies share its geometry + materials
   R.modelGlow = [];
   // a model's lamps in turn (N39's traffic light): [material, seconds] in order -> that lamp's window in the loop
@@ -892,6 +1143,8 @@ async function loadModels() {
       wrap.scale.setScalar(m.fit === 'height' ? slot.y / size.y : Math.min(slot.x / size.x, slot.y / size.y, slot.z / size.z));
       wrap.position.y = bb.min.y;
       it.parts = it.obj.children.filter((c) => c.isMesh && !c.isLineSegments); // its drawn extras (a pump's globe) hide with it
+    } else if (it.kind === 'monitor') { // a plugin's own object where its CRT stood (Dan 11-11): real size, on the CRT's base, turned like it (placeItem keeps it there)
+      const { body, screen, lines } = it.obj.userData; wrap.position.y = -0.7 * screen.scale.y; it.parts = [body, screen, lines];
     } else { // a prop (the drum kit, the throne) is a group of drawn parts: the model takes their place at its real size
       it.obj.updateMatrixWorld(true); const inv = it.obj.matrixWorld.clone().invert(), pb = new THREE.Box3();
       it.parts = it.obj.children.filter((c) => !c.isLight); // its lights stay the room's
@@ -904,7 +1157,7 @@ async function loadModels() {
       o.receiveShadow = true; o.castShadow = ![o.material].flat().some((mt) => mt.transparent); // a decal or glass casts no box of shadow
       for (const mt of [o.material].flat()) {
         for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); } // 8x: stickers and labels stay sharp at the aisle's grazing angles
-        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name), id }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
+        if (mt.emissive && mt.emissive.getHex() && !R.modelGlow.some((g) => g.m === mt)) R.modelGlow.push({ m: mt, k: mt.emissiveIntensity * (m.glow ?? 1), dying: /tube_dying/.test(mt.name), cyc: cycleOf(m.cycle, mt.name), id, own: !!m.own }); // meters and LEDs power on with the room (N02's dying tube dips with its light)
         if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); } // the room's own reflection, on shiny parts only
       }
     });
@@ -920,12 +1173,37 @@ async function loadModels() {
       } catch (e) { console.warn('stand', id, m.stand, e.message); } // the drawn stand stays
     }
     it.obj.add(wrap); it.model = wrap;
+    if (m.plate) try { // the car's number plate: hung at its spot in the car's frame, then carried by the model (it shows and hides with it)
+      const pl = await get(m.plate.src); dress(pl); pl.position.fromArray(m.plate.at); it.obj.add(pl); it.obj.updateMatrixWorld(true); wrap.attach(pl);
+    } catch (e) { console.warn('plate', m.plate.src, e.message); }
     if (it.obj.geometry) {
       const d = R.dress.find((x) => x[0] === it.obj); if (d) d[2] = R.noMat;
       if (R.lookOn) it.obj.material = R.noMat;
     }
   }));
+  R.messModel = {};
+  await Promise.all(Object.entries(MESS_MODELS).map(async ([k, src]) => {
+    let g; try { g = await get(src); } catch (e) { console.warn('mess', k, src, e.message); return; } // the primitive stays
+    g.traverse((o) => { if (!o.isMesh) return; o.castShadow = o.receiveShadow = true;
+      for (const mt of [o.material].flat()) {
+        for (const t of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap']) if (mt[t]) { mt[t].anisotropy = 8; maps.push(mt[t]); }
+        if (mt.metalness > 0.3 || mt.roughness < 0.5) { mt.envMap = R.probe.env.texture; mt.userData.env ??= 1; SHINY.add(mt); }
+      } });
+    R.messModel[k] = g;
+  }));
+  messModels();
+  // the REVAUDIO neon's glass (round 6, Dan 11-11: a real 3D neon): hung on the drawn plane, in its frame, which keeps only
+  // the halo; the glass on the sign's own circuit (lightRoom)
+  try {
+    const sg = await get(SIGN_MODEL), glass = new THREE.Box3();
+    sg.updateMatrixWorld(true);
+    sg.traverse((o) => { if (!o.isMesh) return; o.receiveShadow = true;
+      for (const mt of [o.material].flat()) { if (mt.name === 'neon_glow') { R.signGlow = mt; mt.userData.k = mt.emissiveIntensity; glass.expandByObject(o); } else o.castShadow = true; } });
+    if (!glass.isEmpty()) R.signHalf = Math.max(-glass.min.x, glass.max.x); // the lit word's own half-width, for the end wall's clamp (arrange)
+    R.sign.add(sg); R.signMat.map.dispose(); R.signMat.map = signTex(true); R.signMat.needsUpdate = true;
+  } catch (e) { console.warn('sign', SIGN_MODEL, e.message); } // the drawn sign stays
   applyFlags(); arrange(); // the look shows the models; their shadows drawn once
+  for (const src in modelFiles) { delete modelFiles[src]; delete modelBytes[src]; } // the room has its copies: let the downloads go (they stayed in memory for the whole visit, 38 MB)
   return maps;
 }
 // pegboard: brown hardboard with its grid of holes (drawn, no texture set)
@@ -961,7 +1239,7 @@ const textMat = (lit, w, h) => {
 const SIDE = [
   // Dan 11-03: the guitars get the start of the left wall; the wrenches hang over the workbench, under the parts shelf
   { id: 'L01', cat: 'garage', label: 'Pegboard: wrenches, spanners', side: -1, f: 0.58, w: 2.6, h: 1.0, d: 0.05, y: 1.5 },
-  { id: 'L20', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.3455, w: 0.38, h: 1.15, d: 0.08, y: 2.1, on: 0 }, // Dan, round 2: "lets put 2 bass"
+  { id: 'L20', cat: 'music', label: 'Bass (hanging)', side: -1, f: 0.3455, w: 0.38, h: 1.15, d: 0.08, y: 1.75, on: 0 }, // round 5: down from 2.1, its headstock clear of the nav in the close view; // Dan, round 2: "lets put 2 bass"
   { id: 'L04', cat: 'music', label: 'Amp stack (head + 4x12)', side: -1, f: 0.82, w: 0.8, h: 1.55, d: 0.42, leds: 1 },
   { id: 'L05', cat: 'garage', label: 'Red tool chest', side: -1, f: 0.74, w: 0.8, h: 1.0, d: 0.5 },
   { id: 'L06', cat: 'music', label: 'Compressor rack (VU meters)', side: -1, f: 0.74, w: 0.6, h: 0.9, d: 0.48, y: 1.45, leds: 1, vu: 1 },
@@ -982,7 +1260,6 @@ const SIDE = [
   { id: 'R03', cat: 'music', label: 'Banjo (hanging)', side: 1, f: 0.825, w: 0.38, h: 1.05, d: 0.08, y: 1.95 },
   { id: 'R04', cat: 'garage', label: 'Wall shelf: helmets, wheels', side: 1, f: 0.71, w: 2.6, h: 0.6, d: 0.4, y: 2.95 },
   { id: 'R05', cat: 'garage', label: 'Red tool chest', side: 1, f: 0.44, w: 0.8, h: 1.0, d: 0.5 },
-  { id: 'R06', cat: 'music', label: 'Compressor rack (VU meters)', side: 1, f: 0.44, w: 0.6, h: 0.9, d: 0.48, y: 1.45, leds: 1, vu: 1 },
   { id: 'R07', cat: 'garage', label: 'Parts bench (carb on a stand)', side: 1, f: 0.345, w: 2.2, h: 0.92, d: 0.7 },
   { id: 'R08', cat: 'music', label: 'Modular synth', side: 1, f: 0.33, w: 0.8, h: 0.5, d: 0.25, y: 1.17, leds: 1 },
   { id: 'R09', cat: 'garage', label: 'Pegboard: tools', side: 1, f: 0.345, w: 2.2, h: 1.4, d: 0.05, y: 2.05 },
@@ -1000,7 +1277,7 @@ const SIDE = [
   // Dan's picks of 2026-11-05 (round 4 of the plan page): researcher R1's props, each its own slot. x = a spot off the
   // wall (the aisle, the ceiling); flat = lies on the floor or the ceiling (a rug, a decal), so it may sit under things
   { id: 'N02', cat: 'garage', label: 'Twin-tube shop light on two chains, one tube dying', side: 1, f: 0.955, w: 1.25, h: 0.6, d: 0.25, y: 4.3, x: 2.2 },
-  { id: 'N03', cat: 'garage', label: 'Floor jack + creeper by the lift', side: 1, f: 0.905, w: 1.0, h: 0.2, d: 0.5, y: 0.1, x: 0.95 },
+  { id: 'N03', cat: 'garage', label: 'Lift pump unit + hose into the lift', side: 1, f: 0.9418, w: 0.39, h: 1.05, d: 0.467, y: 0.525, x: 1.331 }, // round 5 (Dan 11-10: make it part of the lift); the hose fits today's lift: if the car or lift moves, rebuild with lift_pump.py
   { id: 'N04', cat: 'garage', label: 'Engine hoist, hook (sways)', side: 1, f: 0.595, w: 0.9, h: 1.9, d: 1.4 },
   { id: 'N05', cat: 'garage', label: 'Air compressor, yellow hose (needle)', side: -1, f: 0.89, w: 0.5, h: 1.2, d: 0.5 },
   { id: 'N06', cat: 'garage', label: 'GAS 2 hazard drum (chevrons)', side: 1, f: 0.795, w: 0.6, h: 0.9, d: 0.6, x: 1.15 },
@@ -1013,7 +1290,7 @@ const SIDE = [
   { id: 'N13', cat: 'garage', label: 'Corkboard: gig flyers, photos, a calendar', side: -1, f: 0.715, w: 1.2, h: 0.8, d: 0.03, y: 2.3 },
   { id: 'N15', cat: 'garage', label: 'Bench grinder + drill press', side: 1, f: 0.396, w: 0.5, h: 0.42, d: 0.4, y: 1.13 },
   { id: 'N16', cat: 'music', label: 'Guitar mid-repair on the test desk', side: -1, f: 0.41, w: 1.0, h: 0.12, d: 0.35, y: 0.81, on: 0.25, sits: 'W07' },
-  { id: 'N17', cat: 'music', label: 'Pedalboard: RevAudio pedals, cable spaghetti', side: -1, f: 0.82, w: 0.7, h: 0.1, d: 0.35, y: 0.05, x: -2.65 },
+  { id: 'N17', cat: 'music', label: 'Pedalboard: RevAmp pedals, cable spaghetti', side: -1, f: 0.82, w: 0.7, h: 0.1, d: 0.35, y: 0.05, x: -2.65 },
   { id: 'N18', cat: 'music', label: 'Coiled cables on wall hooks', side: -1, f: 0.125, w: 0.6, h: 0.6, d: 0.1, y: 1.6, on: 0.02 }, // its board on the L17 pegboard's face (2 cm out: the board's standoff + hardboard), its plugs clear of the batten
   { id: 'N22', cat: 'music', label: 'Road cases, stencilled lids (stacked)', side: 1, f: 0.265, w: 1.0, h: 1.2, d: 0.6, x: 2.2 },
   { id: 'N23', cat: 'music', label: 'Worn couch with a throw', side: 1, f: 0.37, w: 2.0, h: 0.85, d: 0.9, x: 2.2 },
@@ -1039,8 +1316,9 @@ const SIDE = [
   { id: 'N46', cat: 'music', label: 'Desk chair at the test desk (a second work station)', side: -1, f: 0.4416, x: -2.2, w: 0.65, h: 1.0, d: 0.65 }, // where a drum stood (Dan, round 2)
   { id: 'N47', cat: 'music', label: 'Lamp on the amp stack (lit)', side: -1, f: 0.2851, x: -3.05, w: 0.15, h: 0.4, d: 0.15, y: 1.75, sits: 'L04' }, // a gooseneck on the head, beside the drum machine (L11) // Dan, round 2: "put a lamp on top of them"
   { id: 'W09', cat: 'garage', label: 'Build board: SKETCH, BENCH, DSP, TEST', side: 1, f: 0.515, w: 1.2, h: 1.8, d: 0.6 },
-  { id: 'W10', cat: 'music', label: 'Repair shelf: a dash radio, a tube radio', side: 1, f: 0.56, w: 1.2, h: 0.4, d: 0.35, y: 2.3 },
+  { id: 'W10', cat: 'music', label: 'Repair shelf (bare: its radios off, Dan 11-11)', side: 1, f: 0.56, w: 1.2, h: 0.4, d: 0.35, y: 2.3 },
   { id: 'N49', cat: 'music', label: 'Headphones hung under the repair shelf', side: 1, f: 0.4389, x: 3.045, w: 0.11, h: 0.36, d: 0.2, y: 2.285, sits: 'W10' }, // hung from a cup hook under W10's plank at its door end (the tube radio stands under the middle), band up; was lying on the plank, unreadable from the aisle
+  { id: 'N50', cat: 'garage', label: 'Potted pothos on the red chest', side: 1, f: 0.3994, w: 0.57, h: 0.753, d: 0.622, y: 1.0715, x: 3.024, sits: 'R05' }, // Dan 11-11: "put a plant over there" (the chest's top, bare since the radio went up to W10); the box = the model's own (vines 0.305 below the pot, 0.39 in front of it), so it fits at scale 1 with its pot at (3.1, 1.0, 6.15)
 ];
 // the far end: a mix station round the TV (x across the room, d out from the end wall; ty = height from the TV's centre)
 const END = [
@@ -1091,12 +1369,12 @@ const POSTERS = [
   { id: 'P05', pic: 'gas2-pump', label: 'GAS 2: the pump', side: -1, f: 0.47, y: 2.5, h: 0.95 },
   { id: 'P06', pic: 'coming-soon', label: 'COMING SOON plate (future plugins)', side: 1, f: 0.44, y: 2.45, h: 0.5 },
 ];
-// CRT monitors on the benches, each showing a plugin (the room alive; DRIFT and RevFX are the next ones)
+// CRT monitors on the benches, each showing a plugin; since round 6 each holds its plugin's own object instead (Dan 11-11),
+// and DRIFT's (M02, on the right wall's parts bench) is gone with no object in its place (Dan: "dont need to build drift object")
 const MONITORS = [
-  { id: 'M01', pic: 'scr-revfx', label: 'CRT monitor: RevFX', side: -1, f: 0.6, base: 0.92, w: 0.56 },
-  { id: 'M02', pic: 'scr-drift', label: 'CRT monitor: DRIFT', side: 1, f: 0.36, base: 0.92, w: 0.5 },
-  { id: 'M03', pic: 'scr-revlimiter', label: 'CRT monitor: RevLimiter', side: 0, x: -0.75, z: 1.05, base: 0.85, w: 0.44 },
-  { id: 'M04', pic: 'scr-radio', label: 'CRT monitor: Radio Roulette', side: 1, f: 0.44, base: 1.9, w: 0.42 },
+  { id: 'M01', pic: 'scr-revfx', label: 'RevFX: the plugin as a five-module lunchbox', side: -1, f: 0.6, base: 0.92, w: 0.56 },
+  { id: 'M03', pic: 'scr-revlimiter', label: 'RevLimiter: the plugin as a desk console', side: 0, x: -0.75, z: 1.05, base: 0.85, w: 0.44 },
+  { id: 'M04', pic: 'scr-radio', label: 'Radio Roulette: the plugin as a 1950s radio', side: 1, f: 0.44, base: 2.497, w: 0.42, sits: 'W10' }, // on the shelf W10's plank (top 2.497), where the headphones hang (Dan 11-11: "put the radio on the shelf where is the headphones"); the compressor rack R06 is out
 ];
 
 // ---------- the painted room, the default skin (Dan 2026-11-03: "glued and whole, and 3D, and real", over cut-outs) ----------
@@ -1110,7 +1388,7 @@ const PAINT = {
   shots: [{ at: 0, file: 'walk-000' }],   // where on the walk (0..1) each painting was made from, and its picture
   // Dan 11-03, on a real poster over its painted twin: "whoever looks better and looks more glued to the picture, use it"
   live: ['P01', 'P02', 'P03', 'P04'],    // real pixels over their painted twins (the TV always); the CRT screens read better painted
-  drop: ['P05', 'P06', 'M02', 'M04'],    // not in the paintings (the painter merged P05 into P03's poster, put helmets where P06 hung)
+  drop: ['P05', 'P06', 'M04'],    // not in the paintings (the painter merged P05 into P03's poster, put helmets where P06 hung)
 };
 { const q = new URLSearchParams(location.search).get('live'); if (q != null) PAINT.live = q.split(',').filter(Boolean); } // ?live=P04,M03: try others
 // ---------- the walk film (Dan 2026-11-03: projected paintings smear "and broken apart while I walk"; "in every step I will
@@ -1268,6 +1546,11 @@ function createRoom() {
   Object.assign(R.wet.material.uniforms, { tWet: { value: PATCHES.wet }, tNrm: { value: wf.normalMap }, uTile: { value: 3 }, uK: { value: 0.6 }, uFog: { value: 0 } });
   keepAlpha(Object.assign(R.wet.material, { transparent: true, depthWrite: false }), true);
   scene.add(R.wet);
+  // speed (2026-11-18, O-3): frame() draws the floor's reflection just before the room's render, not from inside it.
+  // Nested, three.js re-resolved every lit material's shader in both renders, every frame (~4 ms of JS at the door). Every
+  // other view (the probe, the painter's projectors) still draws it the old way
+  R.wetDraw = R.wet.onBeforeRender;
+  R.wet.onBeforeRender = function (r, s, cam) { if (!(R.wetFirst && cam === camera)) R.wetDraw.call(this, r, s, cam); };
   R.lanesMat = new THREE.MeshStandardMaterial({ transparent: true, roughness: 0.6, depthWrite: false });
   R.lanes = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), R.lanesMat); R.lanes.rotation.x = -Math.PI / 2;
   R.mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, color: 0x8a8590 });
@@ -1387,7 +1670,7 @@ function createRoom() {
     const tex = picture(s.pic), g = new THREE.Group();
     const body = dress(new THREE.Mesh(crtGeo, crtMat), crtMat, kindMat('plastic')); body.castShadow = body.receiveShadow = true;
     body.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), R.edgeMats.music));
-    const smat = liveScreen(new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })); smat.userData.k = 1; // exact pixels (FINISH)
+    const smat = liveScreen(new THREE.MeshBasicMaterial({ ...(tex ? { map: tex } : {}), toneMapped: false })); // (a plugin's object in the slot: no picture) smat.userData.k = 1; // exact pixels (FINISH)
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), smat);
     const lines = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), keepAlpha(new THREE.MeshBasicMaterial({ map: R.scan, transparent: true, depthWrite: false, toneMapped: false })));
     g.add(body, screen, lines); g.userData = { body, screen, lines }; screen.userData.live = lines.userData.live = true;
@@ -1634,8 +1917,11 @@ function acousticPiece(s, i) {
   g.add(blocks);
   return g;
 }
+function messModels() { // a copy of its kind's model per piece (after the load, and after a shuffle)
+  for (const m of R.mess) if (!m.model && R.messModel && R.messModel[m.t.k]) { m.model = R.messModel[m.t.k].clone(true); scene.add(m.model); }
+}
 function buildMess() {
-  for (const m of R.mess) { scene.remove(m.mesh); }
+  for (const m of R.mess) { scene.remove(m.mesh); if (m.model) scene.remove(m.model); }
   const r = rng(1000 + S.messSeed);
   R.mess = Array.from({ length: 64 }, () => {
     const t = R.messTypes[Math.floor(r() * R.messTypes.length)];
@@ -1816,14 +2102,14 @@ function placeItem(it) {
     it.obj.visible = moved || !(side === 1 && inDoor(it.obj.position.z, w / 2, it.obj.position.y - h / 2));
     lb.position.set(it.obj.position.x - side * 0.4, it.obj.position.y + h / 2 + 0.2, it.obj.position.z + (side === 0 ? 0.2 : 0));
   } else if (it.kind === 'monitor') {
-    const s = it.s, img = it.tex.image, aspect = img && img.width ? img.width / img.height : 1.9;
+    const s = it.s, img = it.tex && it.tex.image, aspect = img && img.width ? img.width / img.height : 1.9;
     const w = s.w * k, h = w / aspect, side = ov.side ?? s.side;
     const { body, screen, lines } = it.obj.userData;
     body.scale.set(w * 1.18, h * 1.4, 0.42 * k); body.position.set(0, 0, -0.21 * k);
     screen.scale.set(w, h, 1); screen.position.set(0, 0, 0.003); lines.scale.set(w, h, 1); lines.position.set(0, 0, 0.006);
     const defX = side === 0 ? s.x : side * (Wd / 2 - 0.42), defF = side === 0 ? s.z / span : (s.f ?? s.z / span);
     const x = ov.x ?? defX, z = (ov.f ?? defF) * span, y = (ov.y ?? s.base) + h * 0.7;
-    it.obj.position.set(x, y, z);
+    it.obj.position.set(x, y, z); if (it.model && !MODELS[it.id]?.crt) it.model.position.y = -h * 0.7; // a plugin's object stands on the base
     // a side monitor turns between the aisle and the camera so its screen reads from the walk
     it.obj.rotation.y = (side < 0 ? Math.PI / 4 : side > 0 ? -Math.PI / 4 : 0) + turn; it.side = side;
     own(lines).map.repeat.set(1, Math.max(4, h * 90));
@@ -1831,8 +2117,11 @@ function placeItem(it) {
   } else if (it.kind === 'sign') {
     const H = S.roomH, k2 = S.signScale, z = S.signF * span, y = Math.min(S.signY, H - 0.55 - 0.375 * k2);
     it.obj.scale.setScalar(k2);
-    if (signOnEnd()) { // on the end wall beside the TV, kept inside the wall
-      const x = clamp(S.signX, -Wd / 2 + 1.55 * k2, Wd / 2 - 1.55 * k2);
+    if (signOnEnd()) { // on the end wall beside the TV, kept inside the wall: the lit word, by its own half-width (0.8 m
+      // in the model; 0.95 = the drawn word). Not the 3.1 m plane, which is mostly its glow's margin: at x1.4 that clamp
+      // pushed the sign 0.62 m toward the TV, off the spot Dan gave it on his bench (2026-11-20). The rail's ends and a
+      // wire may run on into the side wall, behind the corner trap
+      const half = (R.signHalf ?? 0.95) * k2, x = clamp(S.signX, -Wd / 2 + half, Wd / 2 - half);
       it.obj.position.set(x, y, 0.06); it.obj.rotation.y = 0; R.signLight.position.set(x, y - 0.3, 0.6);
     } else if (S.signWall === 'aisle') {
       it.obj.position.set(0, y, z); it.obj.rotation.y = 0; R.signLight.position.set(0, y - 0.4, z + 0.3);
@@ -1880,18 +2169,20 @@ function placeLeds() {
 }
 // Dan's round-2 notes (11-09) on this scatter (messSeed 1): two oil drums out (behind the GAS 2 drum; in front of the test
 // desk, where a chair stands now), the tyre by the couch moved to the tyre rack
-const MESS_FIX = { seed: 1, off: [26, 10, 13, 33, 37, 27, 30, 0, 12, 21, 8, 9], at: { 4: [2.25, 9.95] } }; // 13 / 33 / 37: a case and two cones off the drums' rug (N24, 11-10); 27 / 30 / 0 / 12 / 21: a drum in front of N17's pedalboard, two toolboxes + a crate standing on it, and a blank sheet of papers behind it (11-10); 8 / 9: two black cases in the dark corner by the drums, which read as holes in the floor from the walk (11-10)
+const MESS_FIX = { seed: 1, off: [26, 10, 13, 33, 37, 27, 30, 0, 12, 21, 8, 9, 17, 6, 24], at: { 4: [2.25, 9.95], 15: [-2.05, 11.55], 25: [2.62, 2.31], 32: [-2.88, 7.08, 93], 36: [-2.19, 9.58, 85] } }; // 13 / 33 / 37: a case and two cones off the drums' rug (N24, 11-10); 27 / 30 / 0 / 12 / 21: a drum in front of N17's pedalboard, two toolboxes + a crate standing on it, and a blank sheet of papers behind it (11-10); 8 / 9: two black cases in the dark corner by the drums, which read as holes in the floor from the walk (11-10); 17: a toolbox inside the couch N23, no clear spot near it; 6 / 24: a tyre through the test desk W07's leg under the crate 32, a case through the parts bench R07 behind the GAS barrel, both all but hidden from the walk; 15: a coil out from under the tyre 29; 25: the can out of the red chest L05's bottom drawer; 32: the crate squared up under the test desk, off its leg; 36: the case turned along the wall, off the engine hoist R14's leg (11-11, the props' real models)
 function placeMess() {
   const Wd = S.roomW, span = L.span, show = Math.round(S.mess * R.mess.length);
   const [cx, , cz] = R.carPos;
   R.mess.forEach((m, i) => {
     let z = 0.6 + m.u * (span * 0.98 - 0.6), x = m.side * (Wd / 2 - 0.3 - m.depth * 1.05);
     const fix = S.messSeed === MESS_FIX.seed ? MESS_FIX : null, at = fix && fix.at[i]; if (at) [x, z] = at;
+    const rot = at && at[2] != null ? at[2] * Math.PI / 180 : m.rot; // a fixed spot may turn the piece too ([x, z, degrees])
     const nearCar = Math.abs(x - cx) < 2.4 && Math.abs(z - cz) < 1.25;
     const nearTv = Math.abs(x) < 1.6 && z < 2.9; // the desk, the stands and the throne
     m.mesh.visible = i < show && !(fix && fix.off.includes(i)) && (!!at || (!nearCar && !nearTv && !(m.side === 1 && inDoor(z, 0.4, 0))));
     m.mesh.position.set(x, m.t.y, z);
-    if (m.t.flat) m.mesh.rotation.set(-Math.PI / 2, 0, m.rot); else m.mesh.rotation.set(0, m.rot, 0); // flat things lie on the floor
+    if (m.t.flat) m.mesh.rotation.set(-Math.PI / 2, 0, rot); else m.mesh.rotation.set(0, rot, 0); // flat things lie on the floor
+    if (m.model) { m.model.visible = m.mesh.visible && !!R.lookOn; m.mesh.visible &&= !R.lookOn; m.model.position.set(x, 0, z); m.model.rotation.set(0, rot, 0); } // its model: built lying as it lies, origin on the floor
   });
 }
 function placeTv() {
@@ -2057,22 +2348,67 @@ function resize() {
   const c = (TVCAP && CAPS.find((x) => x.tag === TVCAP)) || pickCap(vw);
   if (c !== cap) {
     cap = c;
-    tvImg.src = `assets/tv-${c.tag}.webp`;
+    tvImg.src = `assets/tv-${c.tag}${EMBED_SALE && c !== CAPS[3] ? '-' + EMBED_SALE : ''}.webp`;
     $('tvLive').src = tvImg.src;
-    $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
-    $('belowImg').src = `assets/below-${c.navW}.webp`;
+    if (!EMBED) { // (the home page shows its own nav and sections)
+      $('navImg').src = $('stageNavImg').src = `assets/nav-${c.navW}.webp`;
+      $('belowImg').src = `assets/below-${c.navW}.webp`;
+    }
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75, Math.sqrt(3.7e6 / (vw * vh)))); // the recipe's laptop budget: a 3.7 MP drawing buffer at most
+  setBuffer();
+  layoutCamera(); arrange(); benchFit();
+}
+// the drawing buffer: the recipe's laptop budget, a 3.7 MP buffer at most; GOV.k < 1 only on a machine the governor
+// found too slow at the door (weak machines only, see GOV)
+function setBuffer() {
+  const { vw, vh } = L;
+  renderer.setPixelRatio((LOOK_FLAT ? 1 : window.roomRatio(vw, vh, devicePixelRatio)) * GOV.k); // (a &flat picture: its own pixels, whatever its size)
   renderer.setSize(vw, vh, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(vw, vh);
   const dpr = renderer.getPixelRatio();
   R.mirror.getRenderTarget().setSize(Math.round(vw * dpr * 0.5), Math.round(vh * dpr * 0.5));
   R.wet.getRenderTarget().setSize(Math.round(vw * dpr * 0.25), Math.round(vh * dpr * 0.25)); // it's softened anyway
-  layoutCamera(); arrange(); benchFit();
+  R.lockDrawn = false; // (a new buffer is empty: at the lock, its one frame again)
+}
+// ---------- the governor (2026-11-18, O-6): WEAK MACHINES ONLY ----------
+// A machine that can't hold the frame rate at the door draws a smaller buffer: one step at a time (x0.8), measured over
+// 1.5 s of frames at the door (or, mid-walk, over 3 s and applied only once the walk is at rest), never back up within a
+// visit (no flip-flop), and a step that buys less than 10 % is taken back at once (a slow CPU, not pixels: a smaller
+// buffer only blurs it). On a machine that holds ~36 fps or better nothing happens: the look is untouched. Never in a
+// capture (stills) or with ?governor=0. window.__gov reports what it did
+// Under a look (2026-11-20, lookFrame): a step makes the canvas and the finish smaller, never the room, which is drawn
+// small already and keeps its pixels per CSS px (the sign stays as readable). A step that then buys under 10 % is
+// taken back by the rule above
+const GOV = { k: 1, level: 0, on: CAPTURE == null && new URLSearchParams(location.search).get('governor') !== '0', iv: [], last: 0, from: 0, door: true, before: 0, beforeDoor: true, done: false, log: [] };
+window.__gov = GOV;
+const GOV_STEPS = [1, 0.8, 0.64], GOV_SLOW = 1000 / 36, GOV_WALK_SLOW = 1000 / 25;
+function govern(now, drew) {
+  if (!GOV.on || GOV.done) return;
+  const gap = now - GOV.last; GOV.last = now;
+  if (!drew || document.hidden || gap > 250) { GOV.iv.length = 0; return; } // a pause, a hidden tab or a hitch: start over
+  if (!GOV.from) GOV.from = now + 1500; // the first frames after the hand-off settle (uploads, the first probe)
+  if (now < GOV.from) return;
+  const door = progress < 0.02;
+  if (GOV.iv.length && door !== GOV.door) GOV.iv.length = 0; // a window is all door or all walk
+  GOV.door = door; GOV.iv.push(gap);
+  const span = GOV.iv.reduce((a, b) => a + b, 0);
+  if (span < (door ? 1500 : 3000)) return;
+  const mean = span / GOV.iv.length; GOV.iv.length = 0; GOV.seen = (GOV.seen || 0) + 1; GOV.mean = +mean.toFixed(1); // (what it saw: window.__gov)
+  if (GOV.before && GOV.beforeDoor === door) { // judge the last step on a like window: under 10 % faster = not the pixels
+    const undo = mean > GOV.before * 0.9;
+    GOV.log.push({ at: Math.round(now), mean: +mean.toFixed(1), judged: GOV.level, undo });
+    GOV.before = 0;
+    if (undo) { GOV.level--; GOV.k = GOV_STEPS[GOV.level]; setBuffer(); GOV.done = true; return; } // take it back, stop
+  }
+  if (mean <= (door ? GOV_SLOW : GOV_WALK_SLOW)) return; // it holds: nothing changes
+  if (GOV.level >= GOV_STEPS.length - 1 || Math.min(devicePixelRatio || 1, 1.75) * GOV_STEPS[GOV.level + 1] < 0.75) { GOV.done = true; return; }
+  if (!door && now - lastScrollAt < 500) return; // mid-walk: only once the walk is at rest (no pop while it moves)
+  GOV.level++; GOV.k = GOV_STEPS[GOV.level]; GOV.before = mean; GOV.beforeDoor = door; setBuffer();
+  GOV.log.push({ at: Math.round(now), mean: +mean.toFixed(1), level: GOV.level, door });
 }
 // layoutCamera(): the camera's start and end on this screen. The room has one size in metres (Dan 2026-11-04: a room
 // built and lit in Blender can't stretch per screen); only the camera adapts
 function layoutCamera() {
-  const { vw, vh } = L, navH = cap.nav;
+  const { vw, vh } = L, navH = EMBED_NAV || cap.nav;
   const portrait = vw < vh, lens = S.lens + (portrait ? 18 : 0); // a portrait phone sees a narrow slice: a wider lens there
   camera.fov = lens; camera.aspect = vw / vh; camera.updateProjectionMatrix();
   const tv = Math.tan(deg(lens) / 2), th = tv * vw / vh; // tan of half the vertical / horizontal view
@@ -2090,9 +2426,10 @@ function layoutCamera() {
   const root = document.documentElement.style;
   root.setProperty('--nav-h', navH + 'px'); root.setProperty('--vh', vh + 'px'); root.setProperty('--vw', vw + 'px');
   root.setProperty('--walk-px', L.walkPx + 'px'); root.setProperty('--tv-r', cap.r + 'px');
+  embedSay('layout', { walkPx: L.walkPx });
   // a longer walk keeps the visitor where they stood; one reading the page below keeps their place in it (a phone's
   // address bar changes the height mid-read: the capped progress threw them back up to the TV)
-  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) { const y = lenis ? lenis.scroll : scrollY; jumpTo(y > oldWalk ? y - oldWalk + L.walkPx : progress * L.walkPx); }
+  if (oldWalk && Math.abs(oldWalk - L.walkPx) > 0.5) { const y = EMBED ? embed.y : lenis ? lenis.scroll : scrollY; jumpTo(y > oldWalk ? y - oldWalk + L.walkPx : progress * L.walkPx); }
   const tvBottomPx = vh / 2 + (tvH / 2) / (d0 * tv) * (vh / 2);
   $('readB').style.top = Math.min(vh * 0.7, tvBottomPx + vh * 0.04) + 'px';
   $('tuneNote').textContent = `Room ${roomLen.toFixed(1)} m long · TV on the first screen: ${L.startPct.toFixed(1)} % of the width · walk ${(d0 - dEnd).toFixed(1)} m`;
@@ -2118,6 +2455,13 @@ function flicker(t, win, salt) {
   // 200 ms steps: the whole room changes at most 5 times a second, at most 2.5 flashes (WCAG 2.3.1 allows 3; Dan 2026-11-04)
   return k >= 1 ? 1 : k <= 0 ? 0 : (hash(Math.floor(t / 200) + salt) < k * k * 1.2 ? 1 : 0.05);
 }
+// the live room's own clock (2026-11-20): ms since it took over from the loading screen, 0 until then. The neon's dip,
+// the sign's stutter, the dying tube and the traffic light run on it: counted from the page's start they fell at the
+// same moments for every visitor, the first dip 0.7 to 1.3 s after the hand-off, where it read as a glitch. So: nothing
+// in the first 3 s, then at this visit's own moments (FLK); the traffic light starts on the red the loading pictures show
+const liveClock = (now) => (R.liveAt ? Math.max(0, now - R.liveAt) : 0);
+const FLK = Math.floor(Math.random() * 4096); // (a capture holds the lights steady: nothing of this reaches a still)
+const blip = (now, ms, salt, over) => { const c = liveClock(now); return c > 3000 && hash(Math.floor(c / ms) + salt + FLK) > over; };
 const LED_RGB = [[0.25, 2.2, 0.6], [2.4, 1.3, 0.2], [2.4, 0.25, 0.2], [0.3, 1.6, 2.4]];
 const _c = new THREE.Color();
 let progress = 0, walkDrag = false;
@@ -2211,20 +2555,25 @@ function initFilm() { // per film: a 16:9 box over the 3D room (under the TV, th
 // at exposure 1: the emitters burn bright but keep their colour, the room takes a share
 // full: every bank on whatever the loading screen says (the probe). Each light also takes its bank's level (LV)
 function lightRoom(neonK, warm, signK, open, far, now, full = false) {
-  const lampK = warm * S.lamps, b = full ? () => 1 : lv, gear = b('gear');
+  const lampK = warm * S.lamps, b = full ? () => 1 : lv;
   for (const n of R.neon) { const k = neonK * b(n.side < 0 ? 'neonL' : 'neonR'); n.mat.color.copy(n.mat.userData.base).multiplyScalar(7 * k); for (const l of n.lights) l.intensity = 30 * k; }
   R.lamps.forEach((lp, i) => { const on = b('lamp' + i), k = lampK * on; // the pools are the room's main light, like the painting's
     lp.light.intensity = 130 * k * lp.k; lp.bulbMat.color.copy(lp.bulbMat.userData.base).multiplyScalar((0.3 + 3.2 * lampK) * on);
     lp.shaft.material.uniforms.uK.value = 0.05 * S.shafts * k * far; lp.inner.material.emissiveIntensity = 2.0 * on; });
   for (const g of R.litGlow || []) g.m.emissiveIntensity = g.k * b(PROP_BANK[g.id]); // a lit prop's globe with its light
-  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!steady && id === 'N02' && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1); } // one tube dying (held lit in a capture: a still never catches it dimmed)
-  R.signMat.color.setScalar((0.08 + 1.4 * signK) * gear); R.signLight.intensity = 6 * signK * gear;
+  for (const l of R.propLights || []) { const id = l.parent.userData.item?.id; l.intensity = l.userData.cd * warm * b(PROP_BANK[id]) * (!steady && id === 'N02' && blip(now, 400, 9, 0.93) ? 0.55 : 1); } // one tube dying (held lit in a capture: a still never catches it dimmed)
+  R.signMat.color.setScalar(0.08 + 1.4 * signK); R.signLight.intensity = 6 * signK; if (R.signGlow) R.signGlow.emissiveIntensity = R.signGlow.userData.k * (0.08 + 1.4 * signK) / 1.48; // the sign: its own circuit, lit from the loading screen's first frame like the GAS globes (Dan 11-11), not the gear bank
   const fill = full ? 1 : HEMI_DARK + (1 - HEMI_DARK) * litFrac();
   if (R.hemiK != null) R.hemi.intensity = R.hemiK * fill;
   R.tv.glow.intensity = 3 * S.tvGlow * open * (reduced ? 1 : 1 + 0.05 * Math.sin(now * 0.0019)) * far;
   R.tv.haloMat.opacity = 0.1 * open;
   for (const m of SHINY) m.envMapIntensity = S.probe * (m.userData.env ?? 1) * warm * fill; // the reflections come up with the lamps
-  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (now / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || 'gear') * (g.dying && !steady && hash(Math.floor(now / 400) + 9) > 0.93 ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
+  for (const g of R.modelGlow || []) { const c = g.cyc, s = c && (liveClock(now) / 1000) % c.n; g.m.emissiveIntensity = g.k * warm * b(PROP_BANK[g.id] || (g.own ? 'own' : 'gear')) * (g.dying && !steady && blip(now, 400, 9, 0.93) ? 0.55 : 1) * (!c ? 1 : (steady ? !c.a : s >= c.a && s < c.b) ? 1 : 0.03); } // a model's meters and LEDs too (with its bank, or the gear's); a traffic light's lamps in turn
+}
+const wetFrustum = new THREE.Frustum(), wetPM = new THREE.Matrix4();
+function wetInView() { // the test the room's render makes before it draws R.wet, on this frame's matrices (O-3)
+  camera.updateMatrixWorld(); R.wet.updateMatrixWorld();
+  return wetFrustum.setFromProjectionMatrix(wetPM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)).intersectsObject(R.wet);
 }
 function frame(now) {
   const t = now - t0;
@@ -2233,6 +2582,7 @@ function frame(now) {
   if (!reduced && R.modelAnims) { const dt = Math.min(0.1, (now - (R.animAt || now)) / 1000); for (const a of R.modelAnims) a.o.rotation[a.axis] = a.speed != null ? a.o.rotation[a.axis] + a.speed * dt : a.amp * Math.sin(now / 1000 * a.freq); } R.animAt = now; // the models' fans and reels
   const e = easeIO(clamp(progress), S.ease), far = 1 - e;
   const locked = progress >= 0.999;
+  if (R.carLook) R.carLook.tick(!!S.engine); // the car's frame for its wear shaders, its tail lamps
   $('tvLive').classList.toggle('is-on', locked);
 
   // camera: walkDist (steady metres blended with a steady growth of the TV); sway fades out by the lock
@@ -2247,10 +2597,10 @@ function frame(now) {
 
   // light: the strips buzz on, the lamps warm up, the sign, then the tube opens
   // (reduced motion: the room settles and holds still, no hum, stutter or dying tube)
-  const hum = steady ? 1 : 1 + 0.03 * Math.sin(now * 0.004) + (hash(Math.floor(now / 90)) > 0.988 ? -0.3 : 0);
+  const hum = steady ? 1 : 1 + 0.03 * Math.sin(now * 0.004) + (blip(now, 90, 0, 0.988) ? -0.3 : 0);
   const neonK = flicker(t, INTRO.neon, 3) * S.neon * hum;
   const warm = smooth(0, 1, env(t, INTRO.lamps)), lampK = warm * S.lamps;
-  const signK = flicker(t, INTRO.sign, 11) * hum * (!steady && hash(Math.floor(now / 140) + 5) > 0.994 ? 0.25 : 1); // an old sign: a rare stutter (never in a capture)
+  const signK = flicker(t, INTRO.sign, 11) * hum * (!steady && blip(now, 140, 5, 0.994) ? 0.25 : 1); // an old sign: a rare stutter (never in a capture)
   const tk = LIGHTS != null ? lv('tv') : reduced ? 1 : env(t, INTRO.tv), open = smooth(0.18, 0.62, tk); // (a light capture: the TV with its bank)
   if (R.probe.due && now > R.probe.due) { R.probe.due = 0; updateProbe(); } // (its capture lights the room fully: before this frame's levels)
   lightRoom(neonK, warm, signK, open, far, now);
@@ -2289,7 +2639,7 @@ function frame(now) {
   finishPass.uniforms.uTone.value = TONES[S.tone] ?? 1; finishPass.uniforms.toneMappingExposure.value = renderer.toneMappingExposure = S.exposure;
   bloomPass.strength = R.paintOn ? 0 : S.bloom * (R.lookOn ? 0.25 : 1) * far * far; // the paintings carry their own glow
   bloomPass.threshold = R.lookOn ? 1.6 : 0.9; // in the look only real emitters glow: tubes, bulbs, screens
-  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2) * settle; // up to 0.5 the slider sets how many specks, above it how bright
+  R.dust.mat.opacity = 0.55 * Math.max(S.dust, 0.5) * Math.pow(far, 1.2) * settle * (LOOK_ON ? 0.5 : 1); // up to 0.5 the slider sets how many specks, above it how bright; under a look half as bright (a speck can't be smaller than a pixel of the look's small picture: at full strength they read as stars)
   R.dust.pts.visible = S.dust > 0; R.dust.pts.geometry.setDrawRange(0, Math.round(R.dust.seed.length * Math.min(1, S.dust / 0.5)));
   const p = R.dust.pts.geometry.attributes.position, b = R.dust.base, sd = R.dust.seed;
   for (let i = 0; i < sd.length; i++) {
@@ -2303,9 +2653,13 @@ function frame(now) {
   const rb = $('readB');
   rb.style.display = S.readB ? '' : 'none';
   if (S.readB) {
-    const readIn = reduced ? 1 : smooth(0, 1, env(t, INTRO.read)), leave = 1 - smooth(0, 0.22, e);
+    // its own fade, never a snap (2026-11-20): a wheel turned early skips the intro's clock (readScroll), and the line
+    // then comes in over 0.3 s where it used to land in one frame; under the loading screen it waits for the hand-off,
+    // in reduced motion too (there it stood over the loading pictures)
+    const want = window.lightsOn && !R.handoffAt ? 0 : reduced ? 1 : smooth(0, 1, env(t, INTRO.read));
+    const readIn = R.readIn = Math.min(want, (R.readIn || 0) + Math.min(34, now - (R.readAt ?? now)) / 300), leave = 1 - smooth(0, 0.22, e); R.readAt = now; // (34 ms: a pause between two frames is no reason to jump)
     rb.style.opacity = (readIn * leave).toFixed(3);
-    rb.style.transform = `translateY(${(1 - readIn) * 14 - (1 - leave) * 24}px)`;
+    rb.style.transform = `translateY(${(reduced ? 0 : (1 - readIn) * 14) - (1 - leave) * 24}px)`;
   }
   if (!walkDrag) { $('walkIn').value = progress; $('walkOut').textContent = Math.round(progress * 100) + ' %'; }
 
@@ -2320,20 +2674,32 @@ function frame(now) {
   for (const f of R.film || []) f.box.classList.toggle('is-on', f === R.filmShown);
   if (R.filmShown) placeFilm(R.filmShown, tw);
   if (R.paintOn && R.shotsStale) { R.shotsStale = false; placeShots(); }
-  if ((!locked || document.body.classList.contains('bench-on')) && !R.filmShown) composer.render();
+  if (LOOK_ON) lookFrame(now);
+  // at the lock the room stops drawing, after one last frame at the lock itself (2026-11-20: a fast wheel's last frame
+  // was up to 3 % of the walk short of it, a smaller, softer TV under the real one as that fades in)
+  const lockFrame = locked && !R.lockDrawn; R.lockDrawn = locked;
+  if ((!locked || lockFrame || document.body.classList.contains('bench-on')) && !R.filmShown) {
+    // the floor's reflection first, at the top level (O-3). A frame that redraws the static shadows keeps it nested:
+    // the room's render draws them first
+    R.wetFirst = R.wet.visible && R.wet.material.visible && !renderer.shadowMap.needsUpdate && wetInView();
+    if (R.wetFirst) R.wetDraw.call(R.wet, renderer, scene, camera);
+    composer.render();
+    R.wetFirst = false;
+  }
 }
 
 // ---------- scroll: Lenis like the site; a half walk finishes the way the visitor was going ----------
 history.scrollRestoration = 'manual';
 scrollTo(0, 0);
 let lenis = null, lastScrollAt = 0, lastDir = 1, armed = false, touching = false;
-if (window.Lenis && !reduced) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+if (window.Lenis && !reduced && !EMBED) lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
 if (lenis && window.lightsOn && CAPTURE == null) lenis.stop(); // the walk waits for the loading screen's hand-off
 function jumpTo(y) {
+  if (EMBED) { embed.y = embed.to = y; return; }
   if (lenis) { lenis.resize(); lenis.scrollTo(y, { immediate: true, force: true }); } else scrollTo(0, y);
 }
 function readScroll() {
-  const y = lenis ? lenis.scroll : scrollY, prev = progress;
+  const y = EMBED ? embed.y : lenis ? lenis.scroll : scrollY, prev = progress;
   progress = clamp(y / L.walkPx);
   if (progress !== prev) { lastDir = progress > prev ? 1 : -1; lastScrollAt = performance.now(); }
   if (progress > 0.01 && performance.now() - t0 < INTRO.read[1]) t0 = performance.now() - INTRO.read[1];
@@ -2342,7 +2708,7 @@ addEventListener('wheel', (ev) => { if (!ev.target.closest('.bench, .slots-panel
 addEventListener('touchstart', (ev) => { if (!ev.target.closest('.bench, .slots-panel')) { touching = true; armed = true; } }, { passive: true });
 addEventListener('touchend', () => { touching = false; lastScrollAt = performance.now(); }, { passive: true });
 addEventListener('keydown', (ev) => { if (!ev.target.closest('input, select, textarea') && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(ev.key)) armed = true; });
-const glideTo = (y, dur) => lenis ? lenis.scrollTo(y, { duration: dur, easing: (x) => 1 - Math.pow(1 - x, 4) }) : scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+const glideTo = (y, dur) => EMBED ? (embed.to = y) : lenis ? lenis.scrollTo(y, { duration: dur, easing: (x) => 1 - Math.pow(1 - x, 4) }) : scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
 function snapCheck(now) {
   if (!S.snap || !armed || touching || walkDrag || drag || now - lastScrollAt < 170) return;
   if (progress <= 0.001 || progress >= 0.999) { armed = false; return; }
@@ -2505,8 +2871,13 @@ $('movesReset').addEventListener('click', () => {
 });
 
 function raf(now) {
+  if (EMBED) { // the page's scroll as it comes (the site's own Lenis already eases it); off screen: no drawing
+    embed.y = embed.to;
+    if (embed.paused) { requestAnimationFrame(raf); return; }
+  }
   if (lenis) lenis.raf(now);
   readScroll(); snapCheck(now); frame(now);
+  govern(now, progress < 0.999 && !R.filmShown); // (O-6: weak machines only)
   requestAnimationFrame(raf);
 }
 
@@ -2633,7 +3004,7 @@ $('benchOpen').addEventListener('click', () => setBench(true));
 $('benchClose').addEventListener('click', () => setBench(false));
 $('btnSlots').addEventListener('click', () => { const p = $('slotsPanel'); p.hidden = !p.hidden; if (!p.hidden) buildSlots(); });
 $('btnSlotsClose').addEventListener('click', () => { $('slotsPanel').hidden = true; });
-$('btnShuffle').addEventListener('click', () => { S.messSeed++; save(); buildMess(); applyFlags(); arrange(); });
+$('btnShuffle').addEventListener('click', () => { S.messSeed++; save(); buildMess(); messModels(); applyFlags(); arrange(); });
 $('btnIntro').addEventListener('click', () => { jumpTo(0); t0 = performance.now() + 120; });
 $('btnReset').addEventListener('click', () => { const moves = S.moves; Object.assign(S, DEF, { bench: 1, moves }); save(); layoutCamera(); arrange(); applyFlags(); buildTune(); });
 const walkIn = $('walkIn');
@@ -2650,7 +3021,7 @@ function restoreSnap(snap) {
   restoring = true;
   const o = JSON.parse(snap), seed = S.messSeed;
   Object.assign(S, o); S.moves = o.moves || {};
-  if (S.messSeed !== seed) buildMess();
+  if (S.messSeed !== seed) { buildMess(); messModels(); }
   save(); layoutCamera(); arrange(); applyFlags();
   if (S.bench) buildTune();
   if (R.selected) fillSel();
@@ -2677,12 +3048,308 @@ let resizeTimer = 0;
 addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); });
 tvImg.addEventListener('load', applyTvTexture);
 
-// fonts first (the sign and the labels are drawn with them) and every texture, then the room, once
-await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')]), new Promise((r) => setTimeout(r, 1500))]), loadTextures()]);
+// fonts first (the sign and the labels are drawn with them) and every texture, then the room, once; the models' bytes
+// come down as soon as the textures are in (prefetchModels)
+await Promise.all([Promise.race([Promise.all([document.fonts.load('400 64px "Bebas Neue"'), document.fonts.load('600 34px Inter')].map((f) => f.catch(() => {}))), new Promise((r) => setTimeout(r, 1500))]), loadTextures().then(prefetchModels)]); // (a font that fails to load is not the room failing)
 createRoom();
 resize();
 applyFlags();
+// ---------- the car's look (Dan 2026-11-11: "a bench for the car ... control over wear, texture and other") ----------
+// One settings object drives the coupe's paint, glass, chrome, trim, wear, decals, tail lamps and plate. The coupe has
+// no UVs and flat colours, so the wear is drawn in its materials' own shaders from the position in the car's frame:
+// every value is live, nothing is painted or paid for; a picture can be laid over the paint (the slot, from three
+// sides). CAR_DEF = the coupe as built (every layer at 0); CAR_LOOK = the room's car. The editor is car-bench.html
+// (it runs this room with ?expose and drives R.carLook); its Copy settings are baked here as CAR_LOOK.
+const CAR_DEF = {
+  // paint
+  paintCol: '#141417', paintRough: 0.12, paintMetal: 0, coat: 1, coatRough: 0.05, paintEnv: 2.6,
+  flake: 0, flakeSize: 1.2, flakeCol: '#c9ccd4',
+  // wear, drawn by code (each 0..1; wear = the master)
+  wear: 1, seed: 1, grain: 1,
+  dust: 0, dustCol: '#8f8474', mud: 0, mudH: 0.45, mudCol: '#3b2f23',
+  swirls: 0, scratches: 0, chips: 0, rust: 0, rustCol: '#7d3f1c', fade: 0, streaks: 0,
+  // the painted texture slot (a picture over the paint, laid on from three sides)
+  texSrc: '', texAmt: 0, texScale: 1, texMode: 0, texMatte: 0.5, // texMode: 0 paint over · 1 screen (lighter) · 2 multiply (darker)
+  // glass, chrome + wheels, trim + tyres
+  glassCol: '#1a1d22', glassRough: 0.03, glassEnv: 2.2, glassWear: 1,
+  chromeCol: '#e5e5e8', chromeRough: 0.14, chromeEnv: 1.4, chromeWear: 1,
+  trimCol: '#181819', trimRough: 0.62, trimWear: 1,
+  // decals
+  stripe: 0, stripeW: 0.16, stripeGap: 0.06, stripeX: 0, stripeCol: '#e9e3d2',
+  num: 0, numText: '27', numZ: -0.25, numY: 0.62, numSize: 0.5, numBg: '#f1ead8', numFg: '#141414', numSide: 0,
+  stk: 0, stkSrc: '', stkZ: 0.9, stkY: 0.6, stkSize: 0.3, stkRot: 0, stkSide: 0, // sides: 0 both · 1 aisle side · 2 far side · 3 on top
+  decalWear: 0,
+  // lamps + plate
+  tail: 1, tailCol: '#ff3930', plate: 1, plateWear: 1,
+};
+
+// the room's car today: Dan's car bench of 2026-11-11, pasted as copied (metallic black with a fine flake over tread plate,
+// cream twin stripes, gold wheels, mud and stone chips; stk is on with no picture, so no sticker shows)
+const CAR_LOOK = {
+  paintCol: '#141417', paintRough: 0.21, paintMetal: 1, coat: 1, coatRough: 0, paintEnv: 0.95, flake: 0.25, flakeSize: 0.9, flakeCol: '#c9ccd4',
+  wear: 1.17, seed: 20, grain: 1, dust: 0, dustCol: '#8f8474', mud: 0.44, mudH: 0.39, mudCol: '#3b2f23', swirls: 0.13, scratches: 0.04, chips: 0.44, rust: 0, rustCol: '#7d3f1c', fade: 0, streaks: 0,
+  texSrc: 'assets/pbr/plate_col.webp', texAmt: 0.57, texScale: 4.9, texMode: 0, texMatte: 0,
+  glassCol: '#1a1d22', glassRough: 0.035, glassEnv: 0.35, glassWear: 1.5, chromeCol: '#fff191', chromeRough: 0, chromeEnv: 5, chromeWear: 0.32, trimCol: '#181819', trimRough: 0.61, trimWear: 0.71,
+  stripe: 1, stripeW: 0.14, stripeGap: 0.125, stripeX: 0, stripeCol: '#e9e3d2', num: 0, numText: '27', numZ: -2, numY: 0.55, numSize: 0.5, numBg: '#f1ead8', numFg: '#141414', numSide: 0,
+  stk: 1, stkSrc: '', stkZ: 0.11, stkY: 0.6, stkSize: 0.52, stkRot: 0, stkSide: 0, decalWear: 0.23, tail: 1, tailCol: '#ff3930', plate: 1, plateWear: 1.5,
+};
+const CAR_ROLES = { paint: 0, black: 1, glass: 2, metal: 3, plate: 4, plate_bolt: 4 };
+const CAR_VERT_PARS = /* glsl */`
+uniform mat4 uCarInv;
+varying vec3 vCarP;
+varying vec3 vCarN;
+`;
+const CAR_VERT_MAIN = /* glsl */`
+vec4 carP4 = vec4( transformed, 1.0 ); vec3 carN3 = objectNormal;
+#ifdef USE_INSTANCING
+  carP4 = instanceMatrix * carP4; carN3 = mat3( instanceMatrix ) * carN3;
+#endif
+vCarP = ( uCarInv * modelMatrix * carP4 ).xyz;
+vCarN = mat3( uCarInv ) * mat3( modelMatrix ) * carN3;
+`;
+const CAR_FRAG_PARS = /* glsl */`
+varying vec3 vCarP;
+varying vec3 vCarN;
+uniform float uWear, uSeed, uGrain, uRoleWear;
+uniform float uDust, uMud, uMudH, uSwirls, uScratches, uChips, uRust, uFade, uStreaks;
+uniform vec3 uDustCol, uMudCol, uRustCol;
+uniform float uFlake, uFlakeSize; uniform vec3 uFlakeCol;
+uniform sampler2D uTex; uniform float uTexAmt, uTexScale, uTexMode, uTexMatte;
+uniform float uStripe, uStripeW, uStripeGap, uStripeX; uniform vec3 uStripeCol;
+uniform sampler2D uNumTex; uniform float uNum, uNumSize, uNumSide; uniform vec2 uNumPos;
+uniform sampler2D uStkTex; uniform float uStk, uStkSize, uStkRot, uStkSide, uStkAspect; uniform vec2 uStkPos;
+uniform float uDecalWear;
+float carCoat = 1.0, carCoatRough = 0.0, carBump = 0.0; // carBump: the layers' relief, in metres
+vec3 carFlakeN = vec3( 0.0 );
+float cH( vec3 p ) { p = fract( p * 0.3183099 + vec3( 0.1, 0.2, 0.3 ) ); p *= 17.0; return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) ); }
+float cN( vec3 x ) { vec3 i = floor( x ), f = fract( x ); f = f * f * ( 3.0 - 2.0 * f );
+  return mix( mix( mix( cH( i ), cH( i + vec3( 1, 0, 0 ) ), f.x ), mix( cH( i + vec3( 0, 1, 0 ) ), cH( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+              mix( mix( cH( i + vec3( 0, 0, 1 ) ), cH( i + vec3( 1, 0, 1 ) ), f.x ), mix( cH( i + vec3( 0, 1, 1 ) ), cH( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z ); }
+float cF( vec3 p ) { float a = 0.5, s = 0.0; for ( int i = 0; i < 4; i ++ ) { s += a * cN( p ); p = p * 2.03 + vec3( 7.1, 3.3, 5.7 ); a *= 0.5; } return s / 0.9375; }
+// thin lines running one way (dir), every 1 / freq metres; fades to its mean where a line is thinner than a pixel
+float cLines( vec3 P, vec3 dir, vec3 along, float freq, float thin ) {
+  float c = dot( P, dir ) * freq, l = cN( vec3( c, dot( P, along ) * freq * 0.012, dot( P, cross( dir, along ) ) * freq * 0.012 ) );
+  float line = smoothstep( 1.0 - thin, 1.0 - thin * 0.4, l ), vis = clamp( 1.0 - fwidth( c ) * 1.1, 0.0, 1.0 );
+  return mix( thin * 0.55, line, vis );
+}
+// a picture on the car's sides (read left to right from outside, on both) or on top; pos = along the car (z), up (y) or across (x)
+vec4 cDecal( sampler2D t, vec3 P, vec3 N, vec2 pos, float size, float aspect, float rot, float side ) {
+  vec2 uv; float m;
+  if ( side > 2.5 ) { uv = vec2( - ( P.z - pos.x ), - ( P.x - pos.y ) ); m = smoothstep( 0.3, 0.55, N.y ); }
+  else { float sg = N.x > 0.0 ? 1.0 : - 1.0; uv = vec2( - sg * ( P.z - pos.x ), P.y - pos.y ); m = smoothstep( 0.3, 0.55, abs( N.x ) );
+    if ( side > 0.5 && side < 1.5 && sg < 0.0 ) m = 0.0; if ( side > 1.5 && sg > 0.0 ) m = 0.0; }
+  float c = cos( rot ), s = sin( rot ); uv = mat2( c, - s, s, c ) * uv / size; uv.x /= aspect; uv += 0.5;
+  vec4 d = texture2D( t, clamp( uv, 0.0, 1.0 ) );
+  vec2 e = fwidth( uv ) + 1e-5, in2 = smoothstep( vec2( 0.0 ), e, uv ) * smoothstep( vec2( 0.0 ), e, 1.0 - uv );
+  d.a *= m * in2.x * in2.y; return d;
+}
+`;
+// after the material's own colour, roughness and metalness: the layers, bottom to top
+const CAR_FRAG_LOOK = /* glsl */`
+{
+  vec3 P = vCarP, N = normalize( vCarN ), col = diffuseColor.rgb;
+  vec3 q = P * uGrain + uSeed * vec3( 3.7, 1.3, 5.1 );
+  float W = uWear * uRoleWear, up = clamp( N.y, 0.0, 1.0 ), side = 1.0 - abs( N.y );
+  float rough = roughnessFactor, metal = metalnessFactor, chip = 0.0, fadeM = 0.0;
+  #if CAR_ROLE == 0
+    if ( uFlake > 0.001 ) { // metal flake under the lacquer: bright specks, each tilted its own way
+      vec3 fp = P * ( 1000.0 / uFlakeSize ), fc = floor( fp ); float fm = step( 0.62, cH( fc ) );
+      float fv = clamp( 1.0 - length( fwidth( fp ) ) * 0.45, 0.0, 1.0 ), fa = uFlake * mix( 0.3, fm, fv );
+      col = mix( col, uFlakeCol, fa * 0.45 ); metal = mix( metal, 1.0, fa ); rough = mix( rough, max( rough, 0.3 ), fa );
+      carFlakeN = ( vec3( cH( fc + 11.0 ), cH( fc + 23.0 ), cH( fc + 37.0 ) ) - 0.5 ) * uFlake * fm * fv * 0.9;
+    }
+    if ( uTexAmt > 0.001 ) { // the painted picture, from three sides
+      vec3 w = pow( abs( N ), vec3( 4.0 ) ); w /= w.x + w.y + w.z; vec3 tp = P * uTexScale;
+      vec3 t = texture2D( uTex, tp.zy ).rgb * w.x + texture2D( uTex, tp.xz ).rgb * w.y + texture2D( uTex, tp.xy ).rgb * w.z;
+      vec3 m = uTexMode < 0.5 ? t : uTexMode < 1.5 ? 1.0 - ( 1.0 - col ) * ( 1.0 - t ) : col * t * 2.0;
+      col = mix( col, m, uTexAmt ); float k = uTexAmt * uTexMatte;
+      rough = mix( rough, 0.85, k ); carCoat *= 1.0 - k; metal *= 1.0 - k;
+    }
+    { // decals: stripes over the top, a number on the doors, a sticker
+      float dw = 1.0;
+      if ( uDecalWear > 0.001 ) { float dn = cF( q * 7.0 + 4.0 ) * 0.7 + cN( q * 60.0 ) * 0.3; dw = 1.0 - smoothstep( 1.0 - uDecalWear * 0.75, 1.03 - uDecalWear * 0.75, dn ); }
+      if ( uStripe > 0.001 ) {
+        float sx = abs( P.x - uStripeX ), e = fwidth( P.x ) + 1e-5, a = uStripeGap * 0.5, b = a + uStripeW;
+        float st = smoothstep( a - e, a + e, sx ) * ( 1.0 - smoothstep( b - e, b + e, sx ) );
+        if ( uStripeGap < 0.002 ) st = 1.0 - smoothstep( b - e, b + e, sx );
+        st *= ( 1.0 - smoothstep( 0.8, 0.95, abs( N.x ) ) ) * smoothstep( 0.2, 0.3, P.y ) * dw * uStripe;
+        col = mix( col, uStripeCol, st );
+      }
+      if ( uNum > 0.001 ) { vec4 d = cDecal( uNumTex, P, N, uNumPos, uNumSize, 1.0, 0.0, uNumSide ); float a = d.a * dw * uNum; col = mix( col, d.rgb, a ); metal *= 1.0 - a; }
+      if ( uStk > 0.001 ) { vec4 d = cDecal( uStkTex, P, N, uStkPos, uStkSize, uStkAspect, uStkRot, uStkSide ); float a = d.a * dw * uStk; col = mix( col, d.rgb, a ); metal *= 1.0 - a; }
+    }
+    if ( uFade * W > 0.001 ) { // the lacquer gone in patches, from the sun-facing panels down: dull paint, a chalky edge
+      float f = uFade * W, m = cF( q * 0.9 + 2.0 ) * 0.85 + up * 0.5 - 0.2, th = 1.12 - f * 1.05;
+      fadeM = smoothstep( th, th + 0.07, m ); float ring = fadeM * ( 1.0 - fadeM ) * 4.0;
+      col = mix( col, col * 0.9 + 0.035, fadeM ); col = mix( col, vec3( 0.42, 0.41, 0.39 ), ring * 0.55 );
+      rough = mix( rough, 0.72, fadeM ); carCoat *= 1.0 - fadeM; carCoatRough += ring * 0.4 + f * 0.12 * up; carBump += fadeM * 0.0002;
+    }
+    if ( uSwirls * W > 0.001 ) { // wash swirls: hairlines in the lacquer, they haze the reflections
+      float s = cLines( q, vec3( 0.80, 0.10, 0.59 ), vec3( 0.0, 1.0, 0.0 ), 1400.0, 0.5 ) + cLines( q, vec3( 0.31, 0.74, - 0.60 ), vec3( 1.0, 0.0, 0.0 ), 1100.0, 0.5 ) + cLines( q, vec3( - 0.52, 0.42, 0.74 ), vec3( 0.0, 0.0, 1.0 ), 1700.0, 0.5 );
+      carCoatRough += uSwirls * W * ( 0.06 + 0.15 * s ) * ( 0.6 + 0.8 * cF( q * 1.6 ) );
+    }
+    if ( uScratches * W > 0.001 ) { // key and brush scratches: down to the primer
+      float k = uScratches * W, thin = 0.03 + 0.1 * k;
+      float s = max( cLines( q, vec3( 0.12, 0.99, 0.05 ), vec3( 0.0, 0.0, 1.0 ), 150.0, thin ), max( cLines( q, vec3( 0.45, 0.80, 0.39 ), vec3( 1.0, 0.0, 0.0 ), 110.0, thin ), cLines( q + 3.0, vec3( 0.70, 0.10, - 0.70 ), vec3( 0.0, 1.0, 0.0 ), 90.0, thin * 0.7 ) ) );
+      s *= smoothstep( 0.35, 0.6, cF( q * 1.3 + 9.0 ) + k * 0.35 );
+      col = mix( col, vec3( 0.36, 0.36, 0.35 ), s * 0.85 ); rough = mix( rough, 0.6, s ); carCoat *= 1.0 - s; metal *= 1.0 - s;
+    }
+    if ( uChips * W > 0.001 ) { // stone chips: the nose and the sills first
+      float k = uChips * W, nose = clamp( ( 0.6 - P.z ) / 2.8, 0.0, 1.0 ) * clamp( 0.35 - N.z, 0.0, 1.0 ), low = 1.0 - smoothstep( 0.22, 0.6, P.y );
+      float wgt = clamp( 0.12 + nose * 0.9 + low * 0.55, 0.0, 1.0 ), c = cN( q * 85.0 ) * 0.75 + cN( q * 31.0 ) * 0.25, th = 1.0 - k * wgt * 0.46;
+      chip = smoothstep( th, th + 0.035, c ) * clamp( 1.0 - length( fwidth( q * 85.0 ) ) * 0.3, 0.25, 1.0 );
+      col = mix( col, mix( vec3( 0.34, 0.33, 0.31 ), vec3( 0.05 ), smoothstep( th + 0.03, th + 0.1, c ) ), chip ); rough = mix( rough, 0.7, chip ); carCoat *= 1.0 - chip; metal *= 1.0 - chip; carBump -= chip * 0.0005;
+    }
+  #endif
+  #if CAR_ROLE == 1
+    if ( uFade * W > 0.001 ) { float f = uFade * W * ( 0.45 + 0.55 * up ); col = mix( col, vec3( 0.13, 0.13, 0.125 ), f * ( 0.35 + 0.4 * cF( q * 2.0 ) ) ); rough = mix( rough, 0.92, f ); } // sun-greyed plastic and rubber
+  #endif
+  #if CAR_ROLE == 2
+    if ( uSwirls * W > 0.001 ) rough += uSwirls * W * 0.08 * ( 0.4 + cLines( q, vec3( 0.80, 0.10, 0.59 ), vec3( 0.0, 1.0, 0.0 ), 1400.0, 0.5 ) ); // wiper haze
+  #endif
+  #if CAR_ROLE == 0 || CAR_ROLE == 3
+    if ( uRust * W > 0.001 ) { // rust: up from the sills and the arches, out of the chips and the peeled patches; pitting on the chrome
+      float k = uRust * W;
+      #if CAR_ROLE == 3
+        float m = cF( q * 22.0 + 11.0 ) * 0.55 + cN( q * 150.0 ) * 0.5, th = 1.0 - k * 0.42;
+      #else
+        float m = cF( q * 1.7 + 11.0 ) * 0.6 + cF( q * 8.0 + 3.0 ) * 0.22 + ( 1.0 - smoothstep( 0.18, 0.8, P.y ) ) * 0.45 + chip * 0.3 + fadeM * 0.14, th = 1.22 - k * 0.9;
+      #endif
+      float r = smoothstep( th, th + 0.09, m ), edge = r * ( 1.0 - r ) * 4.0;
+      float rg = cN( q * 150.0 ); vec3 rc = mix( uRustCol * 0.25, uRustCol * 1.3, cF( q * 13.0 ) ) * ( 0.6 + 0.8 * rg );
+      col = mix( col, rc, r ); col = mix( col, uRustCol * 0.12, edge * 0.5 ); rough = mix( rough, 0.96, r ); metal *= 1.0 - r; carCoat *= 1.0 - r; carCoatRough += edge * 0.3; carBump += r * ( 0.0004 + rg * 0.0011 + cF( q * 34.0 ) * 0.0012 );
+    }
+  #endif
+  if ( uStreaks * W > 0.001 ) { // rain and dirt run down the sides
+    float h = P.z * N.x - P.x * N.z, s = smoothstep( 0.5, 0.95, cN( vec3( h * 26.0 + uSeed, P.y * 1.3, 2.0 ) ) * 0.7 + cN( vec3( h * 71.0, P.y * 2.6, 5.0 ) ) * 0.4 );
+    s *= side * side * uStreaks * W * ( 0.55 + 0.45 * smoothstep( 0.2, 1.1, P.y ) );
+    col = mix( col, uDustCol * 0.8, s * 0.5 ); rough = mix( rough, 0.8, s * 0.7 ); carCoatRough += s * 0.45; carCoat *= 1.0 - s * 0.5;
+  }
+  if ( uMud * W > 0.001 ) { // road grime and mud: thrown up from the wheels, thinning with height
+    float k = uMud * W, wz = min( abs( P.z - 1.3 ), abs( P.z + 1.3 ) ), hgt = uMudH * ( 1.0 + 0.45 * ( 1.0 - smoothstep( 0.25, 0.95, wz ) ) );
+    float body = 1.0 - smoothstep( 0.0, hgt, P.y + ( cF( q * 2.3 + 5.0 ) - 0.5 ) * hgt * 0.9 );
+    float spl = smoothstep( 0.66, 0.74, cN( q * 21.0 ) * 0.6 + cN( q * 9.0 ) * 0.4 ) * ( 1.0 - smoothstep( hgt * 0.5, hgt * 1.9, P.y ) );
+    float m = clamp( max( body * ( 0.55 + 0.6 * cF( q * 6.0 ) ), spl * 0.9 ) * k * 1.7, 0.0, 1.0 );
+    float mg = cF( q * 48.0 ); col = mix( col, uMudCol * ( 0.55 + 0.6 * cF( q * 13.0 ) + 0.4 * mg ), m ); rough = mix( rough, 0.97, m ); metal *= 1.0 - m; carCoat *= 1.0 - m; carBump += m * ( 0.001 + mg * 0.003 );
+  }
+  if ( uDust * W > 0.001 ) { // dust: settles on what faces up, a film on the rest
+    float d = clamp( uDust * W * ( 0.2 + 0.9 * pow( up, 0.7 ) ) * ( 0.45 + 1.0 * cF( q * 3.1 + 8.0 ) ) * ( 0.8 + 0.4 * cN( q * 26.0 ) ) * 1.3, 0.0, 1.0 );
+    col = mix( col, uDustCol * ( 0.85 + 0.3 * cN( q * 40.0 ) ), d * 0.9 ); rough = mix( rough, 0.92, d ); metal *= 1.0 - d * 0.85; carCoat *= 1.0 - d * 0.9; carCoatRough += d * 0.5;
+  }
+  diffuseColor.rgb = col; roughnessFactor = clamp( rough, 0.0, 1.0 ); metalnessFactor = clamp( metal, 0.0, 1.0 );
+}
+`;
+const CAR_FRAG_NORMAL = /* glsl */`
+normal = normalize( normal + carFlakeN );
+{ // the layers' relief (rust scale, caked mud, chip pits) tilts the paint's normal; the lacquer over it stays smooth
+  vec3 sx = dFdx( - vViewPosition ), sy = dFdy( - vViewPosition ), r1 = cross( sy, normal ), r2 = cross( normal, sx );
+  float det = dot( sx, r1 ); vec3 g = sign( det ) * ( dFdx( carBump ) * r1 + dFdy( carBump ) * r2 );
+  normal = normalize( abs( det ) * normal - g );
+}
+`;
+const CAR_FRAG_COAT = /* glsl */`
+#ifdef USE_CLEARCOAT
+  material.clearcoat *= carCoat;
+  material.clearcoatRoughness = clamp( material.clearcoatRoughness + carCoatRough, 0.005, 1.0 );
+#endif
+`;
+
+function createCarLook({ car, tailMat }) {
+  const u = (v) => ({ value: v }), col = () => u(new THREE.Color());
+  const blank = new THREE.DataTexture(new Uint8Array([255, 255, 255, 0]), 1, 1); blank.needsUpdate = true;
+  const U = {
+    uCarInv: u(new THREE.Matrix4()), uWear: u(1), uSeed: u(1), uGrain: u(1),
+    uDust: u(0), uMud: u(0), uMudH: u(0.45), uSwirls: u(0), uScratches: u(0), uChips: u(0), uRust: u(0), uFade: u(0), uStreaks: u(0),
+    uDustCol: col(), uMudCol: col(), uRustCol: col(),
+    uFlake: u(0), uFlakeSize: u(1), uFlakeCol: col(),
+    uTex: u(blank), uTexAmt: u(0), uTexScale: u(1), uTexMode: u(0), uTexMatte: u(0.5),
+    uStripe: u(0), uStripeW: u(0.16), uStripeGap: u(0.06), uStripeX: u(0), uStripeCol: col(),
+    uNumTex: u(blank), uNum: u(0), uNumSize: u(0.5), uNumSide: u(0), uNumPos: u(new THREE.Vector2()),
+    uStkTex: u(blank), uStk: u(0), uStkSize: u(0.3), uStkRot: u(0), uStkSide: u(0), uStkAspect: u(1), uStkPos: u(new THREE.Vector2()),
+    uDecalWear: u(0),
+  };
+  // the car's own materials by name (the room's drawn stand-in parts are unnamed and hidden); one wear uniform per role
+  const M = {}, roleWear = [u(1), u(1), u(1), u(1), u(1)]; let plateRoot = null;
+  car.traverse((o) => {
+    if (!o.isMesh) return;
+    const mt = o.material, role = mt && CAR_ROLES[mt.name];
+    if (role == null) return;
+    if (role === 4) plateRoot = o.parent;
+    (M[mt.name] ||= []).includes(mt) || M[mt.name].push(mt);
+    if (mt.userData.carLook) return;
+    mt.userData.carLook = true;
+    mt.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, U, { uRoleWear: roleWear[role] });
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\n' + CAR_VERT_PARS).replace('#include <begin_vertex>', '#include <begin_vertex>\n' + CAR_VERT_MAIN);
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n#define CAR_ROLE ' + role + '\n' + CAR_FRAG_PARS)
+        .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n' + CAR_FRAG_LOOK)
+        .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + CAR_FRAG_NORMAL)
+        .replace('#include <lights_physical_fragment>', '#include <lights_physical_fragment>\n' + CAR_FRAG_COAT);
+    };
+    mt.customProgramCacheKey = () => 'carLook5:' + role;
+    mt.needsUpdate = true;
+  });
+  const each = (name, fn) => (M[name] || []).forEach(fn);
+  const loader = new THREE.TextureLoader(), pics = {};
+  const picture = (key, src, uni, repeat, done) => { // a picture slot: loaded once per source, the blank one while empty
+    if (pics[key] === src) return; pics[key] = src;
+    if (!src) { uni.value = blank; done && done(null); return; }
+    loader.load(src, (t) => { if (pics[key] !== src) { t.dispose(); return; }
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.wrapS = t.wrapT = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+      uni.value = t; done && done(t); }, undefined, () => console.warn('car look: no picture at', String(src).slice(0, 80)));
+  };
+  // the door number: a roundel and its digits, drawn here (Bebas Neue, the room's own face)
+  const numCv = document.createElement('canvas'); numCv.width = numCv.height = 512;
+  const numTex = new THREE.CanvasTexture(numCv); numTex.colorSpace = THREE.SRGBColorSpace; numTex.anisotropy = 8; U.uNumTex.value = numTex;
+  let numKey = '';
+  const drawNum = (s) => {
+    const key = [s.numText, s.numBg, s.numFg].join('|'); if (key === numKey) return; numKey = key;
+    const g = numCv.getContext('2d'), txt = String(s.numText ?? '').slice(0, 3);
+    g.clearRect(0, 0, 512, 512); g.fillStyle = s.numBg; g.beginPath(); g.arc(256, 256, 250, 0, 7); g.fill();
+    g.fillStyle = s.numFg; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    let px = 400; do { g.font = `400 ${px}px "Bebas Neue", Impact, sans-serif`; px -= 10; } while (g.measureText(txt).width > 370 && px > 60);
+    const mt = g.measureText(txt), h = mt.actualBoundingBoxAscent + mt.actualBoundingBoxDescent;
+    g.fillText(txt, 256, 256 + h / 2 - mt.actualBoundingBoxDescent);
+    numTex.needsUpdate = true;
+  };
+  if (document.fonts && document.fonts.load) document.fonts.load('400 100px "Bebas Neue"').then(() => { numKey = ''; if (last) drawNum(last); }).catch(() => {});
+  const tailOff = new THREE.Color(0.02, 0.003, 0.002), tailOn = new THREE.Color();
+  let last = null;
+  function set(s) {
+    last = s = { ...CAR_DEF, ...s };
+    each('paint', (m) => { m.color.set(s.paintCol); m.roughness = s.paintRough; m.metalness = s.paintMetal; m.clearcoat = Math.max(0.001, s.coat); m.clearcoatRoughness = s.coatRough; m.userData.env = s.paintEnv; });
+    each('glass', (m) => { m.color.set(s.glassCol); m.roughness = s.glassRough; m.userData.env = s.glassEnv; });
+    each('metal', (m) => { m.color.set(s.chromeCol); m.roughness = s.chromeRough; m.userData.env = s.chromeEnv; });
+    each('black', (m) => { m.color.set(s.trimCol); m.roughness = s.trimRough; });
+    [1, s.trimWear, s.glassWear, s.chromeWear, s.plateWear].forEach((v, i) => { roleWear[i].value = v; });
+    for (const [k, key] of [['uWear', 'wear'], ['uSeed', 'seed'], ['uGrain', 'grain'], ['uDust', 'dust'], ['uMud', 'mud'], ['uMudH', 'mudH'], ['uSwirls', 'swirls'], ['uScratches', 'scratches'],
+      ['uChips', 'chips'], ['uRust', 'rust'], ['uFade', 'fade'], ['uStreaks', 'streaks'], ['uFlake', 'flake'], ['uFlakeSize', 'flakeSize'], ['uTexAmt', 'texAmt'], ['uTexScale', 'texScale'],
+      ['uTexMode', 'texMode'], ['uTexMatte', 'texMatte'], ['uStripe', 'stripe'], ['uStripeW', 'stripeW'], ['uStripeGap', 'stripeGap'], ['uStripeX', 'stripeX'], ['uNum', 'num'],
+      ['uNumSize', 'numSize'], ['uNumSide', 'numSide'], ['uStk', 'stk'], ['uStkSize', 'stkSize'], ['uStkSide', 'stkSide'], ['uDecalWear', 'decalWear']]) U[k].value = +s[key];
+    for (const [k, key] of [['uDustCol', 'dustCol'], ['uMudCol', 'mudCol'], ['uRustCol', 'rustCol'], ['uFlakeCol', 'flakeCol'], ['uStripeCol', 'stripeCol']]) U[k].value.set(s[key]);
+    U.uNumPos.value.set(s.numZ, s.numY); U.uStkPos.value.set(s.stkZ, s.stkY); U.uStkRot.value = s.stkRot * Math.PI / 180;
+    if (!s.texSrc) U.uTexAmt.value = 0; if (!s.stkSrc) U.uStk.value = 0;
+    picture('tex', s.texSrc, U.uTex, true);
+    picture('stk', s.stkSrc, U.uStkTex, false, (t) => { U.uStkAspect.value = t ? t.image.width / t.image.height : 1; });
+    drawNum(s);
+    if (plateRoot) plateRoot.visible = !!s.plate;
+    tailOn.set(s.tailCol);
+  }
+  function tick(engine = true) { // once a frame: the car's frame for the shaders, the tail lamps (dark with the engine off)
+    U.uCarInv.value.copy(car.matrixWorld).invert();
+    if (tailMat && last && !engine) tailMat.color.copy(tailOff);
+    else if (tailMat && last) { const c = tailMat.color.copy(tailOn).multiplyScalar(last.tail); c.r = Math.max(c.r, tailOff.r); c.g = Math.max(c.g, tailOff.g); c.b = Math.max(c.b, tailOff.b); }
+  }
+  set(CAR_LOOK);
+  return { set, tick, DEF: CAR_DEF, LOOK: CAR_LOOK, uniforms: U, materials: M, get plate() { return plateRoot; } };
+}
+
+// the textures and pictures go up to the GPU while the models still download (they waited for the last model before);
+// the models' own maps follow below, after loadModels
+const upsEarly = [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS)];
+for (let i = 0; i < upsEarly.length; i++) { renderer.initTexture(upsEarly[i]); if (i % 8 === 7) await new Promise((r) => setTimeout(r)); }
 const modelMaps = await loadModels(); // before the uploads and compiles below, so a model never pops in mid-intro
+R.carLook = createCarLook({ car: R.car, tailMat: R.tailMat }); // the coupe's materials are in: their look (CAR_LOOK)
 setBench(!!S.bench);
 if (new URLSearchParams(location.search).has('expose')) window.__room = { R, camera, L, S, walkDist, arrange, go: (p) => jumpTo(p * L.walkPx) }; // inspection and render scripts only
 if (CAPTURE != null) { document.body.classList.add('capture'); for (const m of [...Object.values(R.edgeMats), R.acEdge]) m.visible = false; jumpTo(+CAPTURE * L.walkPx); }
@@ -2693,9 +3360,9 @@ for (const it of R.items) if (it.tex) { const img = it.tex.image; if (!img || !i
 // the maps go up to the GPU and the shaders compile before the intro's clock starts (on first use they froze its first
 // second and a half, and the lights jumped from dim to full in one frame); the stall sits on the dark page instead. Then
 // the first probe capture: the textures are in, the lights at their final levels (a picture landing later recaptures)
-const ups = [...Object.values(PBR).flatMap((set) => Object.values(set)), ...Object.values(PICS), ...modelMaps]; // after the clones: one upload per map
-for (let i = 0; i < ups.length; i++) { renderer.initTexture(ups[i]); if (i % 8 === 7) { loaded('upload', i + 1, ups.length); await new Promise((r) => setTimeout(r)); } } // a breath every 8: the loading screen hears it
-loaded('upload', ups.length, ups.length);
+const ups = modelMaps, nUp = upsEarly.length + ups.length; // after the clones: one upload per map (the textures and pictures went up above)
+for (let i = 0; i < ups.length; i++) { renderer.initTexture(ups[i]); if (i % 8 === 7) { loaded('upload', upsEarly.length + i + 1, nUp); await new Promise((r) => setTimeout(r)); } } // a breath every 8: the loading screen hears it
+loaded('upload', nUp, nUp);
 renderer.setRenderTarget(composer.readBuffer); // the room draws into the composer's target: its shaders differ from the canvas's
 await renderer.compileAsync(scene, camera);
 renderer.setRenderTarget(null);
@@ -2708,6 +3375,11 @@ if (LO) INTRO.neon = INTRO.lamps = INTRO.sign = INTRO.tv = [-2, -1];
 t0 = performance.now(); frame(t0); // one first frame (dark without the loading screen): the glow, the finish and the floor's mirror compile before the clock starts
 if (LO) { await LO.ready(); R.handoffAt = performance.now(); t0 = R.handoffAt - INTRO.read[0] + 400; LO.handoff(); lenis?.start(); }
 else t0 = performance.now();
+R.liveAt = R.handoffAt || t0; // the live room's clock starts (liveClock)
+if (EMBED) { // the page drives the walk from here on (src/components/HomeOpening.astro)
+  window.__garage = { to: (p) => { embed.to = clamp(p) * L.walkPx; }, jump: (p) => jumpTo(clamp(p) * L.walkPx), pause: (b) => { embed.paused = !!b; }, get walkPx() { return L.walkPx; } };
+  embedSay('ready', { walkPx: L.walkPx });
+}
 if (LIGHTS != null) { t0 -= 1e5; window.__lightsReady = true; } // a light capture: every envelope done (lights/render.mjs)
 requestAnimationFrame(raf);
 </script>

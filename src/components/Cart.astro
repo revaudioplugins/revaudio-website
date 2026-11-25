@@ -587,6 +587,15 @@ for (const p of plugins) {
         var gclid = adsClickId();
         if (gclid) customData.gclid = gclid;
         Object.assign(customData, saleSource(), metaCookies());
+        // the home page test (HomeOpening.astro): the side this visitor was drawn into, 'garage' or 'tv', and how the
+        // garage went ('started' | 'walked' | 'skipped' | 'fallback'); nothing for a tester's pinned browser
+        try {
+          var homeSeen = localStorage.getItem('ra-home-seen'), homeOut = localStorage.getItem('ra-home-outcome');
+          if (!localStorage.getItem('ra-home-pin') && (homeSeen === 'garage' || homeSeen === 'tv')) {
+            customData.home = homeSeen;
+            if (homeSeen === 'garage' && /^(started|walked|skipped|fallback)$/.test(homeOut)) customData.home_out = homeOut;
+          }
+        } catch (e) {}
         var checkout = {
           // Paddle sums the full cart natively.
           items: items.map(function (i) { return { priceId: checkoutTargetFor(i), quantity: i.qty || 1 }; }),

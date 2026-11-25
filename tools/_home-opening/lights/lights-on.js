@@ -2,7 +2,11 @@
 // "while the user is loading, the amount of loading = a dark room turning into a lit room, as if someone turned on the
 // light ... I want it to feel real"). Each bank is a picture of its own light (assets/lights/bank-<n>.webp: the room
 // with banks 1..n minus the room with 1..n-1, rendered by lights/render.mjs) added over the dark room (base.webp) with
-// plus-lighter: light adds, so every step is the room as rendered. The room's script reports the load
+// plus-lighter: light adds, so every step is the room as rendered. The pictures come in sets (window.LIGHT_SETS, in the
+// room's markup; assets/lights/<set>/): this screen takes the one drawn at the resolution nearest the one the live room
+// draws here, so the hand-off does not change the picture's sharpness. The REVAUDIO sign is its own picture
+// (assets/lights/sign.webp, an <img> in the room's markup): on from the first painted frame, under the dark room,
+// which fades up over it and shows the same sign (Dan 11-18). The room's script reports the load
 // (lightsOn.progress 0..1); bank i comes on at its share, pure progress (Dan's pick), the way its kind does: a tube
 // strikes, a neon buzzes on, a bulb warms up, the gear powers on; a camera in the dark: grain, and the exposure catching
 // up when the first lights strike. Opacity only, so the compositor plays it while the 3D compiles. Flashes: at most one
@@ -16,7 +20,13 @@
   const root = document.getElementById('lights');
   if (!root) return;
   if (/[?&]capture=/.test(location.search)) { root.remove(); return; }
-  const banks = window.LIGHT_BANKS || [], dir = root.dataset.dir || '', q = new URLSearchParams(location.search).get('lights');
+  const banks = window.LIGHT_BANKS || [], q = new URLSearchParams(location.search).get('lights');
+  // this screen's set: by the rows of the room's drawing buffer (the height x the room's pixel ratio, roomRatio: the
+  // look's resolution follows them), the nearest by ratio; the same on a resize (the loading screen is short)
+  const rows = (w, h, d) => h * (window.roomRatio ? window.roomRatio(w, h, d) : 1), mine = rows(innerWidth, innerHeight, devicePixelRatio);
+  const far = (s) => Math.abs(Math.log(rows(...s.ref) / mine));
+  const set = (window.LIGHT_SETS || []).reduce((a, s) => (!a || far(s) < far(a) ? s : a), null);
+  const dir = (root.dataset.dir || '') + (set ? set.tag + '/' : '');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches, demo = q === 'demo';
   let again = false;
   try { again = sessionStorage.getItem('ra:lightsOn') === '1'; sessionStorage.setItem('ra:lightsOn', '1'); } catch (e) {}
@@ -25,6 +35,7 @@
   if (!(window.CSS && CSS.supports('mix-blend-mode', 'plus-lighter'))) root.classList.add('no-plus');
   document.documentElement.classList.add('lights-loading');
   const t0 = performance.now(), log = [];
+  let heard = t0; // the last load news (the give-up at the end waits for a stall)
   const note = (what) => log.push([Math.round(performance.now() - t0), what]);
 
   const pic = (src, cls, high) => {
@@ -121,6 +132,7 @@
   function progress(x) {
     if (at >= 0) { while (fired < Math.min(at, L.length)) fire(L[fired++]); return; } // the frozen stage
     if (demo && !progress.real) return; // the demo paces itself
+    if (x > p) heard = performance.now(); // load news: the room is still arriving (the give-up below waits)
     p = Math.max(p, x);
     while (fired < L.length && p >= (fired + 1) / (L.length + 1) - 1e-6) fire(L[fired++]);
   }
@@ -147,7 +159,17 @@
     document.documentElement.classList.remove('lights-loading');
     setTimeout(() => root.remove(), 700);
   }
-  // nothing came (the 3D failed): the lights all the same, and the page scrolls
-  const giveUp = setTimeout(() => { if (!readyCalls) { progress.real = true; progress(1); document.documentElement.classList.remove('lights-loading'); } }, 30000);
-  window.lightsOn = { progress, ready: (...a) => { clearTimeout(giveUp); return ready(...a); }, handoff, log, calm };
+  // nothing came (the 3D failed, or the line stopped): the lights all the same, and the page scrolls. Only on a real
+  // stall: no load news for STALL ms (the room's progress, or any file landing), or CAP ms in all. Not on a clock while
+  // the room still arrives (Dan 11-16, "its stuck": at 2 Mbit/s a 30 s clock lit the room as a still that did nothing for
+  // 40 s). Time with the tab hidden doesn't count (its timers sleep)
+  const STALL = 20000, CAP = 180000;
+  try { new PerformanceObserver(() => { heard = performance.now(); }).observe({ type: 'resource' }); } catch (e) {}
+  const giveUp = setInterval(() => {
+    const now = performance.now();
+    if (document.hidden) heard = now;
+    if (readyCalls || (now - heard < STALL && now - t0 < CAP)) return;
+    clearInterval(giveUp); note('give-up'); progress.real = true; progress(1); document.documentElement.classList.remove('lights-loading');
+  }, 1000);
+  window.lightsOn = { progress, ready: (...a) => { clearInterval(giveUp); return ready(...a); }, handoff, log, calm, set: set && set.tag };
 })();

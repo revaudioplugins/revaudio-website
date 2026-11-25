@@ -1,0 +1,21 @@
+---
+/**
+ * /widebeam phone bar (lane A, A.3; guidelines-05, mobile-03): at <= 900 px a strip at the bottom edge carries the one
+ * ask, askFor().sticky, once the hero has scrolled away (since Dan's page map, 2026-11-22, the dash comes next and the
+ * plate after it, so the bar is up over the dash before the plate). DriftStickyBar's mechanics (src/components/drift/
+ * DriftStickyBar.astro): fixed bottom, safe-area padding, starts away, away while any [data-wb-cta] (the hero column,
+ * the plate's form, the closer's form), the manual frame ([data-wb-manual]) or the footer is on screen (the manual's
+ * frame and line only once it has a film: in stand-by the bar stays up over them, furniture.ts), away while an
+ * email field has focus and after a sign-up, hidden while the cookie banner is up; the cart FAB and the SOUND key ride
+ * above it. The script is furniture.ts; the bottom edge's one owner is its --wb-lift stack.
+ * The key takes the visitor to the nearer sign-up form, the plate's or the closer's (furniture.ts; no form of its own:
+ * one form per ask, one source). Without JS its href goes to the plate. Sideways phones get one slim row (furniture.css).
+ */
+import { askFor } from '../../data/widebeam';
+
+const ask = askFor();
+---
+<div class="wb-bar is-away" data-wb-bar>
+  <a class="rv-btn rv-btn--sm wb-bar-key" href="#wb-get" data-wb-bar-key>{ask.sticky.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></a>
+  <span class="wb-bar-micro">{ask.label}</span>
+</div>

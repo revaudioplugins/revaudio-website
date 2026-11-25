@@ -1,0 +1,129 @@
+---
+/**
+ * /widebeam Owner's Manual (lane S; D6 A, P4 A). #manual is where the plugin's MANUAL button lands (D14).
+ * The screen sits in a small copy of the plugin's face (the parts kit's plate, the oxblood strap, the RevAudio badge);
+ * six chapters on the plugin's owner's-card stock beside it (under it on a phone). Every word comes from `manual` and
+ * askFor() in src/data/widebeam.ts.
+ *
+ * Three states, picked by the data alone:
+ *  - stand-by (youtubeId and src null): the LCD line and one sentence. No play icon, length, poster, date or email
+ *    promise. Each chapter is a plain link to the dash, #wb-drive (works without JS; manual.ts drives the face there).
+ *    It went to its step of the stereo road until Dan cut the road from his page map (2026-11-22); the titles still
+ *    come from STEPS.
+ *  - youtubeId: the house click-to-load facade ([slug].astro's Driver's Manual): our own poster through getImage (lazy,
+ *    600 px at 1x), a <button> named with the length; nothing from YouTube loads before the tap. A chapter with `at`
+ *    (seconds) starts the film there.
+ *  - src (a self-hosted cut of 90 s or less, same origin: the live CSP has no media-src): the same facade, then a
+ *    <video preload="none"> with its captions (`src` with .vtt) and, at the end, the ask + Watch again (the
+ *    DriftVideoGate end card, as a link to the plate: the one sign-up form lives there).
+ * data-wb-manual: nothing here starts the sound, the page keys ignore it, a play stops it (manual.ts).
+ * data-wb-watch on the frame: the SOUND key and the cart step aside over it (lane A's furniture.ts).
+ * `m` exists for a fixture page only; the site always renders the data file's `manual`.
+ */
+import { getImage } from 'astro:assets';
+import { manual, askFor, STEPS } from '../../data/widebeam';
+
+interface Props { m?: typeof manual }
+const { m = manual } = Astro.props;
+const ask = askFor();
+
+const film = m.youtubeId ? 'yt' : m.src ? 'self' : null;
+// the stand-by sentence is two parts: the LCD line, then the plain line ("MANUAL · BEING FILMED. It plays right here...")
+const cut = m.standby.indexOf('. ');
+const standbyLcd = cut > 0 ? m.standby.slice(0, cut) : m.standby;
+const standbyLine = cut > 0 ? m.standby.slice(cut + 2) : '';
+
+// our own poster (video-06): src/assets/widebeam/manual-<name>, `poster` names one; the default is a frame of the dash.
+// Resolved only when a film exists, so the stand-by page ships no poster at all.
+const posters = import.meta.glob<{ default: ImageMetadata }>('../../assets/widebeam/manual-*.{jpg,jpeg,png,webp}');
+let poster: { src: string; srcset: string } | null = null;
+if (film) {
+  const want = m.poster ?? 'manual-poster.webp';
+  const key = Object.keys(posters).find((k) => k.endsWith('/' + want));
+  if (key) {
+    const img = (await posters[key]()).default;
+    const [x1, x2] = await Promise.all([600, 1200].map((width) => getImage({ src: img, width, format: 'webp', quality: 70 })));
+    poster = { src: x1.src, srcset: `${x1.src} 1x, ${x2.src} 2x` };
+  }
+}
+const captions = m.src ? m.src.replace(/\.[a-z0-9]+$/i, '') + '.vtt' : null;
+const filmTitle = `WIDE BEAM ${m.title}`;
+
+const headOf = (id: string) => STEPS.find((s) => s.id === id)?.h ?? '';
+const WORDS = ['none', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const timed = m.chapters.filter((c) => c.at != null).length;
+// with the film in but no chapter timed yet, the chapters still go to the dash (above the manual since Dan's page map,
+// 2026-11-22), and the note no longer says "until"
+const note = !film
+  ? 'Until the film is ready, each chapter takes you to the dash above.'
+  : !timed
+  ? 'Each chapter takes you to the dash above.'
+  : timed === m.chapters.length
+    ? 'Each chapter starts the film at that step.'
+    : 'A chapter starts the film at that step, or takes you to the dash above.';
+const paras = (m.transcript ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+---
+{/* ============ THE OWNER'S MANUAL (D6 A) ============ */}
+<section id="manual" class="wb-manual" data-wb-manual aria-labelledby="wb-manual-h">
+  <header class="wb-head wb-manual-head" data-reveal="fade">
+    <p class="wb-eyebrow">The {m.title}</p>
+    <h2 id="wb-manual-h">The controls, <em>chapter by chapter.</em></h2>
+  </header>
+  <div class="wb-manual-row" data-reveal="fade">
+    <div class="wb-manual-film">
+      <div class="wb-plate wb-plate--badge wb-manual-frame" data-wb-manual-frame data-wb-manual data-wb-watch>
+        <div
+          class="wb-manual-glass" data-wb-manual-glass
+          data-film={film ?? undefined}
+          data-yt-id={m.youtubeId ?? undefined}
+          data-src={film === 'self' ? m.src : undefined}
+          data-captions={film === 'self' ? captions : undefined}
+          data-title={filmTitle}
+        >
+          {film ? (
+            <button type="button" class="wb-manual-facade" data-wb-manual-play>
+              {poster && <img class="wb-manual-poster" src={poster.src} srcset={poster.srcset} alt="" width="600" height="338" loading="lazy" decoding="async" />}
+              <span class="wb-manual-key">Watch{m.length ? ` · ${m.length}` : ' the manual'}<span class="sr-only">, the {filmTitle}</span></span>
+            </button>
+          ) : (
+            <div class="wb-manual-standby">
+              <p class="wb-manual-lcd">{standbyLcd}</p>
+              {standbyLine && <p class="wb-manual-line">{standbyLine}</p>}
+            </div>
+          )}
+          {film === 'self' && (
+            <div class="wb-manual-end" data-wb-manual-end hidden>
+              <p>{ask.manualLine}</p>
+              <a class="rv-btn" href="#wb-get" data-wb-manual-ask>{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></a>
+              <button type="button" class="wb-manual-again" data-wb-manual-again>&#8635; Watch again</button>
+            </div>
+          )}
+        </div>
+      </div>
+      <p class="wb-manual-ask" data-wb-cta data-wb-ask data-wb-manual-line>{ask.manualLine} <a href="#wb-get">{ask.key.replace(/ ▸$/, '')} <span aria-hidden="true">&#9656;</span></a></p>
+      {paras.length > 0 && (
+        <details class="wb-manual-transcript">
+          <summary>Read the transcript</summary>
+          {paras.map((p) => <p>{p}</p>)}
+        </details>
+      )}
+    </div>
+    <div class="wb-manual-side">
+      <nav class="wb-manual-card" aria-labelledby="wb-manual-ch">
+        <p class="wb-manual-card-t" id="wb-manual-ch">Chapters <small>{WORDS[m.chapters.length] ?? m.chapters.length}</small></p>
+        <ol>
+          {m.chapters.map((c, i) => (
+            <li>
+              <a href="#wb-drive" data-wb-chapter data-at={film && c.at != null ? c.at : undefined}>
+                <b>{String(i + 1).padStart(2, '0')}</b>
+                <span>{c.label}</span>
+                <em>{headOf(c.step)}</em>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <p class="wb-manual-note">{note}</p>
+    </div>
+  </div>
+</section>

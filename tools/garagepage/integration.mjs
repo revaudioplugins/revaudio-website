@@ -28,7 +28,8 @@ const SKIP = /(\.(md|mjs|py)|\.DS_Store)$/; // layouts' rationale notes
 
 // Served as /garage-9f3c (no slash, a host that does not redirect), every relative URL would miss the folder: the
 // page puts the slash back before any of them loads (the same line as gas2page's).
-const SLASH = `<script>if (!/(\\/|\\.html)$/.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);</script>`;
+// (not in the home page's copy of the room, HomeOpening.astro: an about:srcdoc document has no path to fix)
+const SLASH = `<script>if (location.protocol !== 'about:' && !/(\\/|\\.html)$/.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);</script>`;
 // + the site's icon (the room names none, so the browser asks for /favicon.ico: a 404 on this site)
 const HEAD = `<meta name="robots" content="noindex, nofollow">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n${SLASH}`;
 

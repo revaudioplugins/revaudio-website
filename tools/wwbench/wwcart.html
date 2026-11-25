@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>TV Bench · Cart keys</title>
+<!-- TV cart-keys bench (Dan 2026-11-24, on layout B: "take special care for the add to cart part, and the product page
+     part ... make them special and not just like a regular button. Give me like 5 options, from our brand identity and
+     design system"). Six same-origin iframes of the REAL dev homepage (layout B): today's two keys, then options 1-5,
+     each one a <style> dropped into its frame (nothing in the page's code changes). The view is the keys at true size
+     (KEYS) or the whole TV (TV). The plugin buttons light the same plugin everywhere; the cart switch shows every
+     frame's Add to cart as "In your cart" the way Cart.astro does it (class + label, no real cart). Hover and click
+     the keys: the frames are the real page. Pick in chat.
+     Round 2 (Dan 2026-11-24 picked 5 Parts tag and 1 Fastext, "polish both"): the tag as worn, real-looking paper that
+     falls off the glass when pressed, with paper physics; Fastext with pixel icons, a cart and three for Product page
+     (a page, a magnifier, a tiny plugin). Round 1's five options are in git (d528a4b). -->
+<style>
+  :root { --bg: #0e0b09; --panel: #18120f; --line: #33261e; --ink: #f1e8df; --dim: #ab9b8c; --acc: #e0a35a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.35 -apple-system, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 8px 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 3; background: var(--bg); }
+  header h1 { margin: 0 6px 0 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
+  button { background: #241a15; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--acc); }
+  .seg { display: inline-flex; flex-wrap: wrap; }
+  .seg button { border-radius: 0; margin-left: -1px; padding: 6px 10px; }
+  .seg button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 8px 8px 0; }
+  .seg button.on { background: var(--acc); border-color: var(--acc); color: #221004; font-weight: 700; }
+  .lbl { color: var(--dim); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .spacer { flex: 1; }
+  main { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 22px 18px; padding: 16px; }
+  .card { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .card[hidden] { display: none; }
+  .head { display: flex; align-items: center; gap: 10px; }
+  .badge { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: var(--acc); color: #221004; font-weight: 800; }
+  .card[data-o='today'] .badge { background: #2e231d; color: var(--ink); }
+  .head h2 { margin: 0; font-size: 15px; letter-spacing: .04em; }
+  .head .mine { color: var(--acc); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--acc); border-radius: 5px; padding: 3px 6px; }
+  .head .zoom { margin-left: auto; padding: 4px 10px; font-size: 12px; }
+  .line { margin: 0; color: var(--dim); font-size: 13px; max-width: 80ch; min-height: calc(3 * 1.35em); }
+  .vp { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #050303; }
+  .vp iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #050303; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TV bench · Cart keys</h1>
+  <span class="lbl">Plugin</span>
+  <span class="seg" id="chan" title="Light the same plugin in every TV (the free ones have no Add to cart)"></span>
+  <span class="lbl">Cart</span>
+  <span class="seg" id="cart" title="Show Add to cart as it looks once the plugin is in the cart">
+    <button type="button" data-c="out">Not in cart</button><button type="button" data-c="in">In your cart</button>
+  </span>
+  <button type="button" id="empty" title="Take everything out of the real cart (pressing Add to cart puts the plugin in it) and reload the TVs, so the tag can fall again">Empty the cart</button>
+  <span class="lbl">View</span>
+  <span class="seg" id="view"><button type="button" data-v="keys" title="The keys at their real size">Keys</button><button type="button" data-v="tv" title="The whole TV, scaled">Whole TV</button></span>
+  <span class="lbl">Screen</span>
+  <span class="seg" id="size"><button data-s="1312x734" title="Chrome at 100 % on Dan's laptop">Chrome</button><button data-s="1141x636" title="Safari at 115 % on Dan's laptop">Safari</button></span>
+  <span class="spacer"></span>
+  <span class="lbl">Hover and click. Then tell Claude which Product page icon: 1a, 1b or 1c.</span>
+</header>
+<main id="cards"></main>
+<script>
+(() => {
+  const KEY = 'wwcart:v2';
+  const WALL = '[data-wordwall]';
+  // every option is scoped to the lit plugin's two small keys on the screen wall; the frame's <html> gets id="wwcart"
+  // so these rules outrank the component's scoped ones; html.hc (high contrast) keeps the plain keys
+  const P = "#wwcart:not(.hc) .ww[data-ww-bg='screen'] .ww-panel .ww-buy";
+  const K = `${P} :is(.ww-more, .ww-cart)`;
+  // what every option takes away from today's phosphor outline: the frame, the glow, the fill
+  const BASE = `
+${K} {
+  min-height: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; text-shadow: none; filter: none;
+  transform: none; overflow: visible; isolation: auto; position: relative; display: inline-flex; align-items: center;
+  text-transform: uppercase; text-decoration: none; cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease, box-shadow 160ms ease, filter 160ms ease, transform 160ms ease;
+}
+${K}:is(:hover, :active, .is-pressed) { transform: none; background-color: transparent; box-shadow: none; } /* today's hover fill off; an option's own layers stay */
+${K}:focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 5px; }
+`;
+  const NOMOTION = (css) => `@media (prefers-reduced-motion: reduce) { ${css} }`;
+
+  // ---- round 2 (Dan 2026-11-24: "the tag parts tag and the fast text ... I want to polish both of them") ----
+
+  /* pixel icons for Fastext: ASCII art -> an SVG mask (X = a lit cell), tinted with the key's colour like teletext */
+  const pix = (rows) => {
+    const h = rows.length, w = rows[0].length;
+    let r = '';
+    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'X') r += `<rect x='${x}' y='${y}' width='1.02' height='1.02'/>`; }));
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}' shape-rendering='crispEdges'>${r}</svg>`;
+    return { url: `url("data:image/svg+xml,${encodeURIComponent(svg)}")`, w, h };
+  };
+  const ICON = {
+    cart: pix([
+      'XX..........',
+      '.X..........',
+      '.XXXXXXXXXXX',
+      '..XXXXXXXXXX',
+      '..XXXXXXXXX.',
+      '..XXXXXXXX..',
+      '..X.........',
+      '..XXXXXXXXX.',
+      '...XX...XX..',
+      '...XX...XX..',
+    ]),
+    page: pix([
+      'XXXXXX...',
+      'X....XX..',
+      'X....X.X.',
+      'X....XXXX',
+      'X.XXXXX.X',
+      'X.......X',
+      'X.XXXXX.X',
+      'X.......X',
+      'X.XXX...X',
+      'XXXXXXXXX',
+    ]),
+    loupe: pix([
+      '..XXXX....',
+      '.X....X...',
+      'X..X...X..',
+      'X.X....X..',
+      'X......X..',
+      'X......X..',
+      '.X....XX..',
+      '..XXXX.XX.',
+      '.......XXX',
+      '........XX',
+    ]),
+    plugin: pix([
+      'XXXXXXXXXXXX',
+      'X..........X',
+      'X.XXX..XXX.X',
+      'X.X.X..X.X.X',
+      'X.XXX..XXX.X',
+      'X..........X',
+      'X.XXXXXXXX.X',
+      'X..........X',
+      'XXXXXXXXXXXX',
+    ]),
+  };
+  const PX = 0.125; // rem per pixel: the cart is 1.5 x 1.25 rem
+  const FASTEXT = (more) => BASE + `
+${K} {
+  --fx: var(--brass-bright);
+  gap: .6rem; padding: .42rem .85rem .36rem .6rem;
+  background-color: hsl(var(--ww-ch-h) 35% 5% / .82);
+  box-shadow: inset 0 0 0 1px hsl(var(--ww-ch-h) 30% 30% / .35);
+  color: var(--fx); font-family: var(--font-display); font-size: 1.22rem; line-height: .9; letter-spacing: .07em;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--fx) 45%, transparent);
+}
+${P} .ww-cart { --fx: var(--oxide-text); }
+${P} .ww-more [aria-hidden] { display: none; }
+/* the icon: teletext graphics, one cell = ${PX}rem, lit in the key's colour */
+${K}::before {
+  content: ''; flex: none; background: var(--fx);
+  -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--fx) 60%, transparent));
+}
+${P} .ww-cart::before { --icon: ${ICON.cart.url}; width: ${ICON.cart.w * PX}rem; height: ${ICON.cart.h * PX}rem; }
+${P} .ww-more::before { --icon: ${more.url}; width: ${more.w * PX}rem; height: ${more.h * PX}rem; }
+${K}:hover, ${P} .ww-cart.is-in-cart {
+  background-color: var(--fx); color: hsl(var(--ww-ch-h) 40% 7%); text-shadow: none;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--fx) 55%, transparent);
+}
+${K}:hover::before, ${P} .ww-cart.is-in-cart::before { background: hsl(var(--ww-ch-h) 40% 7%); filter: none; }
+${K}:is(:active, .is-pressed) { filter: brightness(.8); transition-duration: 60ms; }
+`;
+
+  /* worn paper, drawn: SVG grain + a rough edge cut by a displacement map, stains and a crease in gradients, the
+     garage's masking-tape texture (the GAS 2 postcards' tape.webp) */
+  const svgURL = (s) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
+  const GRAIN = svgURL(`<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .32  0 0 0 0 .22  0 0 0 0 .1  .55 0 0 0 -.12'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`);
+  const BLOTCH = svgURL(`<svg xmlns='http://www.w3.org/2000/svg' width='300' height='120' preserveAspectRatio='none'><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='.035 .08' numOctaves='3' seed='11'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .28  0 0 0 0 .1  .9 0 0 0 -.38'/></filter><rect width='100%' height='100%' filter='url(#b)'/></svg>`);
+  const rough = (d, vw, vh, seed) => svgURL(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${vw} ${vh}' preserveAspectRatio='none'><filter id='r' x='-6%' y='-12%' width='112%' height='124%'><feTurbulence type='fractalNoise' baseFrequency='.42' numOctaves='2' seed='${seed}' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='2.4' xChannelSelector='R' yChannelSelector='G'/></filter><path filter='url(#r)' d='${d}'/></svg>`);
+  const TAG_SHAPE = rough('M12 1.6H168.4V42.4H12L1.6 32.6V11.4Z', 170, 44, 3);
+  const CARD_SHAPE = rough('M1.6 1.6H146.5L158.4 13.5V42.4H1.6Z', 160, 44, 5);
+  const TAPE = 'url("data:image/webp;base64,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")';
+  const PAPER = BASE + `
+${K} {
+  --tilt: -1.6deg;
+  isolation: isolate; gap: .4rem; color: rgb(38 27 16 / .92);
+  font-family: 'Special Elite', 'Courier New', monospace; font-size: 1.02rem; line-height: 1; letter-spacing: .04em;
+  text-shadow: 0 0 .6px rgb(38 27 16 / .55);
+  transform: rotate(var(--tilt)); transform-origin: 55% 0;
+  filter: drop-shadow(0 2px 1.5px rgb(0 0 0 / .45)) drop-shadow(0 6px 6px rgb(0 0 0 / .28));
+}
+${P} .ww-more [aria-hidden] { font-family: 'Special Elite', monospace; font-size: 1em; vertical-align: 0; }
+/* the paper itself (behind the typing): its shape and rough edge are the mask */
+${K}::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  -webkit-mask: var(--shape) 0 0 / 100% 100% no-repeat; mask: var(--shape) 0 0 / 100% 100% no-repeat;
+}
+/* the index card: off-white, a faded red head rule and blue lines, yellowed edges, a coffee ring's arc, a thumb
+   smudge, one crease, the top-right corner folded over */
+${P} .ww-more { padding: .66rem 1.05rem .52rem .85rem; --tilt: -1.8deg; }
+${P} .ww-more::before {
+  --shape: ${CARD_SHAPE};
+  background:
+    linear-gradient(225deg, transparent 0 .52rem, #9d927c .52rem .58rem, #d9d0bb .58rem .78rem, transparent .78rem) 100% 0 / 1.3rem 1.3rem no-repeat,
+    linear-gradient(104deg, transparent 63%, rgb(255 255 255 / .35) 63.4%, rgb(70 50 20 / .16) 64%, transparent 65%),
+    radial-gradient(circle at 88% 118%, transparent 0 34%, rgb(120 70 25 / .32) 36%, rgb(120 70 25 / .12) 39%, transparent 42%),
+    radial-gradient(ellipse 22% 38% at 14% 74%, rgb(80 60 40 / .14), transparent 70%),
+    ${GRAIN},
+    ${BLOTCH} 0 0 / 100% 100%,
+    radial-gradient(ellipse at 50% 45%, transparent 52%, rgb(150 115 55 / .38) 100%),
+    linear-gradient(transparent .42rem, rgb(185 90 70 / .5) .42rem .5rem, transparent .5rem),
+    repeating-linear-gradient(transparent 0 calc(.5rem + .56rem), rgb(110 140 185 / .32) calc(.5rem + .56rem) calc(.5rem + .62rem)),
+    linear-gradient(176deg, #efe9da, #e3dac4);
+}
+/* the parts tag: manila, a punched end with a brass eyelet, a grease thumbprint, the edge gone soft and dark */
+${P} .ww-cart { padding: .62rem 1rem .5rem 1.85rem; --tilt: 2.3deg; transform-origin: 62% 0; }
+${P} .ww-cart::before {
+  --shape: ${TAG_SHAPE};
+  -webkit-mask:
+    var(--shape) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at .78rem 50%, #000 .17rem, transparent .19rem);
+  -webkit-mask-composite: source-out;
+  mask:
+    var(--shape) 0 0 / 100% 100% no-repeat subtract,
+    radial-gradient(circle at .78rem 50%, #000 .17rem, transparent .19rem);
+  background:
+    radial-gradient(circle at .78rem 50%, transparent .19rem, #6f5428 .2rem, #e8c878 .26rem, #a3843f .31rem, #5b4520 .36rem, transparent .38rem),
+    linear-gradient(97deg, transparent 54%, rgb(255 245 220 / .3) 54.4%, rgb(70 45 15 / .18) 55%, transparent 56%),
+    radial-gradient(ellipse 13% 30% at 74% 66%, rgb(60 40 20 / .26), rgb(60 40 20 / .1) 60%, transparent 72%),
+    ${GRAIN},
+    ${BLOTCH} 0 0 / 100% 100%,
+    radial-gradient(ellipse at 52% 46%, transparent 48%, rgb(120 82 30 / .5) 100%),
+    linear-gradient(172deg, #dcc596, #cdb07a);
+}
+/* the masking tape that holds it to the glass */
+${K}::after {
+  content: ''; position: absolute; top: -.46rem; left: 55%; width: 2.7rem; height: .78rem; translate: -50% 0; rotate: -5deg;
+  background: ${TAPE} center / 100% 100% no-repeat; opacity: .9; pointer-events: none;
+  filter: sepia(.25) brightness(1.02) drop-shadow(0 1px 1px rgb(0 0 0 / .25));
+}
+${P} .ww-cart::after { left: 62%; rotate: 6deg; }
+/* a draft catches it: it sways from the tape, the shadow opens under it */
+${K}:hover {
+  transform: rotate(var(--tilt));
+  filter: drop-shadow(0 3px 2px rgb(0 0 0 / .42)) drop-shadow(0 12px 10px rgb(0 0 0 / .3));
+  animation: wwp-draft 1.6s ease-in-out infinite;
+}
+@keyframes wwp-draft { 0%, 100% { rotate: 0deg; } 30% { rotate: 1.6deg; } 65% { rotate: -.7deg; } }
+/* pressed flat against the glass */
+${K}:is(:active, .is-pressed) { transform: rotate(var(--tilt)) scale(.985); filter: drop-shadow(0 1px 1px rgb(0 0 0 / .55)); animation: none; transition-duration: 60ms; }
+/* once it's in the cart, the new tag says so in stamp ink */
+${P} .ww-cart.is-in-cart { color: rgb(130 38 16 / .9); text-shadow: 0 0 .8px rgb(130 38 16 / .6); letter-spacing: .06em; }
+/* the paper that fell is gone; a fresh one is slapped on in its place */
+${K}.wwp-gone { visibility: hidden; }
+${K}.wwp-stick { animation: wwp-stick 420ms cubic-bezier(.2, .9, .3, 1.15) both; }
+${K}.wwp-stick::after { animation: wwp-tape 420ms steps(1, end) both; }
+@keyframes wwp-stick {
+  0% { opacity: 0; transform: rotate(calc(var(--tilt) + 7deg)) translateY(-10px) scale(1.1); filter: drop-shadow(0 16px 12px rgb(0 0 0 / .35)); }
+  55% { opacity: 1; transform: rotate(var(--tilt)) scale(.98); filter: drop-shadow(0 2px 1.5px rgb(0 0 0 / .5)); }
+  100% { transform: rotate(var(--tilt)) scale(1); }
+}
+@keyframes wwp-tape { 0%, 50% { opacity: 0; } 51%, 100% { opacity: .9; } }
+${NOMOTION(`${K}:hover { animation: none; } ${K}.wwp-stick, ${K}.wwp-stick::after { animation: none; }`)}
+`;
+
+  /* The fall (the tag's frame only): a press lets the tape go. The paper swings on the corner still stuck, then
+     flutters down like paper: gravity against air drag (it settles near 480 px/s), a sway and a wobble on one
+     rhythm, a tilt toward and away from the glass, the shadow opening as it leaves the glass, then gone past the
+     TV. It is a copy that falls, in a layer over the whole page (nothing on the TV clips it): the real key hides,
+     then a fresh paper is taped on in its place (Add to cart: Cart.astro has made it "In your cart" by then).
+     The bench holds the Product page link (the page would follow it once the card has fallen). Reduced motion:
+     nothing falls. */
+  const PAPER_SETUP = (doc, win) => {
+    if (win.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const VARS = ['--ww-ch-h', '--ww-ch-s', '--ww-gs', '--ww-ink', '--ww-ink-hot', '--ww-ink-text', '--ww-ink-on', '--ww-glow', '--ww-glow-hot', '--ww-glow-soft', '--ww-glow-faint'];
+    const drop = (key) => {
+      const r = key.getBoundingClientRect();
+      const pcs = win.getComputedStyle(key.closest('.ww-panel'));
+      const host = doc.createElement('div');
+      host.className = 'ww'; host.dataset.wwBg = 'screen'; host.setAttribute('aria-hidden', 'true');
+      host.style.cssText = 'position:fixed;inset:0;z-index:2147483000;pointer-events:none;margin:0;padding:0;display:block;background:none;min-height:0;overflow:visible;';
+      const pan = doc.createElement('div');
+      pan.className = 'ww-panel';
+      pan.style.cssText = 'position:absolute;inset:0;display:block;opacity:1;visibility:visible;margin:0;padding:0;';
+      VARS.forEach((v) => pan.style.setProperty(v, pcs.getPropertyValue(v)));
+      const buy = doc.createElement('div');
+      buy.className = 'ww-buy';
+      buy.style.cssText = 'position:absolute;left:0;top:0;display:block;margin:0;padding:0;will-change:transform;';
+      const paper = key.cloneNode(true);
+      paper.removeAttribute('id'); paper.classList.remove('wwp-gone', 'wwp-stick'); paper.tabIndex = -1;
+      // not a cart key any more: Cart.astro relabels every [data-add-to-cart] on the page, the falling copy included
+      ['data-add-to-cart', 'data-cart-label', 'data-slug'].forEach((a) => paper.removeAttribute(a));
+      paper.style.animation = 'none';
+      buy.appendChild(paper); pan.appendChild(buy); host.appendChild(pan); doc.body.appendChild(host);
+      const c = paper.getBoundingClientRect();
+      buy.style.left = `${r.left - c.left}px`; buy.style.top = `${r.top - c.top}px`;
+      const side = Math.random() < 0.5 ? -1 : 1; // which corner the tape keeps a moment longer
+      buy.style.transformOrigin = side > 0 ? '8% 0' : '92% 0';
+      const H = win.innerHeight;
+      const g = 2500, drag = 5.2, f = 1.35 + Math.random() * 0.45, amp = 20 + Math.random() * 12;
+      let t = 0, x = 0, y = 0, vy = 0, phase = Math.random() * Math.PI, last = win.performance.now();
+      const step = (now) => {
+        const dt = Math.min(0.033, (now - last) / 1000);
+        last = now; t += dt;
+        let rot, rx = 0;
+        if (t < 0.24) { // the tape lets go on one side: it swings on the other corner
+          const k = t / 0.24;
+          rot = side * 30 * Math.sin((k * Math.PI) / 2);
+          y = 4 * k * k;
+        } else {
+          vy += (g - drag * vy) * dt;
+          phase += 2 * Math.PI * f * dt;
+          x += (side * 36 + 150 * Math.cos(phase)) * dt;
+          y += vy * dt;
+          rot = side * 30 + amp * Math.sin(phase);
+          rx = 48 * Math.sin(phase * 1.3);
+        }
+        const away = Math.min(1, y / 260); // leaving the glass: the shadow opens and fades
+        paper.style.filter = `drop-shadow(0 ${2 + away * 16}px ${1.5 + away * 12}px rgb(0 0 0 / ${0.45 - away * 0.25}))`;
+        buy.style.transform = `perspective(700px) translate(${x}px, ${y}px) rotate(${rot}deg) rotateX(${rx}deg)`;
+        const out = r.top + y > H + 40 || t > 2.6;
+        buy.style.opacity = String(t > 2.1 ? Math.max(0, 1 - (t - 2.1) / 0.5) : 1);
+        if (out) host.remove(); else win.requestAnimationFrame(step);
+      };
+      win.requestAnimationFrame(step);
+    };
+    doc.addEventListener('click', (e) => {
+      const key = e.target.closest && e.target.closest('.ww-panel .ww-buy :is(.ww-more, .ww-cart)');
+      if (!key || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (key.classList.contains('ww-cart') && key.classList.contains('is-in-cart')) return; // in the cart: the drawer opens
+      if (key.classList.contains('ww-more')) e.preventDefault(); // the bench holds the link
+      drop(key);
+      key.classList.add('wwp-gone');
+      win.setTimeout(() => {
+        key.classList.remove('wwp-gone');
+        key.classList.add('wwp-stick');
+        win.setTimeout(() => key.classList.remove('wwp-stick'), 480);
+      }, key.classList.contains('ww-cart') ? 700 : 1500);
+    }, true); // capture: before Cart.astro's own click, which still runs and flips the label
+  };
+
+  const OPTS = [
+    { id: 'tag', badge: '5', name: 'Parts tag, worn, falls', line: 'Worn paper: a rough edge, grain, a crease, stains, yellowed edges, an eyelet, masking tape. A draft sways it on hover. Press it and the tape lets go: it swings on one corner, then flutters down off the TV like real paper, and a new tag is taped on (Add to cart reads In your cart). The bench holds the Product page link so you can drop it again.', css: PAPER, setup: PAPER_SETUP },
+    { id: 'fx-page', badge: '1a', name: 'Fastext · Page', line: 'A pixel cart on Add to cart. Product page is a page: a sheet with a folded corner and three lines of text.', css: FASTEXT(ICON.page) },
+    { id: 'fx-loupe', badge: '1b', name: 'Fastext · Magnifier', line: 'A pixel cart on Add to cart. Product page is a magnifier: look closer.', css: FASTEXT(ICON.loupe) },
+    { id: 'fx-plugin', badge: '1c', name: 'Fastext · Plugin', line: 'A pixel cart on Add to cart. Product page is a tiny plugin: a faceplate with two knobs and a meter, as in "see the plugin".', css: FASTEXT(ICON.plugin) },
+  ];
+
+  const st = Object.assign({ slug: 'revlimiter', size: '1312x734', zoom: '', view: 'keys', cart: 'out' },
+    (() => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } })());
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  try { if (!localStorage.getItem('ra-cookie-consent')) localStorage.setItem('ra-cookie-consent', 'declined'); } catch (e) {}
+
+  const box = document.getElementById('cards');
+  box.innerHTML = OPTS.map((o) => `
+    <section class="card" data-o="${o.id}">
+      <div class="head"><span class="badge">${o.badge}</span><h2>${o.name}</h2><span class="mine" hidden>Claude's pick</span><button class="zoom" type="button">Zoom</button></div>
+      <p class="line">${o.line}</p>
+      <div class="vp"><iframe title="Homepage TV, ${o.name}"></iframe></div>
+    </section>`).join('');
+  const cards = OPTS.map((o) => ({ o, el: box.querySelector(`[data-o="${o.id}"]`) }));
+  cards.forEach((c) => { c.frame = c.el.querySelector('iframe'); });
+  const PICK = 'fx-plugin';
+  box.querySelector(`[data-o="${PICK}"] .mine`).hidden = false;
+
+  const dims = () => st.size.split('x').map(Number);
+  // the keys view: the lit plugin's words column at true size (from the frame itself, so every option is framed alike)
+  function crop(c) {
+    const d = c.doc, info = d && d.querySelector('.ww-panel.is-active .ww-info');
+    if (!info) return null;
+    const r = info.getBoundingClientRect();
+    return { x: Math.max(0, Math.round(r.left - 26)), y: Math.max(0, Math.round(r.top - 22)), h: Math.round(r.height + 44) };
+  }
+  function layout() {
+    const [W, H] = dims();
+    const one = !!st.zoom;
+    cards.forEach((c) => (c.el.hidden = one && c.o.id !== st.zoom));
+    box.style.setProperty('--cols', one ? 1 : 2);
+    requestAnimationFrame(() => cards.forEach((c) => {
+      if (c.el.hidden) return;
+      const vp = c.el.querySelector('.vp');
+      const cr = st.view === 'keys' && crop(c);
+      if (cr) {
+        vp.style.height = `${cr.h}px`;
+        Object.assign(c.frame.style, { width: `${W}px`, height: `${H}px`, transform: `translate(${-cr.x}px, ${-cr.y}px)` });
+      } else {
+        const k = Math.min(1, vp.clientWidth / W);
+        vp.style.height = `${Math.round(H * k)}px`;
+        Object.assign(c.frame.style, { width: `${W}px`, height: `${H}px`, transform: `scale(${k})` });
+      }
+      c.el.querySelector('.zoom').textContent = one ? 'Back to all four' : 'Zoom';
+    }));
+  }
+
+  function send(c, detail) {
+    const win = c.frame.contentWindow, wallEl = win && win.document.querySelector(WALL);
+    if (wallEl) wallEl.dispatchEvent(new win.CustomEvent('ww:select', { detail }));
+  }
+  // the cart switch: what Cart.astro does to a key once its plugin is in the cart (class + label), nothing stored
+  function cartState(c) {
+    const d = c.doc; if (!d) return;
+    d.querySelectorAll('.ww-panel .ww-cart').forEach((b) => {
+      if (!b.hasAttribute('data-bench-idle')) b.setAttribute('data-bench-idle', b.textContent.trim());
+      const on = st.cart === 'in';
+      b.classList.toggle('is-in-cart', on);
+      b.textContent = on ? 'In your cart' : b.getAttribute('data-bench-idle');
+    });
+  }
+  function wire(c) {
+    const doc = c.frame.contentDocument;
+    c.doc = doc;
+    doc.documentElement.id = 'wwcart';
+    const s = doc.createElement('style');
+    s.id = 'wwcart-style';
+    s.textContent = '#cookie-banner, dialog.wd-modal, dialog.exit-gas, dialog.sub-modal, #support-chat, .cart-fab { display: none !important; }\n' + c.o.css;
+    doc.head.appendChild(s);
+    if (c.o.setup) c.o.setup(doc, c.frame.contentWindow);
+    if (!document.querySelector('#chan button')) buildChannels(doc);
+    send(c, { slug: st.slug });
+    cartState(c);
+    setTimeout(layout, 1300);
+  }
+  function waitFor(c, tries = 0) {
+    const doc = c.frame.contentDocument;
+    const wallEl = doc && doc.location.href !== 'about:blank' && doc.querySelector(WALL);
+    if (wallEl && wallEl.dataset.wwLib === 'on' && doc !== c.old) return wire(c);
+    if (tries < 200) setTimeout(() => waitFor(c, tries + 1), 150);
+  }
+  function load() {
+    cards.forEach((c) => {
+      c.old = c.frame.contentDocument;
+      c.doc = null;
+      c.frame.src = '/' + (st.slug ? `?plugin=${encodeURIComponent(st.slug)}` : '');
+      waitFor(c);
+    });
+    layout();
+  }
+
+  function buildChannels(doc) {
+    const rows = [...doc.querySelectorAll('[data-ww-pick]')];
+    const slugs = rows.map((a) => a.getAttribute('href').replace(/^\//, ''));
+    const names = rows.map((a) => a.querySelector('.ww-name').textContent.trim());
+    const paid = new Set([...doc.querySelectorAll('.ww-panel')].filter((p) => p.querySelector('.ww-cart')).map((p) => p.dataset.wwPanel));
+    document.getElementById('chan').innerHTML = slugs.map((s, i) => `<button type="button" data-slug="${s}" title="${paid.has(s) ? 'Has Add to cart' : 'Free: Product page only'}">${names[i] || s}${paid.has(s) ? ' $' : ''}</button>`).join('');
+    document.querySelectorAll('#chan button').forEach((b) => (b.onclick = () => {
+      st.slug = b.dataset.slug; save(); paint();
+      cards.forEach((c) => send(c, { slug: st.slug }));
+      setTimeout(layout, 1300);
+    }));
+    paint();
+  }
+
+  function paint() {
+    document.querySelectorAll('#chan button').forEach((b) => b.classList.toggle('on', b.dataset.slug === st.slug));
+    document.querySelectorAll('#size button').forEach((b) => b.classList.toggle('on', b.dataset.s === st.size));
+    document.querySelectorAll('#view button').forEach((b) => b.classList.toggle('on', b.dataset.v === st.view));
+    document.querySelectorAll('#cart button').forEach((b) => b.classList.toggle('on', b.dataset.c === st.cart));
+  }
+  document.querySelectorAll('#size button').forEach((b) => (b.onclick = () => { st.size = b.dataset.s; save(); paint(); load(); }));
+  document.querySelectorAll('#view button').forEach((b) => (b.onclick = () => { st.view = b.dataset.v; save(); paint(); layout(); }));
+  document.querySelectorAll('#cart button').forEach((b) => (b.onclick = () => { st.cart = b.dataset.c; save(); paint(); cards.forEach(cartState); }));
+  document.getElementById('empty').onclick = () => {
+    try { localStorage.removeItem('revaudio_cart_v2'); } catch (e) {}
+    st.cart = 'out'; save(); paint(); load();
+  };
+  cards.forEach((c) => (c.el.querySelector('.zoom').onclick = () => { st.zoom = st.zoom ? '' : c.o.id; save(); layout(); }));
+  addEventListener('resize', layout);
+  paint();
+  load();
+})();
+</script>
+</body>
+</html>

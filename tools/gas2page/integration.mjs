@@ -5,7 +5,7 @@
 
      /gas2/                 page-b.html (the laptop page); a phone goes on to postcards.html (PHONE below)
      /gas2/postcards.html   the phone page; a laptop goes back to /gas2/
-     /gas2/<asset>          fonts/, frames/, props/, player/, taxi/, drone/, postcards/img/ (no tools, reviews, notes)
+     /gas2/<asset>          fonts/, frames/, props/, player/, taxi/, drone/, tv/, postcards/img/ (no tools, reviews, notes)
 
    Both pages keep their relative URLs (player/radio.js, fonts/...), so they must be served from /gas2/ WITH the slash:
    GitHub Pages (and the dev server here) redirects /gas2 to /gas2/, so the TV's and the downloads' /gas2 links land right.
@@ -16,9 +16,10 @@ import { fileURLToPath } from 'node:url';
 import { join, normalize, extname } from 'node:path';
 
 const SCENE = fileURLToPath(new URL('../_gas2-scene/', import.meta.url));
-const DIRS = ['fonts', 'frames', 'props', 'player', 'taxi', 'drone', 'postcards/img'];
-// inside DIRS: the art tools, review pages, notes and dev benches stay out of the site
-const SKIP = /(^|\/)(tools|review|README\.md|\.gitignore|bench\.js|cam-bench\.js)(\/|$)/;
+const DIRS = ['fonts', 'frames', 'props', 'player', 'taxi', 'drone', 'tv', 'postcards/img'];
+// inside DIRS: the art tools, review pages, notes and dev benches stay out of the site; so do the PNG masters
+// (frames/f6-v17.png and the props cut from it: the art tools read them, the pages load the .webp beside each)
+const SKIP = /(^|\/)(tools|review|README\.md|\.gitignore|bench\.js|cam-bench\.js)(\/|$)|\.png$/;
 
 const TITLE = 'GAS 2 · Free master-bus color plugin · RevAudio';
 const DESC = 'GAS 2: a free master-bus color plugin. One GAS dial, three grades of fuel. Thicker, smoother, glued master.';
@@ -108,7 +109,7 @@ async function page(name, parts) {
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png',
-  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.m4a': 'audio/mp4', '.glb': 'model/gltf-binary',
+  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.m4a': 'audio/mp4', '.glb': 'model/gltf-binary', '.mp4': 'video/mp4',
   '.json': 'application/json', '.svg': 'image/svg+xml',
 };
 

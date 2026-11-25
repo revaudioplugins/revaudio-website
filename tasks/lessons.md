@@ -463,3 +463,102 @@ no model uses `EXT_meshopt_compression` (none of the room's 83 did on 11-10). Un
 `'wasm-unsafe-eval'`, Chrome, Safari and Firefox each log a violation and an unhandled `CompileError` on every visit.
 Before a page with three goes behind the site's CSP, load it under the live header locally and read every violation
 (the room's test: `.claude/garage-bench-2026-11-10/csp/`, `cspserve.py` + `csptest.cjs`).
+
+## 2026-11-11 - packing the room's models: what changes the picture, and a trial number is not a promise (`danavivi-cc`)
+
+Direction 1 went on the directions page as "same look, 15.2 MB"; the real build is 17.6 MB. The trial's number was
+measured, its look was not: the stills comparison ran only on the real build, and there the trial's recipe failed twice.
+- meshopt's FILTER mode stores normals at 8 bits: on glossy paint (the coupe, clearcoat) the highlight moves. 12 bits
+  with mode QUANTIZE is invisible (car area: mean difference 1.94 → 0.07 of 255 levels).
+- Rounding positions (even to 0.03 mm) reorders faces that sit a hair apart: the studio desk's lit meter face is 0.5 mm
+  over its panel and came out half dark. The pack keeps positions and triangles bit for bit and checks it.
+- Texture right-size finds little here: `dress()` reads the models' maps with 8x anisotropy, so the walk needs about one
+  size level more than a plain "pixels on screen" estimate (7 of 237 textures could drop, ≈ 0.3 MB).
+
+Rule: before a size or speed number goes in front of Dan under "same look", run that exact recipe through the stills
+comparison (five walk stops, originals against it, plus a zoom on the glossiest and the thinnest things in the room).
+A number whose look is not checked yet is labelled "estimate, look not checked". And never pipe a check you may need
+to read through `tail -3`: send it to a log file (one failed `pack.mjs build` run lost its error text that way).
+
+## 2026-11-11 - Dan's browser keeps old loading pictures; a render left in the tree blocks the push (`danavivi-cf`)
+
+- `python3 -m http.server` sends no Cache-Control, only Last-Modified, so Chrome and Safari reuse a picture for a
+  while on their own (heuristic freshness). After `lights/render.mjs` re-rendered the loading screen, Dan's reload
+  still showed the old pictures and he asked why the sign wasn't there ("I don't see any sign, any skeleton of a
+  sign"). Serve the room Dan looks at with `Cache-Control: no-store`: an `http.server` subclass that adds the header
+  in `end_headers()` (11-11's: `.claude/garage-bench-2026-11-11/nocache_server.py`, run as
+  `python3 nocache_server.py <port> <worktree root>`). After switching servers, have him hard-reload once (Chrome
+  ⌘⇧R, Safari ⌥⌘R): what is already cached stays. Headless runs on Windows also need HTTP/1.1 keep-alive (shared
+  memory `feedback_bench_server_http11_keepalive`).
+- `lights/render.mjs` writes into `assets/lights/` in place. A render left uncommitted (and stale after the next
+  room change) makes `git pull --rebase` refuse, and the repo's hook wants that pull in the same command as every
+  push, so nothing pushes until it is committed or thrown away. Render the loading pictures once, last, right before
+  the commit that ships them; if one has to sit in the tree, commit it as a marked stopgap.
+
+## 2026-11-11 - The loading screen must match the room: check it every time (`danavivi-ee`)
+
+- Dan, after his car look was baked into the room: "in the loading screen the picture not matching the 3d asset in all
+  of the page. lets always chack it if the loeading screen matches the finel page". The loading pictures
+  (`assets/lights/*.webp`) are renders of the room at walk 0, so ANY change that shows there (a model, a material, the
+  car's look, a light, a moved prop, the TV picture) makes them stale, and the visitor sees one room turn into another
+  at the hand-off. I had baked the look and only noted "the pictures are stale, the next session re-renders": Dan
+  opened the room and saw the mismatch first.
+- The rule: a change to the room is not done, shown to Dan or pushed until `node tools/_home-opening/lights/check.mjs
+  --port <port>` prints PASS (it now exits 1 on FAIL: blurred mean 3.8, p99 20, worst area of a 16 x 9 grid 17). On
+  FAIL: `lights/render.mjs --port <port> --check`, check again, commit the 12 pictures with the change. This replaces
+  "render once, last" for anything Dan will look at: render again whenever the check fails, it costs minutes and no
+  credits.
+- The whole-picture numbers alone miss a small change (one prop is under 1 % of the pixels): the gate also reads the
+  picture area by area. Measured 11-11: stale 4.52 / 43 / 26.9 (FAIL), fresh 3.28 / 15 / 12.4 (PASS; the 12.4 is the
+  wet floor's moving shine).
+
+## 2026-11-11 - A bench for a claimed room; a new file the room imports is a dead live page (`danavivi-ee`)
+
+- The room was claimed (`danavivi-cf`, round 6) when Dan asked for a car bench. What worked without touching
+  `room.html`: a second page that runs the real room in a frame (`room.html?expose`), takes `three` from the frame's
+  own realm (`frame.contentWindow.eval("import('three')")`: same instance, same fonts) and moves the room's camera from
+  `scene.onBeforeRender` (the room sets its camera in `frame()`, the hook runs after it and before the draw; put the
+  near plane back in `scene.onAfterRender`). The object is judged in the room's real light, and the owner's file
+  stays the owner's.
+- `tools/garagepage/integration.mjs` (on main) copies a FIXED list to the live page: `room.html`, `street.js`,
+  `lights/lights-on.js`, and the folders `layouts`, `vendor`, `assets`. A new module that `room.html` imports is a 404
+  there, and a failed import kills the whole module script: no room. So room code goes inline in `room.html` (the
+  car's look did, `car-look.js` was folded in), or the integration's list changes in the same push as the import.
+- The coupe has no UVs: anything on it is drawn from the position in the car's frame (`uCarInv * modelMatrix`), never
+  from a texture coordinate. A material's clear coat is cut per pixel after `<lights_physical_fragment>`; keep
+  `material.clearcoat` above 0 (0.001) or three drops the clear-coat code from the program.
+- Auto mode refused this session's first push of the branch (no word from Dan in the session yet) and passed it after
+  his "תריץ תעלה". Do the local work, hand him the one push line, do not look for another way to publish.
+
+## 2026-11-16 - Timing the room: warm up, pair, and read the line first (`Garage load-speed branch review`)
+
+- One cold visit is not a timing. While comparing Gil's PR #33 the first visit after a pause, or on a busy Mac, came out
+  2 to 3 times slower than the rest (7.3 s against 3.8 s; 11.2 s against 3.4 s). The method that held: one discarded
+  warm-up of each version, then pairs A B B A, and a gain counts only when every pair agrees and the two ranges do not
+  touch. Two methods (`perf/simserve.py`, and an HTTP/2 server with Chrome's own limiter) agreed within 0.25 s.
+- A live time from Dan's Mac measures his line first. On 11-16 cached files from revaudio.net came at 2-6 Mbit/s and the
+  live room was ready with its last byte (35-56 s for 19.8 MB). Before reading a live number, curl one cached model
+  (`curl -s -o /dev/null -H 'Accept-Encoding: gzip' -w '%{speed_download}' https://revaudio.net/garage-9f3c/assets/models/couch.glb`).
+- The main checkout's `node_modules` lacks `@astrojs/mdx`, so `npm run build` fails there ("Cannot find module
+  '@astrojs/mdx'"). Build a merge in a temp worktree with its own `npm ci` (about 1 min) instead of linking that folder.
+- A load-path change can break another branch with no conflict at all: `prefetchModels()` starts before `createRoom()`
+  and merges cleanly into the phone cut, whose filter lives later, in `loadModels()` (test merge: 100 model requests
+  instead of 30). After a merge that touches the boot line, count the `.glb` requests of every page that filters.
+
+## 2026-11-18 - A once-per-tab intro hides itself from the reviewer; Lenis and a scrub trigger on the mover (`Wide Beam page tour`)
+
+- Dan opened /widebeam and saw no car. The intro played once per tab (`sessionStorage`): the session had opened the
+  tab for him while he was away, so it played to nobody, and every reload after that showed only the road. An intro
+  that hides itself after one play hides from exactly the person reviewing it. Play it on every load and skip it only
+  when the visitor comes back with Back / Forward (`performance.getEntriesByType('navigation')[0].type`).
+- A knob with a wheel handler turns whenever a page scroll passes over it (WIDTH 136 -> 0 in one pass down the page),
+  and Lenis scrolls the page anyway: it ignores `preventDefault`. Turn a control by wheel only while it has focus, and
+  give it `data-lenis-prevent-wheel` for that time.
+- `lenis.scrollTo(element)` adds the page's `scroll-padding-top` (here nav + 0.75rem, ~56 px) and adds the element's
+  rect to its own animated scroll, which runs ahead of the page while a wheel glide is still going: the preset click
+  landed 57 px short in WebKit and 115 px off in Chrome. Pass a number computed from `getBoundingClientRect().top +
+  scrollY`. A native smooth `scrollIntoView` under Lenis stopped ~70 px short too.
+- A scrub tween whose trigger is the element it moves is measured in its start pose (here 80 px down, scale .9), so it
+  ends ~135 px late. Trigger on a still parent.
+- Test path: a native `scrollIntoView` in a check leaves Lenis stale, and the next click lands on an element that has
+  since moved off screen (WebKit: the knob at y -21). Reach a spot with `mouse.wheel` the way a visitor does.

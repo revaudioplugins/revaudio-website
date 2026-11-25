@@ -1,0 +1,162 @@
+/* /widebeam page tokens and the rules several sections share (lane F). The index is src/styles/widebeam.css. */
+/* /widebeam: WIDE BEAM, a late-60s grand tourer at night (WideBeam DESIGN.md §0-2): charcoal steel, brass trim,
+   chrome, oxblood leather, ivory lettering, LCD blue confined to readouts, warm halogen (never pure white) for light.
+   House laws kept: one upper-left light, no #000 / #fff, keys sink by depth. */
+
+/* ---------- the plugin's own two faces, bundled for systems that lack them (SIL OFL 1.1; licences beside the files
+   in public/fonts/widebeam/). Subsets made with fontTools; add a character = re-subset and bump the -vN in the name.
+   'WB Serif': the plate's engraved serif. Georgia where it is installed (Mac, Windows, iOS); elsewhere (Android,
+   Linux) Gelasio, which is drawn to Georgia's metrics. Subset: A-Z a-z 0-9 and the label punctuation, 8.3 KB.
+   'WB Courier Prime': the LCD face for systems without Courier New (the plugin's LCDs are Courier New). The family
+   stack names Courier New first, so a Mac or a PC never downloads it. Subset: printable ASCII + · × ° – — ‘ ’ “ ” …
+   ‹ › −, 6.7 KB. */
+@font-face {
+  font-family: 'WB Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Georgia'), url('/fonts/widebeam/Gelasio-Regular.subset-v1.woff2') format('woff2');
+  unicode-range: U+0020-007E, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2019, U+201C-201D, U+2026, U+2039-203A;
+}
+@font-face {
+  font-family: 'WB Courier Prime';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/widebeam/CourierPrime-Regular.subset-v1.woff2') format('woff2');
+  unicode-range: U+0020-007E, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2018-2019, U+201C-201D, U+2026, U+2039-203A, U+2212;
+}
+
+.wb-page {
+  --charcoal: #15130f; --charcoal-2: #1d1a16; --steel: #24211c;
+  --brass-hi: #f3dca0; --brass: #c9a35c; --brass-lo: #6f5430;
+  --ox: #6b1d1a; --ox-hi: #93302a;
+  /* --ivory-3 = small print. #9c927f (was #8a8070) clears AA on the plate steel #24211c at 5.2:1 (art-18, a11y-10) */
+  --ivory: #efe6d2; --ivory-2: #b8ad98; --ivory-3: #9c927f;
+  --halo: #fff1cb; --halo-2: #eadcc0;
+  --lcd-ink: #b9e8ff; --lcd-glow: #2894fa; --lcd-well: #04152b;
+  /* status (art-19): the house --emerald (fills, lamps) as is; text needs a lift to read on the plate steel, so the
+     two text colours are the house hues mixed toward --ivory: --emerald 45 % (5.7:1 on --steel) and the house
+     --oxide-text 25 % (5.6:1; the house #d4622a is 4.3:1 there, AA only on bg-0 / bg-1) */
+  --emerald-text: #85a287;
+  --oxide-text: #db8354;
+
+  /* faces (DESIGN.md §3 + D4 C): Bebas for headlines; Oswald for button and pill labels; the plate's engraved serif
+     for the lockup, the kickers and the small plate labels; the plugin's Courier New for its LCDs; the house mono for
+     every other readout. No pixel font on readable text (DESIGN Law 5, art-07): VT323 is off the page. */
+  --serif: 'WB Serif', Georgia, 'Times New Roman', serif;
+  --wb-display: var(--font-display);
+  --wb-label: 'Oswald', var(--font-display);
+  --wb-lcd: 'Courier New', 'WB Courier Prime', var(--font-mono);
+  --wb-read: var(--font-mono);
+  /* light on text only where a lamp is (art-15): the face's LCD glow, and a softer one for the other blue readouts */
+  --wb-lcd-glow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow);
+  --wb-lcd-glow-soft: 0 0 8px rgba(40, 148, 250, .55);
+
+  /* the engraved label (D4 C, art-21), shared by .wb-eyebrow here and .wb-plate-label in parts.css: the plate's own
+     ink, sampled from the plugin's LOW FOCUS / MIX / MONO (#e6d6b6-#e9dabf at the letter cores), and the cut */
+  --wb-engrave-font: var(--serif);
+  --wb-engrave-track: .16em;
+  --wb-engrave-ink: #e3d6bc;
+  --wb-engrave-cut: 0 1px 0 rgba(8, 6, 4, .9), 0 -1px 0 rgba(255, 240, 210, .07);
+
+  /* rhythm (art-16, art-14): one gap between sections (72 px phone .. 128 px laptop), one-line section heads */
+  --wb-gap: clamp(72px, 10vw, 128px);
+  --wb-h2: clamp(2.2rem, 3.6vw, 3.2rem);
+  /* the phone floor for readable text (mobile-10; DriftStickyBar's 13 px) */
+  --wb-fine-min: 13px;
+
+  --wb-w: .68;
+  position: relative;
+  color: var(--ivory);
+  background:
+    radial-gradient(1100px 700px at 50% 0%, rgba(255, 228, 170, .05), transparent 65%),
+    linear-gradient(180deg, #0a0908, var(--charcoal) 20%, #0d0c0a 70%, #0a0908);
+  overflow-x: clip;
+}
+.wb-page ::selection { background: rgba(201, 163, 92, .4); }
+
+/* the house smoke (global.css .haze-plate, haze1 + haze2.webp, 67 KB) sits behind the page's own opaque background, so on
+   /widebeam it shows only through the translucent footer (measured at 390x844: a shot with the plates hidden differs
+   from one with them only in the footer rows; everywhere else the two are the same, stage 4). Its two photos wait for the footer: the inline
+   script at the end of widebeam.astro marks .site-footer [data-wb-near] 3/4 of a screen ahead, as the parts kit's art.
+   That takes them out of a phone's first view, which sat 1.4 KB over G11's 1.0 MB bar (r-cross-g11fv). Without JS, or in
+   a browser without :has(), the rule doesn't apply and the smoke loads as on every other page.
+   display: none too (2026-11-22, Dan: "a little bit laggy"): an empty plate is still a 1837x1028 screen-blended layer
+   that haze.ts moves every frame, so Chrome redrew a full Retina frame 60 times a second at rest and every wheel input
+   waited ~16 ms more (measured: input to first motion 40-42 -> 24-25 ms, 0 frames swapped at rest, 0 pixels differ). */
+@media (scripting: enabled) {
+  :root:not(:has(.site-footer[data-wb-near])) .haze-plate { background-image: none; display: none; }
+}
+
+/* ---------- shared ---------- */
+.wb-head { max-width: 1180px; margin: 0 auto; padding: 0 16px; text-align: center; }
+/* kickers: the plate's engraved serif caps (D4 C) */
+.wb-eyebrow {
+  margin: 0; font-family: var(--wb-engrave-font); font-weight: 400; font-size: .86rem; font-variant: small-caps; text-transform: uppercase;
+  letter-spacing: var(--wb-engrave-track); color: var(--wb-engrave-ink); text-shadow: var(--wb-engrave-cut);
+}
+.wb-page h2 {
+  font-family: var(--wb-display); font-weight: 400; font-size: var(--wb-h2); line-height: 1; letter-spacing: .02em;
+  margin: .3em auto .35em; max-width: none; text-wrap: balance; color: var(--ivory);
+}
+.wb-page h2 em { font-style: normal; color: var(--brass-hi); }
+.wb-headsub { color: var(--ivory-2); max-width: 54ch; margin: 0 auto; font-size: 1.06rem; line-height: 1.6; }
+.wb-fine { color: var(--ivory-3); font-size: .82rem; line-height: 1.45; margin: 14px 0 0; }
+
+[data-wb-reveal] { opacity: 0; transform: translateY(30px); transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform 1s cubic-bezier(.16, 1, .3, 1); }
+[data-wb-reveal].is-in { opacity: 1; transform: none; }
+
+/* the house reveal's failsafe on this page (r-cross-revealstuck). global.css hides [data-reveal] under html.motion-ok
+   (set by BaseLayout's inline head gate) until src/lib/reveal.ts adds .revealed, and in a production build reveal.ts
+   rides the page's own script chunk. If that chunk never runs (cached HTML naming the last deploy's chunk, a dropped
+   request, a blocker), the plate, the four section heads, the glove box, the manual and the closer (both sign-up forms)
+   stayed at opacity 0 for good. CSS only, since a failsafe in the failed chunk would never run: at 9 s they show (the
+   hero's own failsafe is 8.5 s). init.ts puts .wb-booted on the page as it boots, which takes the failsafe off and
+   leaves the blocks to the house reveal (its entrance on scroll, and its own fallback that shows the rest 2.5 s after
+   it starts), so on a working page this never fires. An animation beats the house's opacity 0 and gsap's inline
+   from-state. */
+html.motion-ok .wb-page:not(.wb-booted) :is([data-reveal], [data-reveal-item]):not(.revealed) { animation: wb-reveal-failsafe 0s 9s forwards; }
+@keyframes wb-reveal-failsafe { to { opacity: 1; } }
+
+.wb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.wb-head > p { margin-left: auto; margin-right: auto; }
+
+/* phones: no readable text under 13 px (mobile-10). The meter's own print (CORRELATION) is part of a drawn part and
+   stays; the lanes that redraw a part bring its print up with it. */
+@media (max-width: 560px) {
+  .wb-page :is(.wb-sub, .wb-get-micro, .wb-get-notice, .wb-get-or span, .wb-get-price span, .wb-skip, .wb-replay, .wb-sound, .wb-hud-label) {
+    font-size: var(--wb-fine-min);
+  }
+}
+
+/* the console's rear-view mirror (WbConsole .wb-con-mirror.wb-mirror) keeps its inline-size containment: the console
+   grid sizes it without its content's width at 901-1100 px. Its old figcaption and idle-hint rules went with the
+   figure (lane D's console has neither). */
+.wb-page .wb-mirror { container-type: inline-size; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-wb-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------- the site's High contrast switch (a11y-d02) ----------
+   html.hc (the footer switch, or the OS's "Increase contrast") re-tints :root, but .wb-page sets its own tokens, so
+   it has to follow here: the house hc values, small print to near-white, no glow on text, every story step lit. */
+html.hc .wb-page {
+  --ivory: #ffffff; --ivory-2: #e6e6e6; --ivory-3: #d4d4d4;
+  --brass: #ffd479; --brass-hi: #ffe9b0;
+  --lcd-ink: #e6f6ff;
+  --emerald-text: #a8e6bd; --oxide-text: #ff9a5a;
+  --wb-engrave-ink: #ffffff; --wb-engrave-cut: none;
+  --wb-lcd-glow: none; --wb-lcd-glow-soft: none;
+}
+html.hc .wb-page :is(.wb-step, .wb-level) { opacity: 1; }
+html.hc .wb-page :is(.wb-hud-lcd, .wb-lede) { text-shadow: none; }
+html.hc .wb-page .wb-dr dd { color: var(--lcd-ink); }
+/* the brass keys' focus ring in high contrast (r-base-hcring). The house html.hc .rv-btn (buttons.css, 0-2-1) draws an
+   always-on 2 px white outline that outranks both html.hc :focus-visible (0-1-1) and .rv-btn:focus-visible (0-2-0), so
+   a focused key looked exactly like a blurred one. Focused, the key takes the house hc ring (3 px --brass-bright) set
+   out to 4 px: the white band at 2-4 px turns to the page's dark and the ring sits outside it, a change that reads at a
+   glance. 'Use your own track' is a label round its file input, so it rings on :focus-within (drive.css .wb-file).
+   A house bug (the /plugins key is the same); this fixes it on /widebeam only. */
+html.hc .wb-page :is(.rv-btn:focus-visible, .rv-btn.wb-file:focus-within) { outline: 3px solid var(--brass-bright); outline-offset: 4px; }

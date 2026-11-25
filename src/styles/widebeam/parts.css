@@ -1,0 +1,172 @@
+/* WIDE BEAM parts kit (D4 C): every surface cut from the plugin's own photo by tools/widebeam-parts/cut.cjs into
+   src/assets/widebeam/parts/. Nothing here points at the full face photo. Units: the plugin's face is 1536 x 1024 units;
+   --wb-ps is CSS px per unit. The plate parts are cut at 1 px per unit, so they stay sharp up to --wb-ps .5 at DPR 2
+   (and .33 at DPR 3). Markup and use: tools/widebeam-parts/README.md. */
+
+/* ---------- the plate: leather border, brass trim, brushed steel, real screws ----------
+   A 9-slice border-image (corners + seamless runs; the steel inside the trim is cut out of it) over the steel field
+   tile, so it fits a box of any size. The screws ride on ::before; the strap and badge on ::after. Both pseudos sit
+   under the box's content (z-index -1 inside the plate's own stacking context). */
+.wb-plate {
+  --wb-ps: .45;
+  --wb-plate-b: 68; /* bottom band in units: 68 plain, 199 with the strap */
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  padding: var(--wb-plate-pad, 20px 26px);
+  border-style: solid;
+  border-width: calc(var(--wb-ps) * 68px) calc(var(--wb-ps) * 62px) calc(var(--wb-ps) * var(--wb-plate-b) * 1px) calc(var(--wb-ps) * 62px);
+  border-image-source: url(../../assets/widebeam/parts/plate.webp);
+  border-image-slice: 68 62 68 62;
+  border-image-width: calc(var(--wb-ps) * 68px) calc(var(--wb-ps) * 62px) calc(var(--wb-ps) * 68px) calc(var(--wb-ps) * 62px);
+  border-image-repeat: round;
+  /* one upper-left light on the steel (the tile itself is flat), a little dusk toward the bottom */
+  background:
+    radial-gradient(130% 120% at 24% 0%, rgba(255, 236, 200, .075), transparent 60%),
+    linear-gradient(180deg, transparent 55%, rgba(8, 6, 4, .22)),
+    url(../../assets/widebeam/parts/field.webp) 0 0 / calc(var(--wb-ps) * 180px) calc(var(--wb-ps) * 128px) repeat;
+  background-origin: border-box;
+  background-clip: border-box;
+  box-shadow: 0 calc(var(--wb-ps) * 50px) calc(var(--wb-ps) * 110px) calc(var(--wb-ps) * -16px) rgba(8, 6, 4, .7);
+  color: var(--ivory, #efe6d2);
+}
+.wb-plate::before,
+.wb-plate--strap::after,
+.wb-plate--badge::after { content: ''; position: absolute; z-index: -1; pointer-events: none; }
+/* the four screws on the steel, each turned its own way (the plugin's own four) */
+.wb-plate::before {
+  inset: calc(var(--wb-ps) * -68px) calc(var(--wb-ps) * -62px) calc(var(--wb-ps) * var(--wb-plate-b) * -1px) calc(var(--wb-ps) * -62px);
+  --wb-screw: calc(var(--wb-ps) * 36px);
+  background:
+    url(../../assets/widebeam/parts/screw-tl.webp) left calc(var(--wb-ps) * 48px) top calc(var(--wb-ps) * 56px) / var(--wb-screw) no-repeat,
+    url(../../assets/widebeam/parts/screw-tr.webp) right calc(var(--wb-ps) * 48px) top calc(var(--wb-ps) * 56px) / var(--wb-screw) no-repeat,
+    url(../../assets/widebeam/parts/screw-bl.webp) left calc(var(--wb-ps) * 48px) bottom calc(var(--wb-ps) * (var(--wb-plate-b) - 11) * 1px) / var(--wb-screw) no-repeat,
+    url(../../assets/widebeam/parts/screw-br.webp) right calc(var(--wb-ps) * 48px) bottom calc(var(--wb-ps) * (var(--wb-plate-b) - 11) * 1px) / var(--wb-screw) no-repeat;
+}
+
+/* the stitched oxblood strap under the steel: its two real ends (with their screws) and a seamless run between */
+.wb-plate--strap,
+.wb-plate--badge {
+  --wb-plate-b: 199;
+  /* each url once (Vite inlines the small ones as base64; two rules naming them would ship them twice) */
+  --wb-strap-l: url(../../assets/widebeam/parts/strap-l.webp);
+  --wb-strap-r: url(../../assets/widebeam/parts/strap-r.webp);
+  --wb-strap-run: url(../../assets/widebeam/parts/strap-run.webp);
+  border-image-width: calc(var(--wb-ps) * 68px) calc(var(--wb-ps) * 62px) 0 calc(var(--wb-ps) * 62px);
+}
+.wb-plate--strap::after,
+.wb-plate--badge::after {
+  box-sizing: border-box;
+  left: calc(var(--wb-ps) * -62px);
+  right: calc(var(--wb-ps) * -62px);
+  bottom: calc(var(--wb-ps) * -199px);
+  height: calc(var(--wb-ps) * 199px);
+  padding: 0 calc(var(--wb-ps) * 100px); /* the run is clipped to the content box, between the two ends */
+  background-image: var(--wb-strap-l), var(--wb-strap-r), var(--wb-strap-run);
+  background-position: left top, right top, left top;
+  background-size: calc(var(--wb-ps) * 100px) 100%, calc(var(--wb-ps) * 100px) 100%, calc(var(--wb-ps) * 400px) 100%;
+  background-repeat: no-repeat, no-repeat, repeat-x;
+  background-origin: border-box, border-box, content-box;
+  background-clip: border-box, border-box, content-box;
+}
+/* the nameplate's url once for both users (the badge plate and .wb-part-badge), as the strap's above: two rules naming it
+   shipped its base64 twice in the built CSS */
+.wb-plate--badge,
+.wb-part-badge { --wb-badge: url(../../assets/widebeam/parts/badge.webp); }
+/* + the RevAudio nameplate, centred on the strap where the plugin has it */
+.wb-plate--badge::after {
+  background-image: var(--wb-badge), var(--wb-strap-l), var(--wb-strap-r), var(--wb-strap-run);
+  background-position: 50% calc(var(--wb-ps) * 43px), left top, right top, left top;
+  background-size: calc(var(--wb-ps) * 250px) auto, calc(var(--wb-ps) * 100px) 100%, calc(var(--wb-ps) * 100px) 100%, calc(var(--wb-ps) * 400px) 100%;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
+  background-origin: border-box, border-box, border-box, content-box;
+  background-clip: border-box, border-box, border-box, content-box;
+}
+
+/* small labels on the plate: the plate's own engraved serif (LOW FOCUS, MIX), small capitals, pressed into the steel.
+   Headlines stay Bebas. 'WB Serif' is lane F's Georgia-first face; Georgia is the fallback. */
+.wb-plate-label {
+  /* the page's engraved-serif tokens (base.css), so the kickers and the plate labels stay one voice */
+  font-family: var(--wb-engrave-font, 'WB Serif', Georgia, 'Times New Roman', serif);
+  font-weight: 400;
+  font-variant: small-caps;
+  text-transform: none;
+  letter-spacing: var(--wb-engrave-track, .16em);
+  color: var(--wb-engrave-ink, #e3d6bc);
+  text-shadow: var(--wb-engrave-cut, 0 1px 0 rgba(8, 6, 4, .9), 0 -1px 0 rgba(255, 240, 210, .07));
+}
+
+@media (max-width: 600px) {
+  .wb-plate { --wb-ps: .36; }
+}
+
+/* forced colours (Windows High Contrast): the plate's photos go, as the hero's road does (hero.css). A browser keeps
+   url() images in forced colours but repaints the focus ring in the theme's own colour, so in a light theme the navy
+   ring landed on the dark leather and steel at 1.1-1.8:1 (r-base-forced). The plate becomes the system's Canvas with
+   a thin CanvasText rule at the same box size, so nothing moves. border-color is Canvas, not transparent: forcing
+   paints a transparent border CanvasText (a 20-89 px black frame); a system colour is kept. Gradients need nothing:
+   Chrome drops them in forced colours (the page's own gradient computes to none there). */
+@media (forced-colors: active) {
+  .wb-plate { border-image: none; border-color: Canvas; background: Canvas; box-shadow: none; outline: 1px solid CanvasText; outline-offset: -1px; }
+  .wb-plate::before, .wb-plate--strap::after, .wb-plate--badge::after { background: none; }
+  /* the console's and the deck's LCD-blue arrows (drive.css .wb-con-step) were drawn for the dark plate: forcing leaves
+     an SVG stroke alone, so on the Canvas they would fade to a pale blur. They take the button's own system colour. */
+  .wb-plate .wb-con-step svg { stroke: ButtonText; filter: none; }
+}
+
+/* ---------- single parts (block boxes: give them a width, the height follows) ---------- */
+.wb-part-lamp-l,
+.wb-part-lamp-r,
+.wb-part-road,
+.wb-part-meter,
+.wb-part-cap,
+.wb-part-badge { position: relative; display: block; background-position: 0 0; background-size: 100% 100%; background-repeat: no-repeat; }
+
+/* below-the-fold art waits until it is about a screen away (r-base-foldart): every one of these parts sits under the
+   first view on every size, and as CSS backgrounds they loaded with the page (lamps 2 x 31 KB at the closer, road 33,
+   meter 8, cap 8). An inline script at the end of the page (widebeam.astro, not the page's script chunk, so a late or
+   failed chunk can't leave them bare: r-base-artbare) marks each part [data-wb-near] 3/4 of a screen ahead of the
+   reader (IntersectionObserver rootMargin 75%); the box keeps its size (aspect-ratio), so nothing moves when the art
+   lands. Only with scripting: without JS, or where the query is unknown, the art loads as before. Other areas opt in with [data-wb-defer] on an
+   element and their own :not([data-wb-near]) rule. The plate (just under the fold, and its border-image would fall
+   back to a solid currentColor frame) is not deferred. */
+@media (scripting: enabled) {
+  :is(.wb-part-lamp-l, .wb-part-lamp-r, .wb-part-road, .wb-part-meter, .wb-part-cap):not([data-wb-near]) { background-image: none; }
+}
+
+/* the headlamps. --wb-lamp is the lens exposure only (the brass bezel never dims): 0.1 off, 1 the photo, ~1.6 full
+   beam. The lens copy is clipped to the face's own lens rectangle (face.ts wbLensL / wbLensR). */
+.wb-part-lamp-l { aspect-ratio: 335 / 304; background-image: url(../../assets/widebeam/parts/lamp-l.webp); }
+.wb-part-lamp-r { aspect-ratio: 335 / 304; background-image: url(../../assets/widebeam/parts/lamp-r.webp); }
+.wb-part-lamp-l::after,
+.wb-part-lamp-r::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: inherit;
+  filter: brightness(var(--wb-lamp, 1));
+}
+.wb-part-lamp-l::after { clip-path: inset(12.5% 11.34% 12.17% 9.85% round 7.46% / 8.22%); }
+.wb-part-lamp-r::after { clip-path: inset(12.5% 12.84% 12.17% 13.43% round 7.16% / 7.89%); }
+
+/* the road window: chrome + brass bezel, the plugin's night-road glass and its trip LCD.
+   Children: .wb-part-road-glass covers the glass (put the canvas / sources in it), .wb-part-road-lcd the trip LCD. */
+.wb-part-road { aspect-ratio: 778 / 319; background-image: url(../../assets/widebeam/parts/road.webp); }
+.wb-part-road-glass { position: absolute; left: 2.44%; top: 5.33%; width: 95.12%; height: 89.34%; border-radius: 1.8% / 4.9%; overflow: hidden; }
+.wb-part-road-lcd { position: absolute; left: 33.93%; top: 7.84%; width: 32%; height: 16.93%; display: grid; place-items: center; }
+
+/* the panel correlation meter, and its needle as its own part. --wb-needle is the angle: the face uses
+   correlation x 50deg (-50deg at -1, 0 straight up, +50deg at +1). The needle's pivot sits below the meter's bottom
+   edge, as on the face (it comes up from behind the pivot cover). */
+.wb-part-meter { aspect-ratio: 279 / 136; background-image: url(../../assets/widebeam/parts/meter.webp); }
+.wb-part-meter-needle {
+  position: absolute; left: 48.03%; top: 23.9%; width: 4.3%; height: 82.35%; pointer-events: none;
+  background: url(../../assets/widebeam/parts/needle.svg) 0 0 / 100% 100% no-repeat;
+  transform-origin: 50% 100%;
+  transform: rotate(var(--wb-needle, 0deg));
+}
+
+/* the MONO push cap in its brass ring; --down for the pressed state */
+.wb-part-cap { aspect-ratio: 1; border-radius: 50%; background-image: url(../../assets/widebeam/parts/cap.webp); }
+.wb-part-cap--down { transform: scale(.97); filter: brightness(.86); }
+
+/* the RevAudio nameplate on its own (the strap modifier already carries it on a plate) */
+.wb-part-badge { aspect-ratio: 250 / 84; background-image: var(--wb-badge); }
