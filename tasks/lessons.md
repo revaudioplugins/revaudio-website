@@ -562,3 +562,14 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
   ends ~135 px late. Trigger on a still parent.
 - Test path: a native `scrollIntoView` in a check leaves Lenis stale, and the next click lands on an element that has
   since moved off screen (WebKit: the knob at y -21). Reach a spot with `mouse.wheel` the way a visitor does.
+
+## 2026-11-24 - `?bench` on a part that changes state, and baking one plugin's moves for all (`RevAudio homepage redesign`)
+
+- The shared `?bench` harness saves each change under the part's selector path, and on the TV that path carried
+  state classes (`is-active`, `is-lit`). After a reload with another plugin lit, every saved change missed. On a
+  component whose parts switch state, give each part a stable dev-only id (here `wwb-<panel>-<slug>-<class path>`)
+  and copy a change made on one plugin to the same part of the others, so the bench shows the rule, not one case.
+- Dan's moves on one plugin did not fit the others as exported (RevFX's wider Try ran under its price, GAS's FREE
+  floated off). Bake them as rules: one fixed Try width, one fixed spot for the price. Then replay the export on the
+  old layout and measure the baked page against it. That replay caught the 8 px key gap lost to the component's
+  scoped 1rem (scoped CSS out-ranks the global block: `!important` there).
