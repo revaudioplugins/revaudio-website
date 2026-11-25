@@ -73,12 +73,39 @@ button, input, textarea { font: inherit; }
   background-clip: border-box, border-box, border-box, content-box;
 }
 .plate-body { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 18px clamp(14px, 3vw, 34px) 14px; }
-.eng { font-family: var(--serif); font-variant: small-caps; letter-spacing: .16em; color: var(--engrave-ink); text-shadow: var(--engrave-cut); margin: 0; }
+.eng { font-family: var(--serif); font-variant: small-caps; letter-spacing: .16em; color: var(--engrave-ink); text-shadow: var(--engrave-cut); margin: 0; text-wrap: balance; }
 .stamp { font-family: var(--display); font-weight: 400; letter-spacing: .02em; line-height: 1; color: var(--ivory); text-shadow: var(--engrave-cut); margin: 0; text-wrap: balance; }
-.fine { margin: 0; color: var(--ivory-2); font-size: .8rem; line-height: 1.45; max-width: 46ch; }
+.fine { margin: 0; color: var(--ivory-2); font-size: .8rem; line-height: 1.45; max-width: 46ch; text-wrap: balance; }
 .status { margin: 0; font-size: .9rem; color: var(--ivory-2); min-height: 1.2em; }
 /* the line under an email box clears the box's brass ring (its shadow rings reach 4 px below the box) */
 .gate .status { margin-top: 10px; line-height: 1.35; }
+/* The gate (Dan, 2026-11-24: "much more precise"). It has a set width, so nothing a visitor types and no message
+   ever resizes the field or the key. The field takes the room, the key keeps its word. Under the field sits one
+   line kept free for the message, so the card never grows or jumps; every message fits that line on the narrowest
+   phone. A bad address marks the field itself (its edge turns), says what is missing in a few words, and clears the
+   moment the visitor types again. A good one turns the field and key into "You're on the list" in the same box. */
+.gate { box-sizing: border-box; width: 100%; max-width: 520px; min-width: 0; justify-self: center; }
+.plate-body, .ec-body { grid-template-columns: minmax(0, 1fr); }
+.gate .rail { width: 100%; }
+.gate .rail input { flex: 1 1 0; box-sizing: border-box; height: 50px; }
+.gate .rail .key { flex: none; font-size: 19px; padding: 0 18px; }
+.gate .status { height: 1.35em; min-height: 0; margin-top: 8px; font-size: .88rem; white-space: nowrap; }
+/* the small links get a finger-sized hit area without moving anything (more below than above: the key sits above) */
+.gate .status .fix, .done button { position: relative; }
+.gate .status .fix::after, .done button::after { content: ''; position: absolute; inset: -5px -10px -16px; }
+.gate .status .fix { font: inherit; color: inherit; padding: 0; border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.gate.is-err .rail input { border-color: var(--err); box-shadow: inset 0 3px 6px rgba(0, 0, 0, .9), 0 0 0 1px var(--err); }
+.gate.is-err .rail input:focus-visible { outline-color: var(--err); }
+/* done: the field and the key make way for the confirmation, in exactly their box */
+.gate .done { position: absolute; inset: 6px; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 12px; box-sizing: border-box; text-align: center; }
+.gate.is-done .done { display: flex; }
+.gate .done:focus { outline: none; }
+@media (min-width: 561px) { .gate .done { flex-direction: row; gap: .8em; } .done span { min-width: 0; } }
+.gate.is-done .rail > :not(.done) { visibility: hidden; }
+.done b { font-family: var(--display); font-weight: 400; font-size: 20px; line-height: 1.05; letter-spacing: .06em; text-transform: uppercase; color: var(--key-hi); }
+.done span { display: flex; align-items: baseline; justify-content: center; gap: .5em; max-width: 100%; font-size: .85rem; color: var(--ivory-2); }
+.done em { font-style: normal; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ivory); }
+.done button { flex: none; padding: 0; border: 0; background: none; color: var(--ivory-2); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .status.ok { color: var(--ok); } .status.err { color: var(--err); }
 
 /* a well cut into the steel: dark recess, shaded top lip, a brass bezel ring; the key sits IN it */
@@ -104,6 +131,7 @@ button, input, textarea { font: inherit; }
 .key--small { min-height: 36px; padding: 0 14px; font-size: 17px; }
 .rail { width: min(100%, 520px); }
 .rail input {
+  -webkit-appearance: none; appearance: none;
   flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 9px; border: 1px solid #2a2117;
   background: linear-gradient(180deg, #070605, #12100d); color: var(--ivory); font-family: 'Gelasio', Georgia, serif; font-size: 16px;
   box-shadow: inset 0 3px 6px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 236, 200, .05);
@@ -149,9 +177,9 @@ button, input, textarea { font: inherit; }
 .s1-plate { width: min(100%, 540px); --ps: .34; justify-self: center; }
 .s1-plate .plate-body { gap: 9px; padding: 12px 20px 8px; }
 .s1-plate .plate-body { justify-items: center; text-align: center; }
-.s1-plate .rail { width: 100%; }
+.s1-plate .gate { max-width: none; }
 .buyrow { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
-.buyrow .eng { font-size: .95rem; }
+.buyrow .eng, .s1-terms { font-size: .95rem; }
 .s1-plate .price { font-size: 1.5em; letter-spacing: .02em; vertical-align: -.06em; }
 /* Section 1's card is smoked glass over the car film, held by four brass screws: the film shows through it, blurred.
    It drops the leather plate, the strap and the badge; RevAudio is etched into the glass instead. Its ancestors carry
@@ -177,13 +205,14 @@ button, input, textarea { font: inherit; }
     url(parts/screw-bl.webp) left 11px bottom 11px / var(--sc) no-repeat, url(parts/screw-br.webp) right 11px bottom 11px / var(--sc) no-repeat;
 }
 .plate.s1-plate::after {
-  content: 'RevAudio'; left: 0; right: 0; bottom: 8px; height: auto; padding: 0; background: none;
+  content: 'RevAudio'; left: 0; right: 0; bottom: 4px; height: auto; padding: 0; background: none;
   font-family: var(--serif); font-size: 10px; letter-spacing: .32em; text-align: center;
   color: rgba(255, 240, 210, .26); text-shadow: 0 -1px 0 rgba(0, 0, 0, .5);
 }
-.s1-plate .plate-body { padding: 8px 14px 2px; }
+.s1-plate .plate-body { padding: 8px 0 2px; }
 .s1-plate .well { background: linear-gradient(180deg, rgba(4, 3, 2, .4), rgba(14, 12, 9, .22) 60%, rgba(22, 19, 14, .14)); }
 .s1-plate .rail input { background: linear-gradient(180deg, rgba(0, 0, 0, .38), rgba(10, 9, 7, .2)); border-color: rgba(255, 236, 200, .14); }
+.s1-plate .gate.is-err .rail input { border-color: var(--err); }
 /* thinner glass lets more film through: a soft dark halo keeps the words readable over bright frames */
 .s1-plate .stamp, .s1-plate .eng, .s1-plate .fine { text-shadow: 0 1px 2px rgba(0, 0, 0, .85), 0 0 14px rgba(0, 0, 0, .55); }
 /* the small print is one row on a laptop; a phone is too narrow, so there it wraps */
@@ -246,6 +275,11 @@ button, input, textarea { font: inherit; }
   text-align: center; text-wrap: balance; font-family: 'Gelasio', Georgia, serif; font-size: clamp(15px, calc(var(--fw) * .03), 28px); line-height: 1.3;
   color: #f4efe2; background: rgba(6, 5, 4, .66); border-radius: 4px; text-shadow: 0 1px 2px #000; opacity: 0; transition: opacity .16s; pointer-events: none; }
 .cap.on { opacity: 1; }
+/* letterbox (a phone: the frame is as tall as the title card, the 16:9 picture sits in its middle): the captions sit
+   in the black band under the picture like subtitles, and the sound key in the band above it, so neither covers the
+   picture or the other */
+.s2.lbox .cap { bottom: auto; top: calc(50% + var(--pich) / 2 + var(--band) / 2); translate: -50% -50%; background: none; padding: 0; max-width: 94%; }
+.s2.lbox .tap { bottom: auto; top: calc(var(--ftop) + max(6px, (var(--band) - 36px) / 2)); right: calc(var(--fside) + 10px); }
 /* the hardware that holds the panel: two brass latches (F1, F2) or the louvers' tie rod (F3) */
 .latch, .rod { position: absolute; display: none; z-index: 4; pointer-events: none;
   background: linear-gradient(180deg, #f6e3ad, #c9a35c 42%, #7a5c31 78%, #4a3618);
@@ -315,28 +349,73 @@ button, input, textarea { font: inherit; }
 /* .film img stretches the film's own stills full-frame: the card's title is an image too, so it opts out */
 .endcard img.ec-title { position: static; inset: auto; display: block; width: clamp(170px, 44cqi, 420px); height: auto; object-fit: initial; filter: grayscale(1) brightness(1.32) contrast(1.06); }
 .ec-tag { margin: 0; display: flex; align-items: center; gap: .9em; width: fit-content; min-width: clamp(170px, 44cqi, 420px); max-width: 100%; font-family: var(--serif); font-variant: small-caps;
-  letter-spacing: .3em; font-size: clamp(10px, 1.75cqi, 15px); color: #cfc8b6; white-space: nowrap; }
+  letter-spacing: .3em; font-size: clamp(11px, 1.75cqi, 15px); color: #cfc8b6; white-space: nowrap; }
 .ec-tag span { margin-right: -.3em; }
 .ec-tag::before, .ec-tag::after { content: ''; flex: 1; min-width: 10px; height: 1px; background: rgba(236, 230, 214, .6); }
 .ec-head { margin: clamp(2px, .8cqi, 8px) 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(24px, 5.2cqi, 46px); line-height: 1; letter-spacing: .03em; color: #f3eddd; text-wrap: balance; }
 .endcard .price { font-family: inherit; color: #fff; text-shadow: none; }
 .endcard .eng { color: #cfc8b6; text-shadow: none; }
-.endcard .fine { color: #a9a293; font-size: clamp(11px, 1.6cqi, 14px); }
-.endcard .gate { width: min(100%, 520px); }
+.endcard .fine { color: #a9a293; font-size: clamp(12.5px, 1.6cqi, 14px); }
+.endcard .gate { max-width: 520px; }
 .endcard .well { background: none; box-shadow: none; padding: 0; gap: 10px; border-radius: 0; }
 .endcard .rail .divider { display: none; }
-.endcard .rail input { height: 46px; border: 1.5px solid #e6dfcd; border-radius: 2px; background: rgba(0, 0, 0, .45); color: #f3eddd; box-shadow: none; }
+.endcard .rail input { border: 1.5px solid #e6dfcd; border-radius: 2px; background: rgba(0, 0, 0, .45); color: #f3eddd; box-shadow: none; }
 .endcard .rail input::placeholder { color: #9d978a; }
-.endcard .rail input:focus-visible, .endcard .key:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.endcard .rail input:focus-visible { outline: 1.5px solid #fff; outline-offset: -5px; }
+.endcard .key:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .endcard .key { transform: none; border-radius: 2px; background: #ece6d6; color: #0c0b09; text-shadow: none; box-shadow: none; transition: background .12s; }
 .endcard .key:hover { background: #fff; }
 .endcard .key:active, .endcard .key.down { transform: none; box-shadow: none; background: #d6cfbd; }
 .endcard .key--ghost { background: transparent; color: #cfc8b6; box-shadow: inset 0 0 0 1px rgba(236, 230, 214, .45); }
 .endcard .key--ghost:hover { background: rgba(236, 230, 214, .1); }
 .endcard .or::before, .endcard .or::after { background: linear-gradient(90deg, transparent, rgba(236, 230, 214, .55), transparent); }
-.endcard .status { color: #cfc8b6; } .endcard .status.ok { color: #d6e4cf; } .endcard .status.err { color: #f0c2a6; }
+.endcard .status { color: #cfc8b6; } .endcard .status.ok { color: #e6e0d0; } .endcard .status.err { color: #fff; font-style: italic; }
+.endcard .gate.is-err .rail input { border: 2px dashed #fff; box-shadow: none; }
+.endcard .status.err::before { content: '\2715\00a0'; font-style: normal; }
+.endcard .gate .done { inset: 0; border: 1.5px solid #e6dfcd; }
+.endcard .done b { color: #f3eddd; } .endcard .done span, .endcard .done button { color: #b9b2a2; } .endcard .done em { color: #f3eddd; }
 .endcard .plate-foot { margin-top: 2px; }
 .fx-splice { background: #f4efe2; opacity: 0; }
+/* The title card as a frame of the print (Dan, 2026-11-25: "doesn't look all the way like a film"). Next to the film's
+   own frames the card was too clean: razor-sharp letters and rules, one flat black, web-style keys. Two treatments,
+   switched in the Look controls ("Title card"):
+   - Print: the card shot on the same stock. Lifted, uneven blacks (a brighter centre, darker edges), film white with
+     halation (the light that bleeds round white letters on a print; that glow is all the softness it gets, since a blur
+     filter smeared the letters on a real iPhone, whose Safari draws a filtered layer at a lower resolution), the film's grain showing in
+     the lifted blacks. The gate keeps its shapes.
+   - Intertitle (my pick): Print, and the gate lettered like the card: the field is a double-ruled box like the card's
+     frame, the keys are cartouches (a film-white plate with a black inner rule), Watch again is underlined lettering.
+   Both are still: no weave, no extra flicker (Dan, 2026-11-23). "Now" is the card as it was. */
+.s2:is([data-card="print"], [data-card="title"]) .endcard {
+  color: #e8e2d4;
+  background:
+    radial-gradient(ellipse 64% 58% at 50% 45%, rgba(255, 246, 226, .085), transparent 72%),
+    radial-gradient(ellipse 125% 105% at 50% 48%, #1f1d18 0%, #161411 52%, #0b0a08 100%);
+}
+.s2:is([data-card="print"], [data-card="title"]) .endcard::before {
+  border-color: rgba(236, 230, 214, .78); outline-color: rgba(236, 230, 214, .34);
+  box-shadow: 0 0 9px rgba(255, 240, 214, .2), inset 0 0 9px rgba(255, 240, 214, .12); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard img.ec-title { filter: grayscale(1) brightness(1.3) contrast(1.04) drop-shadow(0 0 7px rgba(255, 240, 214, .3)); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard :is(.ec-head, .ec-tag, .eng, .fine, .status, .done b, .done span) {
+  text-shadow: 0 0 1px rgba(255, 248, 232, .4), 0 0 10px rgba(255, 240, 214, .24); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard .ec-tag::before, .s2:is([data-card="print"], [data-card="title"]) .endcard .ec-tag::after { box-shadow: 0 0 6px rgba(255, 240, 214, .3); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard .key:not(.key--ghost) { box-shadow: 0 0 12px rgba(255, 240, 214, .2); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard .rail input { box-shadow: 0 0 10px rgba(255, 240, 214, .12); }
+/* the film's grain shows in the card's lifted blacks (on the old flat black it vanished) */
+.s2[data-look="p1"]:is([data-card="print"], [data-card="title"]).carded .fx-grain { opacity: .3; }
+.s2[data-look="p3"]:is([data-card="print"], [data-card="title"]).carded .fx-grain { opacity: .27; }
+/* Intertitle: the gate in the card's own hand */
+.s2[data-card="title"] .endcard .rail input { background: rgba(0, 0, 0, .22); border: 1.5px solid rgba(236, 230, 214, .9); border-radius: 0;
+  outline: 1px solid rgba(236, 230, 214, .36); outline-offset: 3px; font-style: italic; letter-spacing: .02em; }
+.s2[data-card="title"] .endcard .rail input:focus-visible { outline: 1.5px solid #fff; outline-offset: 3px; border-color: #fff; }
+.s2[data-card="title"] .endcard .gate.is-err .rail input { border: 2px dashed #fff; outline: 1px solid rgba(255, 255, 255, .5); outline-offset: 3px; }
+.s2[data-card="title"] .endcard .key:not(.key--ghost) { border-radius: 1px; background: #e9e3d3; color: #0c0b09; letter-spacing: .1em;
+  box-shadow: inset 0 0 0 3px #e9e3d3, inset 0 0 0 4.5px rgba(12, 11, 9, .9), 0 0 12px rgba(255, 240, 214, .22); }
+.s2[data-card="title"] .endcard .key:not(.key--ghost):hover { background: #fff; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 4.5px rgba(12, 11, 9, .9), 0 0 14px rgba(255, 240, 214, .3); }
+.s2[data-card="title"] .endcard .key:not(.key--ghost):active { background: #d6cfbd; box-shadow: inset 0 0 0 3px #d6cfbd, inset 0 0 0 4.5px rgba(12, 11, 9, .9); }
+.s2[data-card="title"] .endcard .key--ghost { box-shadow: none; background: none; color: #d8d1bf; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+.s2[data-card="title"] .endcard .key--ghost:hover { background: none; color: #fff; }
+.s2[data-card="title"] .endcard .gate .done { outline: 1px solid rgba(236, 230, 214, .36); outline-offset: 3px; }
 .fx-dust { opacity: 0; } /* a speck of dust on one frame now and then (script) */
 .s2.carding .cap, .s2.carded .cap, .s2.carding .tap, .s2.carded .tap { display: none; }
 .s2.carded:not(.rm) .fx-grain { animation: grain .21s steps(1) infinite; }
@@ -424,7 +503,7 @@ button, input, textarea { font: inherit; }
 .fp-road { left: 25.98%; top: 21.58%; width: 47.92%; height: 21.39%; overflow: hidden; border-radius: 1.2% / 3%; mix-blend-mode: lighten; opacity: 0; }
 .fp-road img { position: absolute; width: 208.7%; height: 467.6%; left: -54.21%; top: -100.9%; max-width: none; transform-origin: 49.9% 27.3%; }
 .fp-lcd { left: 42.25%; top: 16.7%; width: 15.43%; height: 4.39%; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; color: var(--lcd-ink);
-  font-size: clamp(9px, 1.45vw, 15px); letter-spacing: .12em; text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); }
+  font-size: clamp(9px, 1.45vw, 15px); letter-spacing: .12em; white-space: nowrap; text-shadow: 0 0 4px #bce8ff, 0 0 10px var(--lcd-glow); }
 /* the numbers: flat brass coins, an exact circle (a set height, so no grid row can stretch one), a dark rim and a
    fine light ring inside; lit evenly, so they read round, not as a lit bead. On the face each one sits just before
    its control's printed name ("1 WIDTH"), clear of every knob, switch and label: --x is where that name starts
@@ -438,7 +517,9 @@ button, input, textarea { font: inherit; }
   box-shadow: inset 0 0 0 1px rgba(255, 246, 220, .5), 0 1px 3px rgba(0, 0, 0, .55); }
 .faceset { container: face / inline-size; }
 .faceset .pin { --d: clamp(14px, 2.2cqw, 26px); left: calc(var(--x) - .6cqw - var(--d)); top: 78.05%; translate: 0 -50%; }
-@container face (max-width: 639px) { .faceset .pin { display: none; } }
+/* Under 640 px of face (a phone) the coins shrink with the face, so each still fits in the gap before its name
+   (at 402 px: a 14 px coin, 1.6 px clear of TILT), and the LCD's words keep the plugin's own size on one line. */
+@container face (max-width: 639px) { .faceset .pin { --d: clamp(10px, 3.5cqw, 14px); } .fp-lcd { font-size: 1.42cqw; letter-spacing: .1em; white-space: nowrap; } }
 .legend { list-style: none; margin: 26px auto 0; padding: 0; max-width: 1060px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; }
 .legend li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; }
 .legend .pin { position: static; translate: none; grid-row: span 2; }
@@ -471,21 +552,52 @@ button, input, textarea { font: inherit; }
 .cp-pick small { font-size: 12px; color: var(--ivory-2); line-height: 1.3; }
 
 @media (max-width: 760px) {
-  .s1 { min-height: 0; grid-template-rows: auto; }
-  .s1-film { position: relative; height: 58svh; }
-  .s1-shade { height: 58svh; background: linear-gradient(180deg, rgba(8, 7, 5, .2), transparent 40%, rgba(8, 7, 5, .95)); }
-  .s1-in { margin-top: -30svh; padding-block: 0 28px; }
+  /* Phone, section 1: the film fills the whole first screen behind the glass, as on the laptop. The name rides the
+     stars at the top, the glass card sits low in the thumb zone, and the car drives through between them. The film's
+     box is taller than the screen (150 %) and stands on its bottom edge: that lifts the horizon (63 % down the frame)
+     and the last of the tail-lights clear above the card. */
+  .s1 { min-height: 100svh; }
+  .s1-film { top: auto; height: 150%; }
+  .s1-shade { background:
+    radial-gradient(90% 40% at 50% 100%, rgba(8, 7, 5, .5), transparent 80%),
+    linear-gradient(180deg, rgba(8, 7, 5, .55), transparent 22%, transparent 52%, rgba(8, 7, 5, .55)); }
+  .s1-in { min-height: 100svh; grid-template-rows: auto 1fr auto; align-content: stretch; gap: 16px; padding-block: max(34px, 6svh) 50px; }
+  .s1 .lock { align-self: start; }
+  .s1-plate { align-self: end; }
+  .scroll-cue { bottom: max(16px, env(safe-area-inset-bottom, 0px)); font-size: .92rem; letter-spacing: .16em; }
+}
+@media (max-width: 400px) {
+  .scroll-cue { font-size: .8rem; letter-spacing: .12em; } /* stays clear of the Look controls chip on a narrow phone */
   .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .scroll-cue { display: none; }
 }
 @media (max-width: 560px) {
   .plate { --ps: .34; }
-  .rail { flex-direction: column; }
+  /* a phone stacks the field over the key, both 44 px; the room they take comes out of the gaps around them, so
+     each card keeps its size */
+  .rail { flex-direction: column; gap: 6px; }
+  .well.rail { padding: 5px; }
+  .endcard .well.rail { padding: 0; gap: 6px; }
   .rail .divider { display: none; }
+  .gate .rail input { flex: none; height: 44px; }
+  .gate .rail .key { min-height: 44px; font-size: 20px; }
+  .gate .status { margin-top: 6px; }
+  .s1-plate .plate-body { gap: 5px; }
+  .ec-body { gap: 8px; }
+  .s3-plate .plate-body { gap: 8px; }
+  .s1-plate .fine, .s3-plate .fine { line-height: 1.38; }
   .key { white-space: normal; text-align: center; line-height: 1.1; }
   .key--big { font-size: 22px; padding: 8px 20px; }
   .legend { grid-template-columns: minmax(0, 1fr); }
   .fine { font-size: 13px; }
+  .plate.s1-plate { padding: 14px 12px 20px; }
+  .s1-plate .plate-body { padding: 6px 4px 2px; }
+  .s1-terms { letter-spacing: .1em; }
+  .fine { text-wrap: balance; }
+  .plate-name .dot { display: none; } .plate-name .sub { display: block; }
+  /* the plugin's face runs edge to edge, so its numbers can sit on it (see .pin) */
+  .faceset { width: auto; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))) calc(-1 * max(16px, env(safe-area-inset-right, 0px))); }
+  .s3 { padding-bottom: 76px; } /* the last line clears the Look controls chip */
+  .cp.closed .cp-more { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .key { transition: none; }
@@ -511,7 +623,7 @@ button, input, textarea { font: inherit; }
   </section>
 
   <!-- ============ 2. the manual film on the projector ============ -->
-  <section class="s2" id="s2" data-look="p1" data-flip="f0" data-hw="none" aria-label="The WIDE BEAM film">
+  <section class="s2" id="s2" data-look="p1" data-flip="f0" data-hw="none" data-card="title" aria-label="The WIDE BEAM film">
     <div class="room" aria-hidden="true"><canvas class="beam" id="beam"></canvas><canvas class="beam dust" id="dust"></canvas></div>
     <div class="roller" aria-hidden="true"></div>
     <div class="stage" id="stage">
@@ -601,13 +713,20 @@ button, input, textarea { font: inherit; }
 
 <!-- ============ the control panel ============ -->
 <aside class="cp closed" id="cp" aria-label="Look controls">
-  <button class="cp-top" id="cpTop" type="button" aria-expanded="false" aria-controls="cpBody">Look controls <em id="cpNow">P1 · F1</em></button>
+  <button class="cp-top" id="cpTop" type="button" aria-expanded="false" aria-controls="cpBody"><span>Look<span class="cp-more"> controls</span></span> <em id="cpNow">P1</em></button>
   <div class="cp-body" id="cpBody">
     <div class="cp-row"><span>Projector look</span>
       <div class="seg" data-set="look">
         <button type="button" data-v="p1"><b>P1</b>Beam in the dark</button>
         <button type="button" data-v="p2"><b>P2</b>Full-bleed reel</button>
         <button type="button" data-v="p3"><b>P3</b>Garage wall</button>
+      </div>
+    </div>
+    <div class="cp-row"><span>Title card</span>
+      <div class="seg" data-set="card">
+        <button type="button" data-v="now">Now</button>
+        <button type="button" data-v="print">Print</button>
+        <button type="button" data-v="title">Intertitle</button>
       </div>
     </div>
     <div class="cp-row"><span>Phase</span>
@@ -638,7 +757,7 @@ button, input, textarea { font: inherit; }
   const rmq = matchMedia('(prefers-reduced-motion: reduce)');
   const RM = () => rmq.matches;
 
-  const state = { look: 'p1', flip: 'f0', phase: 'sale', hw: 'none' }; // on sale since 2026-11-23 (Gil)
+  const state = { look: 'p1', flip: 'f0', phase: 'sale', hw: 'none', card: 'title' }; // on sale since 2026-11-23 (Gil)
   const s1 = $('#s1'), s2 = $('#s2'), s3 = $('#s3');
   const stage = $('#stage'), rig = $('#rig'), panel = $('#panel'), front = $('#front'), back = $('#back');
   const film = $('#film'), manual = $('#manual'), louvers = $('#louvers'), plateRest = $('#plateRest');
@@ -646,13 +765,15 @@ button, input, textarea { font: inherit; }
 
   /* ---------------- plates ---------------- */
   const ICON = '<svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l6 4-6 4z" fill="currentColor"/></svg>';
+  const LONGEST_STATUS = 'That address looks incomplete. Check the @ and the part after it.';
   function railHTML(id, keyLabel) {
     return `<form class="gate" novalidate data-gate>
       <div class="well rail">
-        <input id="${id}" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" aria-label="Your email" required>
+        <input id="${id}" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" placeholder="your@email.com" aria-label="Your email" aria-describedby="${id}-msg" required>
         <span class="divider" aria-hidden="true"></span>
-        <button class="key" type="submit">${keyLabel}</button></div>
-      <p class="status" role="status" aria-live="polite"></p></form>`;
+        <button class="key" type="submit">${keyLabel}</button>
+        <div class="done" tabindex="-1"><b>${state.phase === 'pre' ? "You're on the list" : 'Your trial is on its way'}</b><span><em></em><button type="button" data-change>Change</button></span></div></div>
+      <p class="status" id="${id}-msg" role="status" aria-live="polite"></p></form>`;
   }
   function cardHTML(phase) {
     const again = `<div class="plate-foot"><button class="key key--ghost key--small" type="button" data-again><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.4 1.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Watch again</button></div>`;
@@ -675,7 +796,7 @@ button, input, textarea { font: inherit; }
       if (phase === 'pre') return `<div class="plate-body">
           <p class="stamp head" style="font-size:clamp(1.5rem,2.4vw,2rem)">Get it the day it launches</p>
           ${railHTML(id, 'Email me at launch ' + ICON)}
-          <p class="eng" style="font-size:.95rem"><span class="price">$9</span> at launch · free 30-day trial</p>
+          <p class="eng s1-terms"><span class="price">$9</span> at launch · free 30-day trial</p>
           <p class="fine">One email on launch day. You join our list · unsubscribe anytime.</p></div>`;
       return `<div class="plate-body">
           <div class="buyrow"><div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
@@ -684,12 +805,12 @@ button, input, textarea { font: inherit; }
           <p class="fine">Full version, no credit card. One email with the download link.</p></div>`;
     }
     if (phase === 'pre') return `<div class="plate-body">
-        <p class="eng" style="font-size:1rem">WIDE BEAM · stereo width control</p>
+        <p class="eng plate-name" style="font-size:1rem">WIDE BEAM<span class="dot"> · </span><span class="sub">stereo width control</span></p>
         <p class="stamp head">Get it the day it launches · <span class="price">$9</span></p>
         ${railHTML(id, 'Email me at launch ' + ICON)}
         <p class="fine">Free 30-day trial on launch day. One email, unsubscribe anytime.</p>${again}</div>`;
     return `<div class="plate-body">
-        <p class="eng" style="font-size:1rem">WIDE BEAM · stereo width control</p>
+        <p class="eng plate-name" style="font-size:1rem">WIDE BEAM<span class="dot"> · </span><span class="sub">stereo width control</span></p>
         <div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
         <div class="or"><span class="eng" style="font-size:.95rem">or try it free for 30 days</span></div>
         ${railHTML(id, 'Send my trial ' + ICON)}
@@ -698,20 +819,73 @@ button, input, textarea { font: inherit; }
   function renderPlates() {
     for (const el of $$('[data-plate]')) el.innerHTML = plateHTML(el.dataset.plate, state.phase);
   }
+  // What is wrong with an address, in a few words that fit the message line on the narrowest phone, or '' if it
+  // looks right. A missing or misspelt ending on a common provider is offered back as one tap ("Did you mean ...?").
+  const FIXES = { gmail: 'gmail.com', gmial: 'gmail.com', gmai: 'gmail.com', gamil: 'gmail.com', gnail: 'gmail.com', 'gmail.co': 'gmail.com', 'gmail.con': 'gmail.com',
+    hotmail: 'hotmail.com', hotmial: 'hotmail.com', 'hotmail.con': 'hotmail.com', outlook: 'outlook.com', 'outlook.con': 'outlook.com',
+    yahoo: 'yahoo.com', 'yahoo.con': 'yahoo.com', icloud: 'icloud.com', 'icloud.con': 'icloud.com', me: 'me.com',
+    'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gamil.com': 'gmail.com', 'gnail.com': 'gmail.com', 'gmal.com': 'gmail.com', 'gmaill.com': 'gmail.com',
+    'hotmial.com': 'hotmail.com', 'hotmal.com': 'hotmail.com', 'yaho.com': 'yahoo.com', 'outlok.com': 'outlook.com', 'iclod.com': 'icloud.com' };
+  function emailProblem(v) {
+    if (!v) return { msg: 'Type your email first.' };
+    if (/\s/.test(v)) return { msg: 'Take out the spaces.' };
+    const at = v.indexOf('@');
+    if (at < 0) return { msg: 'An email needs an @.' };
+    if (v.indexOf('@', at + 1) >= 0) return { msg: 'Only one @, please.' };
+    const name = v.slice(0, at), dom = v.slice(at + 1).toLowerCase();
+    if (!name) return { msg: 'Add the name before the @.' };
+    if (!dom) return { msg: 'Add the part after the @.' };
+    if (dom.includes(',')) return { msg: 'Did you mean ', fix: name + '@' + dom.replace(/,/g, '.') };
+    if (dom.endsWith('.')) return { msg: 'Take out the dot at the end.' };
+    if (dom.includes('..') || name.includes('..') || name.startsWith('.') || name.endsWith('.')) return { msg: 'Check the dots in it.' };
+    if (/(^|\.)-|-(\.|$)/.test(dom)) return { msg: 'Check the part after the @.' };
+    if (FIXES[dom]) return { msg: 'Did you mean ', fix: name + '@' + FIXES[dom] };
+    if (!/^[^.]+(\.[^.]+)*\.[a-z]{2,}$/i.test(dom)) return { msg: 'Add the ending, like .com' };
+    return null;
+  }
+  // the address in the confirmation: whole if it fits, else the name is cut and the domain kept ("firstna…@gmail.com")
+  function fitEmail(em, v) {
+    em.textContent = v;
+    if (em.scrollWidth <= em.clientWidth + 1) return;
+    const at = v.lastIndexOf('@'), name = v.slice(0, at), dom = v.slice(at);
+    for (let k = name.length - 1; k >= 1; k--) { em.textContent = name.slice(0, k) + '…' + dom; if (em.scrollWidth <= em.clientWidth + 1) return; }
+    // a domain too long for the line on its own: keep the start and the ending, cut the middle
+    for (let t = v.length - 2; t >= 8; t--) { const hd = Math.ceil(t * 0.45); em.textContent = v.slice(0, hd) + '…' + v.slice(v.length - (t - hd)); if (em.scrollWidth <= em.clientWidth + 1) return; }
+  }
+  function gateReset(f) {
+    f.classList.remove('is-err'); const input = f.querySelector('input'), st = f.querySelector('.status');
+    input.removeAttribute('aria-invalid'); st.className = 'status'; st.textContent = '';
+  }
   document.addEventListener('submit', (e) => {
     const f = e.target.closest('[data-gate]'); if (!f) return;
     e.preventDefault();
-    const input = f.querySelector('input'), st = f.querySelector('.status');
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value.trim());
-    input.setAttribute('aria-invalid', ok ? 'false' : 'true');
-    st.className = 'status ' + (ok ? 'ok' : 'err');
-    st.textContent = ok ? (state.phase === 'pre' ? 'Saved for launch day. (This rough look sends nothing.)' : 'Trial on its way. (This rough look sends nothing.)')
-                        : 'That address looks incomplete. Check the @ and the part after it.';
+    const input = f.querySelector('input'), st = f.querySelector('.status'), v = input.value.trim();
+    const bad = emailProblem(v);
+    if (bad) {
+      f.classList.add('is-err'); input.setAttribute('aria-invalid', 'true'); st.className = 'status err';
+      st.textContent = bad.msg;
+      if (bad.fix) { const b = document.createElement('button'); b.type = 'button'; b.className = 'fix'; b.textContent = bad.fix; b.dataset.fix = bad.fix; st.append(b, '?');
+        if (st.scrollWidth > st.clientWidth + 1) b.textContent = '…@' + bad.fix.split('@')[1]; }
+      input.focus();
+      return;
+    }
+    gateReset(f); input.value = v;
+    f.classList.add('is-done');
+    fitEmail(f.querySelector('.done em'), v);
+    st.className = 'status ok'; st.textContent = 'Rough look: nothing was sent.';
+    f.querySelector('.done').focus();
   });
+  // a bad address clears the moment the visitor types again
+  document.addEventListener('input', (e) => { const f = e.target.closest('[data-gate]'); if (f && f.classList.contains('is-err')) gateReset(f); });
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-buy]');
-    if (b) { const st = b.closest('.plate-body').querySelector('.status'); if (st) { st.className = 'status ok'; st.textContent = 'Checkout opens here on the live page.'; } }
+    if (b) { const g = b.closest('.plate-body').querySelector('[data-gate]'); if (g && g.classList.contains('is-err')) gateReset(g);
+      const st = b.closest('.plate-body').querySelector('.status'); if (st) { st.className = 'status ok'; st.textContent = 'Checkout opens here on the live page.'; } }
     if (e.target.closest('[data-again]')) watchAgain();
+    const fx = e.target.closest('[data-fix]');
+    if (fx) { const f = fx.closest('[data-gate]'), input = f.querySelector('input'); input.value = fx.dataset.fix; gateReset(f); input.focus(); }
+    const ch = e.target.closest('[data-change]');
+    if (ch) { const f = ch.closest('[data-gate]'), input = f.querySelector('input'); f.classList.remove('is-done'); gateReset(f); input.focus(); input.select(); }
   });
 
   /* ---------------- Section 1: the car film at 1.5x ---------------- */
@@ -726,12 +900,15 @@ button, input, textarea { font: inherit; }
   const FADE_AFTER = 420;
   let carPainted = false, carStarted = false;
   const carShow = () => car.classList.add('is-in');
+  // play() is called at once, buffered or not: an iPhone loads no film before play() (it sat on its first frame
+  // forever waiting for 'canplay'). The fade starts when the picture really moves ('playing'), so the first second
+  // is still never spent in the dark.
   const carStart = () => {
     if (!carPainted || carStarted) return;
     if (RM()) { carShow(); return; }
-    if (car.readyState < 3) return;                       // not enough film yet: 'canplay' calls again
     carStarted = true;
-    const p = car.play(); if (p) p.then(carShow, carShow); else carShow();
+    car.addEventListener('playing', carShow, { once: true });
+    const p = car.play(); if (p) p.catch(carShow);
   };
   car.addEventListener('canplay', carStart);
   requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => {
@@ -769,9 +946,14 @@ button, input, textarea { font: inherit; }
     const fInset = state.look === 'p3' ? W * 0.05 : state.look === 'p1' ? Math.max(6, W * 0.008) : 0;
     let cardNeed = 0;
     if (state.flip === 'f0') {
-      const ec = $('.endcard', film), prevCss = ec.style.cssText;
-      ec.style.cssText = `display:grid;position:absolute;visibility:hidden;inset:auto;left:0;top:0;width:${Math.round(W - fInset * 2)}px;height:auto`;
-      cardNeed = Math.ceil(ec.scrollHeight); ec.style.cssText = prevCss;
+      // measured on a hidden copy whose status lines hold the longest message, so a two-line error or "saved" line
+      // can never push Watch again out of the frame (the film clips)
+      const probe = $('.endcard', film).cloneNode(true);
+      probe.removeAttribute('role'); probe.removeAttribute('aria-label'); probe.setAttribute('aria-hidden', 'true');
+      for (const n of probe.querySelectorAll('[id]')) n.removeAttribute('id');
+      for (const st of probe.querySelectorAll('.status')) { st.removeAttribute('role'); st.removeAttribute('aria-live'); st.className = 'status err'; st.textContent = LONGEST_STATUS; }
+      probe.style.cssText = `display:grid;position:absolute;visibility:hidden;inset:auto;left:0;top:0;width:${Math.round(W - fInset * 2)}px;height:auto`;
+      film.appendChild(probe); cardNeed = Math.ceil(probe.scrollHeight); probe.remove();
       H = Math.max(H, cardNeed + Math.ceil(fInset * 2));
     }
     if (state.look === 'p2' && phone) H = Math.max(H, Math.min(vh * 0.8, 600));
@@ -787,6 +969,11 @@ button, input, textarea { font: inherit; }
     if (state.flip === 'f0' && cardNeed > fh) fh = cardNeed;
     else if (fh > H - inset * 2) { fh = H - inset * 2; fw = fh * 16 / 9; }
     s2.style.setProperty('--fw', Math.round(fw) + 'px'); s2.style.setProperty('--fh', Math.round(fh) + 'px');
+    const va = manual.videoWidth && manual.videoHeight ? manual.videoHeight / manual.videoWidth : 9 / 16;
+    const pich = Math.min(fh, fw * va), band = (fh - pich) / 2;
+    s2.classList.toggle('lbox', band >= 56);
+    s2.style.setProperty('--pich', Math.round(pich) + 'px'); s2.style.setProperty('--band', Math.round(band) + 'px');
+    s2.style.setProperty('--ftop', Math.round((H - fh) / 2) + 'px'); s2.style.setProperty('--fside', Math.round((W - fw) / 2) + 'px');
     geo = { vw, vh, W, H, left, top, fw, fh };
     placeLatches();
     drawBeam(1);
@@ -933,19 +1120,52 @@ button, input, textarea { font: inherit; }
   io2.observe(s2);
   playkey.addEventListener('click', () => { s2.classList.remove('rm-wait'); started = true; const p = manual.play(); if (p) p.catch(() => {}); });
 
+  manual.addEventListener('loadedmetadata', () => layout());
   manual.addEventListener('play', () => { s2.classList.add('playing'); syncVoice(); });
   manual.addEventListener('pause', () => { s2.classList.remove('playing'); voice.pause(); });
   manual.addEventListener('seeking', () => { if (soundOn) voice.currentTime = Math.min(manual.currentTime, voice.duration || 99); });
   manual.addEventListener('ended', () => { s2.classList.remove('playing'); voice.pause(); ended = true; film.classList.add('show-still'); setTimeout(() => runFlip(false), RM() ? 0 : 120); });
 
   /* ---------------- sound: muted until a tap ---------------- */
+  /* Sound is on by default (Dan, 2026-11-24: "play sound on default, also in the laptop version"). Every browser
+     refuses sound until the visitor has clicked, tapped or pressed a key on the page, so the voice starts the moment
+     that is allowed: the first click or tap anywhere (the email field, the film, the Look controls) unlocks it, and
+     when the film is already running the voice joins it in step. Until then the film runs silent and the key says
+     "Tap for sound"; once the voice is heard it says "Sound on", and a tap on it mutes. */
   const voice = new Audio(); voice.preload = 'auto'; voice.src = 'standin-voice.mp4';
-  let soundOn = false;
+  let soundOn = true, soundBlocked = false, voiceUnlocked = false, voiceHeard = false;
+  // Dan, 2026-11-24 (pick "A"): a visitor whose first touch comes while the manual already runs silent hears it whole:
+  // the moment the voice can first be heard, the manual cuts back to its first frame and runs again with the voice.
+  // Only the first time; a later mute and unmute carries on where the film is.
+  const REWIND_AFTER = 1.0;
+  const audible = () => soundOn && voiceUnlocked && !soundBlocked;
+  function paintTap() {
+    tap.setAttribute('aria-pressed', String(audible()));
+    tap.querySelector('span').textContent = audible() ? 'Sound on' : 'Tap for sound';
+  }
   function syncVoice() {
     if (!soundOn || manual.paused || ended) return;
     if (manual.currentTime >= (voice.duration || 12.2)) return;
-    voice.currentTime = manual.currentTime; const p = voice.play(); if (p) p.catch(() => {});
+    voice.currentTime = manual.currentTime;
+    const p = voice.play();
+    if (p) p.then(() => {
+      if (!voiceHeard && !ended && manual.currentTime > REWIND_AFTER) { manual.currentTime = 0; voice.currentTime = 0; }
+      voiceHeard = true; voiceUnlocked = true; soundBlocked = false; paintTap(); },
+                  (e) => { if (e && e.name === 'NotAllowedError') { soundBlocked = true; paintTap(); } });
   }
+  // the first gesture: play the voice for real if the film is running, else play and stop it at once (its first
+  // 0.15 s is silence), which is what lets a phone play it later without another tap
+  let unlockTriedAt = -1e9;
+  function unlockVoice() {
+    if (voiceUnlocked || !soundOn) return;
+    unlockTriedAt = performance.now();
+    if (!manual.paused && !ended) { syncVoice(); return; }
+    voice.currentTime = 0;
+    const p = voice.play(); if (!p) return;
+    p.then(() => { if (manual.paused || ended || !soundOn) { voice.pause(); voice.currentTime = 0; } voiceUnlocked = true; soundBlocked = false; paintTap();
+      if (!manual.paused && !ended) syncVoice(); }, () => {});
+  }
+  for (const ev of ['pointerdown', 'pointerup', 'touchend', 'keydown', 'click']) addEventListener(ev, unlockVoice, { capture: true, passive: true });
   /* captions, on the film's own clock; the same tick keeps the voice within 0.2 s of the picture (WebKit lagged 0.6 s) */
   const CUES = [[0.15, 2.08, 'Why does your mix sound so narrow?'], [2.15, 5.3, 'Same sound in both speakers?<br>It sits dead center.'],
     [5.44, 7.76, 'Width is the difference<br>between left and right.'], [7.8, 11.6, 'The copy-and-delay trick fakes it,<br>and falls apart in mono.']];
@@ -958,13 +1178,23 @@ button, input, textarea { font: inherit; }
     if (!manual.paused && !capRAF) capRAF = requestAnimationFrame(capTick);
   }
   for (const ev of ['play', 'seeked', 'ended', 'loadeddata']) manual.addEventListener(ev, () => { if (!capRAF) capTick(); });
-  tap.addEventListener('click', () => {
-    soundOn = !soundOn;
-    tap.setAttribute('aria-pressed', String(soundOn));
-    tap.querySelector('span').textContent = soundOn ? 'Sound on' : 'Tap for sound';
-    if (soundOn) { if (!started && RM()) { s2.classList.remove('rm-wait'); started = true; manual.play().catch(() => {}); } syncVoice(); }
-    else voice.pause();
+  // a click on the picture turns the sound on; on a phone a second tap turns it off again, as on any phone video
+  film.addEventListener('click', (e) => {
+    if (s2.classList.contains('carding') || s2.classList.contains('carded')) return;
+    if (e.target.closest('button, input, a, form, .endcard')) return;
+    if (audible() && !matchMedia('(max-width: 760px)').matches) return;
+    tap.click();
   });
+  tap.addEventListener('click', () => {
+    // the press of this same tap already started the voice (its click comes a moment later): keep it on
+    if (audible() && performance.now() - unlockTriedAt < 900) return;
+    if (audible()) { soundOn = false; voice.pause(); paintTap(); return; }
+    soundOn = true; soundBlocked = false;
+    if (!started && RM()) { s2.classList.remove('rm-wait'); started = true; manual.play().catch(() => {}); }
+    if (!manual.paused && !ended) syncVoice(); else { voiceUnlocked = false; unlockVoice(); }
+    paintTap();
+  });
+  paintTap();
 
   /* ---------------- the flip: one curve, sampled, so every part moves on the same clock ---------------- */
   // 0-70 ms the latches snap open (the rig jolts); 70-200 the panel, let go, kicks back 9° and sags 7 px on its pivot;
@@ -1008,6 +1238,7 @@ button, input, textarea { font: inherit; }
     const c = node.cloneNode(true);
     c.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
     c.querySelectorAll('label[for]').forEach((n) => n.removeAttribute('for'));
+    c.removeAttribute('data-plate'); c.querySelectorAll('[data-plate]').forEach((n) => n.removeAttribute('data-plate'));
     c.setAttribute('inert', ''); c.setAttribute('aria-hidden', 'true');
     return c;
   }
@@ -1166,13 +1397,14 @@ button, input, textarea { font: inherit; }
   }
   function setPhase(v) { state.phase = v; renderPlates(); layout(); updateSeg(); }
   function setHw(v) { state.hw = v; s2.dataset.hw = v; updateSeg(); placeLatches(); }
+  function setCard(v) { state.card = v; s2.dataset.card = v; layout(); updateSeg(); }
   function updateSeg() {
     for (const seg of $$('.seg')) for (const b of $$('button', seg)) b.setAttribute('aria-pressed', String(state[seg.dataset.set] === b.dataset.v));
     $('#cpNow').textContent = state.look.toUpperCase();
   }
   for (const seg of $$('.seg')) seg.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    ({ look: setLook, flip: setFlip, phase: setPhase, hw: setHw })[seg.dataset.set](b.dataset.v);
+    ({ look: setLook, flip: setFlip, phase: setPhase, hw: setHw, card: setCard })[seg.dataset.set](b.dataset.v);
   });
   $('#cpTop').addEventListener('click', () => { const c = $('#cp').classList.toggle('closed'); $('#cpTop').setAttribute('aria-expanded', String(!c)); });
   $('#skip').addEventListener('click', () => {
@@ -1196,12 +1428,13 @@ button, input, textarea { font: inherit; }
   const note = $('#note'), pickStatus = $('#pickStatus');
   function showPick(where) {
     if (!pick || !pick.look) { pickStatus.textContent = 'No pick saved yet.'; return; }
-    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()} · ` + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
+    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()}` + (pick.card ? ` · card ${pick.card}` : '') + ' · ' + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
   }
   function readLocal() { try { const v = JSON.parse(localStorage.getItem(LS) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; } }
   function writeLocal(v) { try { localStorage.setItem(LS, JSON.stringify(v)); return true; } catch (e) { return false; } }
   function applyPick(v) {
-    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', hw: v.hw || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', hw: v.hw || '', card: v.card || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (/^(now|print|title)$/.test(pick.card) && pick.card !== state.card) setCard(pick.card);
     if (/^(pivot|none|catch)$/.test(pick.hw) && pick.hw !== state.hw) setHw(pick.hw);
     if (document.activeElement !== note) note.value = pick.note;
     if (/^p[123]$/.test(pick.look) && pick.look !== state.look) setLook(pick.look);
@@ -1210,7 +1443,7 @@ button, input, textarea { font: inherit; }
   async function flush() {
     if (saving) { dirty = true; return; }
     saving = true;
-    const v = { look: pick.look, flip: pick.flip, hw: pick.hw || '', note: pick.note, updatedAt: new Date().toISOString() };
+    const v = { look: pick.look, flip: pick.flip, hw: pick.hw || '', card: pick.card || '', note: pick.note, updatedAt: new Date().toISOString() };
     let where = 'local';
     if (db) { try { await db.doc('pick/dan').set(v); where = 'db'; } catch (e) { where = 'local'; } }
     writeLocal(v); showPick(where);
@@ -1218,8 +1451,8 @@ button, input, textarea { font: inherit; }
     if (dirty) { dirty = false; flush(); }
   }
   function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
-  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, hw: state.hw, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
-  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', hw: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
+  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, hw: state.hw, card: state.card, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
+  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', hw: '', card: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
   applyPick(readLocal()); showPick('local');
   (async () => {
     try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
@@ -1260,7 +1493,7 @@ button, input, textarea { font: inherit; }
   const stillImg = $('.still', film); if (stillImg && stillImg.decode) stillImg.decode().catch(() => {});
 
   // test hooks (the crane door's #cranep idea): scrub a turn without real time
-  window.__wb = { voice, flipAt: scrubAt, runFlip, settlePlate, settleFront, setLook, setFlip, setPhase, state, seekEnd, layout, setWidth,
+  window.__wb = { setCard, voice, sound: () => ({ soundOn, soundBlocked, voiceUnlocked, voiceHeard, audible: audible() }), flipAt: scrubAt, runFlip, settlePlate, settleFront, setLook, setFlip, setPhase, state, seekEnd, layout, setWidth,
     get onPlate() { return onPlate; }, get turning() { return turning; }, get clock() { return anims.length ? anims[anims.length - 1].currentTime : null; } };
 })();
 </script>
