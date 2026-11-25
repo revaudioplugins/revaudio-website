@@ -18,6 +18,13 @@ in the open garage-home claim (2026-11-18): different lines.
   FREE BETA): no value line for now. Paddle's checkout name is Paddle's product name (Gil).
 - Checks: `astro build` green; WebKit 402 + Chromium 390/360/1312x734, `?sale=bf|cm`: no sideways scroll, swap leaves
   only `bundle` in the cart, no page errors. Not yet: a real Paddle overlay opened with the bundle price (not paid).
+- Later the same evening, Dan: the bundle goes INSIDE the TV, not under it: a new BUNDLES category, highlighted and
+  blinking, the bundle the TV's front page during Black Friday / Cyber Monday, in the screen's own look; "give me 3
+  options". Three rough looks drawn into the real TV (`tools/wwbench/bundle-options.cjs`, dev only): A Channel 00 (the
+  bundle as one more channel, its picture = the 8 plugins as a multi-view; Claude's pick), B the teletext front page
+  (P100, the page takes the screen), C Live (a shopping channel: the picture runs through the 8, a crawl). Dan's pick
+  page: claude.ai artifact 7K6g8eBK61qKSMcs8UV4MQ. Waiting for his pick; the card under the TV (`SaleBundleCard`) goes
+  when the TV version is built.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
