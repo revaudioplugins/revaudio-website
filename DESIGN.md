@@ -151,6 +151,14 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     `WALL_BG = 'wood'`) they
     stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop).
+  - The sale bundle on the TV (Dan 2026-11-25, pick A "Channel 00" of three; `src/data/sale.ts`): while a sale is on
+    (html[data-sale]) a BUNDLES tab comes first, outlined, blinking five times when the tube comes on, then lit; the TV
+    opens on it with the bundle's channel lit (first in the strip, "All 8"); BUNDLES = the bundle, then the plugins in
+    it; ALL = the plugins. Its picture = every plugin at once, bare on the glass ("just the html not the frame": no box
+    round any), standing on one line in two rows, each name in its own channel's colour. Black Friday plays it in warm
+    white, Cyber Monday in the scan tool's green. Its key = the cart's add ("Add all 8 to cart", $69 in the price
+    spot). A phone with nothing asked for opens on the bundle's page (no history entry). Off the sale the script takes
+    it all out: the TV is exactly as before. The sale's pop-up (SaleIntro) is off: the TV carries the offer.
   - Laptop layout B, "the channel strip" (Dan 2026-11-23, picked on `/__wwlayout` over two others; branch
     `feat/home-tv-layout`, being tuned on the live bench `/?bench`): from plugin to plugin the words jumped up to 356 px
     and the picture swung from 130 to 419 px tall. Now the plugins are one row of channels under the categories, the lit

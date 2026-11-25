@@ -52,6 +52,8 @@ import brokenMeta from '../assets/seasons/drift/tv-broken.json';
 import { drift } from '../data/drift';
 import { tvPlugins, tvCats, catsOf, tvName, priceLine, tryAction, cartAction, type TvAction } from '../data/library';
 import type { LibraryWord } from '../data/plugins';
+import { saleBundle, salePhases } from '../data/sale';
+import bundleThumbImg from '../assets/sale/bundle-thumb.png';
 
 /* What the whole wall is: the garage wood, or one TV every plugin plays on
    (Dan 2026-10-14). Lives on .ww. The bench can flip it. */
@@ -178,10 +180,25 @@ const items: Item[] = tvPlugins()
     price: priceLine(p),
     action: tryAction(p),
     cart: cartAction(p),
-    cats: catsOf(p),
+    // every plugin the sale bundle holds is under BUNDLES too, after the bundle itself (the script's inCat)
+    cats: [...catsOf(p), ...(saleBundle.slugs.includes(p.slug) ? ['bundles'] : [])],
   }));
 const cats = tvCats(tvPlugins().filter((p) => items.some((it) => it.slug === p.slug)));
 const first = items[0]?.slug ?? '';
+
+/* The Black Friday / Cyber Monday bundle (src/data/sale.ts; Dan 2026-11-25: "a new section called bundles, which will
+   be highlighted and blinking ... on Black Friday the bundle will be the front page ... inside the screen, the same
+   vibe"; his pick A of three, Channel 00, with "just the html not the frame"). Its tab (BUNDLES, first), its channel
+   (first in the strip) and its page are in the markup always, marked data-ww-sale: CSS shows them only under
+   html[data-sale] (the sale's own dates, BaseLayout's head gate), and the script takes them out otherwise, so off the
+   sale the TV is exactly as before. Its picture = every plugin in it at once, bare on the glass, each name in its
+   own channel's colour. Black Friday plays it in warm white, Cyber Monday in the scan tool's green. */
+const saleBf = salePhases.find((p) => p.id === 'bf')!;
+const saleCm = salePhases.find((p) => p.id === 'cm')!;
+const bundleIn = saleBundle.slugs.flatMap((slug) => {
+  const p = tvPlugins().find((x) => x.slug === slug);
+  return p && WINDOWS[slug] ? [{ slug, name: tvName(p), img: WINDOWS[slug].img }] : [];
+});
 ---
 
 <GarageWall id="plugins" ariaLabel="RevAudio plugins">
@@ -210,6 +227,7 @@ const first = items[0]?.slug ?? '';
           "Plugins" for a screen reader) */}
       <h2 class="ww-tag" tabindex="-1"><span class="ww-tag-name">Plugins</span>{' '}<span class="ww-tag-ask">Pick a category<i aria-hidden="true">▸</i></span></h2>
       <div class="ww-cats" role="group" aria-label="Categories">
+        <button type="button" class="ww-cat ww-cat-bundles" data-ww-cat="bundles" data-ww-sale aria-pressed="false" aria-label="Bundles">Bundles<sup class="ww-cat-n" aria-hidden="true">1</sup></button>
         {cats.map((c, k) => (
           <button
             type="button"
@@ -225,6 +243,18 @@ const first = items[0]?.slug ?? '';
 
     {/* the plugins: links to their pages; the script makes them the TV's channel buttons (tabs) */}
     <ul class="ww-list" id="ww-list" role="list" data-ww-list data-reveal-group data-stagger="0.07">
+      <li class="ww-item" data-ww-item="bundle" data-ww-cats="bundles" data-ww-sale data-reveal-item>
+        <a class="ww-row" href="/plugins/?cat=bundles&plugin=bundle" id="ww-tab-bundle" data-ww-pick="bundle">
+          <span class="ww-thumb" aria-hidden="true">
+            <Image src={bundleThumbImg} alt="" width={320} widths={[160, 320]} sizes="(max-width: 860px) 6rem, 10rem" format="webp" quality={80} loading="lazy" />
+          </span>
+          <span class="ww-rtext">
+            <span class="ww-name">{saleBundle.tv.short}</span>
+            <span class="ww-type"><span class="ww-sale-bf">{saleBf.name}</span><span class="ww-sale-cm">{saleCm.name}</span> bundle</span>
+          </span>
+          <span class="ww-rprice">${saleBundle.priceUsd}</span>
+        </a>
+      </li>
       {items.map((it, i) => (
         <li class="ww-item" data-ww-item={it.slug} data-ww-cats={it.cats.join(' ')} data-reveal-item>
           <a
@@ -252,6 +282,43 @@ const first = items[0]?.slug ?? '';
     <button type="button" class="ww-strip-arrow is-next" data-ww-strip="1" aria-controls="ww-list" aria-label="More plugins" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
     </button>
+
+    {/* the sale bundle's page: its picture is every plugin in it, bare on the glass (role img: one picture, one label) */}
+    <article class="ww-panel" style="--ww-ar:1.75" id="ww-ch-bundle" data-ww-panel="bundle" data-ww-sale aria-labelledby="ww-pn-bundle" aria-hidden="true">
+      <button type="button" class="ww-back" data-ww-back>All plugins</button>
+      <figure class="ww-ui">
+        <ul class="ww-mv" role="img" aria-label={`The ${bundleIn.length} plugins in the bundle: ${bundleIn.map((b) => b.name).join(', ')}`}>
+          {bundleIn.map((b) => (
+            <li class="ww-mv-i" style={`--h:var(--ww-ch-${b.slug}-h);--s:var(--ww-ch-${b.slug}-s)`}>
+              <span class="ww-mv-pic"><Image src={b.img} alt="" width={480} widths={[240, 480]} sizes="(max-width: 860px) 22vw, 12vw" format="webp" quality={80} loading="lazy" /></span>
+              <span class="ww-mv-name">{b.name}</span>
+            </li>
+          ))}
+        </ul>
+      </figure>
+      <div class="ww-info">
+        <div class="ww-phead">
+          <h3 class="ww-pname" id="ww-pn-bundle" tabindex="-1">{saleBundle.tv.name}</h3>
+          <p class="ww-ptype"><span class="ww-sale-bf">{saleBf.name}</span><span class="ww-sale-cm">{saleCm.name}</span> bundle</p>
+        </div>
+        <p class="ww-blurb">{saleBundle.tv.blurb}</p>
+        <p class="ww-pwords">
+          {saleBundle.tv.words.map((w, k) => (
+            <Fragment><span class="ww-pw-i"><span class:list={['ww-pw', { 'is-hot': k === 0 }]}>{w}</span><span class="ww-pw-dot" aria-hidden="true"> ·</span></span>{' '}</Fragment>
+          ))}
+          <span class="ww-pw-i"><span class="ww-pw"><span class="ww-sale-bf">ends {saleBf.endShort}</span><span class="ww-sale-cm">ends {saleCm.endShort}</span></span></span>
+        </p>
+        <div class="ww-buy">
+          <span class="ww-price">${saleBundle.priceUsd}</span>
+          {/* the cart's own add (Cart.astro): the bundle in, the drawer open */}
+          <button type="button" class="ww-try rv-btn rv-btn--stack" data-add-to-cart data-cart-open
+            data-slug={saleBundle.slug} data-name={saleBundle.name} data-price={saleBundle.priceUsd}>
+            <span>Add all {saleBundle.slugs.length} to cart</span>
+            <span class="rv-btn__sub">6 licence keys · one email</span>
+          </button>
+        </div>
+      </div>
+    </article>
 
     {/* the lit plugin: one panel per plugin, stacked in one cell (swapping never shifts the page) */}
     {items.map((it, i) => {
@@ -349,9 +416,14 @@ const first = items[0]?.slug ?? '';
 
   const wall = document.querySelector<HTMLElement>('[data-wordwall]');
   if (wall) {
+    // The sale bundle (src/data/sale.ts): on the TV only while the sale is on (html[data-sale], set before the first
+    // paint); off it, its tab, its channel and its page leave here, before anything below counts them.
+    const onSale = !!document.documentElement.dataset.sale;
+    if (!onSale) wall.querySelectorAll('[data-ww-sale]').forEach((el) => el.remove());
     const panels = Array.from(wall.querySelectorAll<HTMLElement>('[data-ww-panel]'));
     const list = wall.querySelector<HTMLElement>('[data-ww-list]');
     const items = Array.from(wall.querySelectorAll<HTMLElement>('[data-ww-item]'));
+    wall.style.setProperty('--ww-rows', String(items.length)); // the bundle's channel counted in or out
     const rows = Array.from(wall.querySelectorAll<HTMLAnchorElement>('[data-ww-pick]'));
     const catBtns = Array.from(wall.querySelectorAll<HTMLButtonElement>('[data-ww-cat]'));
     const say = wall.querySelector<HTMLElement>('[data-ww-say]');
@@ -436,10 +508,12 @@ const first = items[0]?.slug ?? '';
        (the list, or the lit plugin's panel). The links become tabs: one
        tabbable at a time, arrows / Home / End move and light, a plain click
        lights instead of leaving (a modified click still opens the page). */
-    let cat = 'all';
+    const CAT0 = onSale ? 'bundles' : 'all'; // the category the TV opens on: BUNDLES while the sale is on
+    let cat = CAT0;
     let lit = panels.find((p) => p.classList.contains('is-active'))?.dataset.wwPanel ?? slugOf(panels[0] ?? wall);
     const catLabel = (c: string) => catBtns.find((b) => b.dataset.wwCat === c)?.getAttribute('aria-label') ?? c;
-    const inCat = (li: HTMLElement, c: string) => c === 'all' || (li.dataset.wwCats ?? '').split(' ').includes(c);
+    // ALL = every plugin (the bundle has its own tab); BUNDLES = the bundle, then the plugins in it
+    const inCat = (li: HTMLElement, c: string) => c === 'all' ? li.dataset.wwItem !== 'bundle' : (li.dataset.wwCats ?? '').split(' ').includes(c);
     const shown = () => items.filter((li) => !li.hidden).map(slugOf);
 
     if (list) {
@@ -1169,7 +1243,10 @@ const first = items[0]?.slug ?? '';
       }
       const on = shown();
       if (!on.includes(lit) && on[0]) light(on[0], move);
-      if (changed && announce && say) say.textContent = `${catLabel(c)}: ${on.length} ${on.length === 1 ? 'plugin' : 'plugins'}`;
+      const nPlug = on.filter((s) => s !== 'bundle').length;
+      if (changed && announce && say) say.textContent = c === 'bundles'
+        ? `${catLabel(c)}: all ${nPlug} plugins in one bundle`
+        : `${catLabel(c)}: ${on.length} ${on.length === 1 ? 'plugin' : 'plugins'}`;
     };
 
     // phones: one pane at a time
@@ -1193,7 +1270,7 @@ const first = items[0]?.slug ?? '';
     const P_PLUGIN = 'plugin';
     const writeUrl = (how: 'push' | 'replace', view: 'list' | 'panel' = 'list') => {
       const u = new URL(window.location.href);
-      if (cat === 'all') u.searchParams.delete(P_CAT);
+      if (cat === CAT0) u.searchParams.delete(P_CAT);
       else u.searchParams.set(P_CAT, cat);
       u.searchParams.set(P_PLUGIN, lit);
       const state = { ...(history.state ?? {}), wwView: view };
@@ -1207,12 +1284,18 @@ const first = items[0]?.slug ?? '';
       focusView = nav && viewWant !== wall.dataset.wwView; // focus follows the pane that opened
       const mv = move && (!phone.matches || backKey); // a phone moves on its own Back key only (the rest cuts)
       backKey = false;
-      setCat(q.get(P_CAT) ?? 'all', nav, mv);
-      const want = q.get(P_PLUGIN);
+      setCat(q.get(P_CAT) ?? CAT0, nav, mv);
+      const want = q.get(P_PLUGIN) ?? (onSale ? 'bundle' : null); // the sale: the bundle is the TV's front page
       if (want && shown().includes(want)) light(want, mv);
       go(mv);
     };
     fromUrl(false);
+    // the sale on a phone, nothing asked for: the TV opens on the bundle's own page. No history entry, so the browser's
+    // Back still leaves the page; the pane's own "All plugins" goes to the list, as from any plugin.
+    if (onSale && phone.matches && lit === 'bundle' && !new URLSearchParams(location.search).has(P_PLUGIN) && history.state?.wwView !== 'panel') {
+      viewWant = 'panel';
+      go(false);
+    }
     // a browser that already animated the Back (an iOS swipe) gets a cut
     window.addEventListener('popstate', (e) => fromUrl(true, !(e as PopStateEvent & { hasUAVisualTransition?: boolean }).hasUAVisualTransition));
 
@@ -2562,6 +2645,48 @@ const first = items[0]?.slug ?? '';
   :global(html.hc) .ww-row.is-lit .ww-name { color: var(--oxide-text); }
   :global(html.hc) .ww-thumb { opacity: 1; }
   :global(html.hc) :is(.ww-tag, .ww-tag-ask, .ww-cat, .ww-pname, .ww-blurb, .ww-pw, .ww-price) { text-shadow: none; }
+
+  /* ==========================================================================
+     THE SALE BUNDLE (src/data/sale.ts; Dan 2026-11-25, pick A "Channel 00" of three on his pick page). Off the sale
+     none of it is on the page: the script takes it out, and this hides it until the script runs.
+     ========================================================================== */
+  :global(html:not([data-sale])) [data-ww-sale] { display: none !important; }
+  .ww-sale-cm { display: none; }
+  :global(html[data-sale='cm']) .ww-sale-cm { display: inline; }
+  :global(html[data-sale='cm']) .ww-sale-bf { display: none; }
+  /* its channel: warm white on Black Friday (every channel at once), the scan tool's green on Cyber Monday (the
+     strip's skin that day) */
+  .ww { --ww-ch-bundle-h: 44; --ww-ch-bundle-s: 24; }
+  :global(html[data-sale='cm']) .ww { --ww-ch-bundle-h: 150; --ww-ch-bundle-s: 70; }
+  .ww-panel[data-ww-panel='bundle'] { --ww-ch-h: var(--ww-ch-bundle-h); --ww-ch-s: var(--ww-ch-bundle-s); }
+  .ww[data-ww-on='bundle'] { --ww-on-h: var(--ww-ch-bundle-h); --ww-on-s: var(--ww-ch-bundle-s); }
+  /* BUNDLES ("highlighted and blinking"): outlined all through the sale; when the tube comes on it blinks five times
+     in the menu's own steps (as the ▸ does), then stays lit. Five, so it stops by itself (WCAG 2.2.2: a blink past
+     5 s needs a stop); none with reduced motion. */
+  .ww-cat-bundles { outline: 2px solid var(--ww-ink-hot); outline-offset: 2px; }
+  .ww[data-ww-power='on'] .ww-cat-bundles { animation: ww-bundles 1s steps(1, end) 5; }
+  @keyframes ww-bundles { 50% { background: transparent; color: var(--ww-ink-hot); box-shadow: none; } }
+  @media (prefers-reduced-motion: reduce) { .ww[data-ww-power='on'] .ww-cat-bundles { animation: none; } }
+  /* its picture: every plugin in it at once, bare on the glass (Dan: "just the html not the frame", so no box round
+     any), standing on one line in two rows, each name under it in its own channel's colour (the scan tool's green
+     on Cyber Monday). The figure is its own size container, so the rows split its height. */
+  .ww-panel[data-ww-panel='bundle'] .ww-ui { container-type: size; width: 100%; height: clamp(13rem, 58vw, 22rem); }
+  .ww-mv { list-style: none; margin: 0; padding: 0; width: 100cqw; height: 100cqh; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: clamp(0.5rem, 4cqh, 1.6rem) clamp(0.4rem, 2cqw, 1.4rem); }
+  .ww-mv-i { min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: clamp(0.25rem, 1.6cqh, 0.55rem); }
+  .ww-mv-pic { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+  .ww-ui .ww-mv :global(img) { width: auto; height: auto; max-width: 100%; max-height: min(100%, calc(50cqh - 2.4rem)); aspect-ratio: auto; border-radius: 0; box-shadow: none; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.6)); }
+  .ww-mv-name {
+    font-family: var(--font-display);
+    font-size: clamp(0.66rem, 3.2cqh, 1rem);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: hsl(var(--h, 38) min(100%, calc(var(--s, 28) * 1% + 30%)) 76%);
+    text-shadow: 0 0 8px hsl(var(--h, 38) min(100%, calc(var(--s, 28) * 1%)) 58% / 0.55);
+  }
+  :global(html[data-sale='cm']) .ww-mv-i { --h: 150 !important; --s: 70 !important; }
+  :global(html.hc) .ww-mv-name { color: var(--fg); text-shadow: none; }
 </style>
 
 <style is:global>
@@ -2661,6 +2786,11 @@ html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel {
   height: calc(var(--ww-main) - var(--lay-strip) - var(--ww-row-gap));
   grid-template-columns: minmax(0, clamp(26rem, 34vw, 28rem)) minmax(0, 1fr); grid-template-areas: 'info ui';
   column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+/* the sale bundle's picture (WordWall's scoped CSS): its plugins keep their own shapes, not the window rule above */
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui .ww-mv img {
+  width: auto !important; height: auto !important; max-width: 100% !important; max-height: min(100%, calc(50cqh - 2.4rem)) !important;
+  aspect-ratio: auto !important; border-radius: 0 !important; box-shadow: none !important;
 }
   }
 </style>

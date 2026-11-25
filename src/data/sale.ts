@@ -80,4 +80,12 @@ export const saleBundle = {
   slugs: ['revlimiter', 'revfx', 'radio-roulette', 'gas', 'gas2', 'drift', 'obdtune', 'widebeam'],
   /** The free ones: the cart's offer names only the paid plugins the bundle adds. */
   free: ['gas', 'gas2'],
+  /** On the TV (WordWall.astro, Dan's pick A 2026-11-25): the BUNDLES tab, the bundle's channel, its page. */
+  tv: {
+    name: `All ${saleBundleCount} plugins`,
+    short: `All ${saleBundleCount}`,
+    blurb: `All ${saleBundleCount} in one order: 6 licence keys in one email.\nDRIFT’s release build comes free when it ships.`,
+    /** the words line, the sale's end appended per phase */
+    words: ['6 keys', 'GAS + GAS 2 free'],
+  },
 };

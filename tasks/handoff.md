@@ -23,8 +23,19 @@ in the open garage-home claim (2026-11-18): different lines.
   options". Three rough looks drawn into the real TV (`tools/wwbench/bundle-options.cjs`, dev only): A Channel 00 (the
   bundle as one more channel, its picture = the 8 plugins as a multi-view; Claude's pick), B the teletext front page
   (P100, the page takes the screen), C Live (a shopping channel: the picture runs through the 8, a crawl). Dan's pick
-  page: claude.ai artifact 7K6g8eBK61qKSMcs8UV4MQ. Waiting for his pick; the card under the TV (`SaleBundleCard`) goes
-  when the TV version is built.
+  page: claude.ai artifact 7K6g8eBK61qKSMcs8UV4MQ. Dan picked **A**, note on the multi-view: "just the html not the
+  frame" (the plugins bare, no box round each).
+- Built A for real in `src/components/WordWall.astro` (+ `src/data/sale.ts` `saleBundle.tv`): the BUNDLES tab, the
+  bundle's channel and page, all `data-ww-sale` (CSS hides them off the sale, the script removes them), the TV opening
+  on BUNDLES / the bundle while html[data-sale], ALL = the plugins only, a phone opening on the bundle's page (no history
+  entry), CM in green. `SaleBundleCard.astro` deleted (and its two mounts); the sale pop-up `SaleIntro` unmounted in
+  `BaseLayout.astro` (file kept, Gil's). DESIGN.md §4 has the bullet. Files added to the claim: WordWall.astro,
+  BaseLayout.astro, DESIGN.md.
+- Checks (dev, Chromium, `?sale=bf|cm|off`): laptop 1312x734 + 1141x636 and phone 390: BUNDLES pressed + bundle lit and
+  its page up on both sale days; off the sale no `[data-ww-sale]` left, ALL pressed, RevLimiter lit, `--ww-rows` 8 (as
+  before); phone: lands on the bundle's page, "All plugins" -> the list (BUNDLES first, the bundle on top), ALL -> the
+  plugins only; "Add all 8 to cart" -> cart = `bundle`, drawer open; home: the opening screen first, the first scroll
+  -> the TV on BUNDLES, no pop-up; no page errors; `astro build` green.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
