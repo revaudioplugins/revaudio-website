@@ -53,6 +53,13 @@ bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro u
   timeout, no test runs). WebKit on the real build with the clock: 1141x636 BF + CM, 390 /plugins and home (the
   opening screen, a tap -> the bundle's page -> All plugins -> ALL), off the sale. Before the page's script arrives the
   TV shows RevLimiter unassembled, as it always did; the bundle comes with the script.
+- Dan's notes on the bundle page (screenshot, same night): a dividing line under the strip, one section a bit darker,
+  GAS smaller. Built TV-wide on laptops (every channel, so it goes live with the merge, not with the sale): the glass
+  behind the categories + strip at black 25%, ending in a 1 px line in the channel's ink halfway between the strip and
+  the panel (`.ww-screen::before`, `--ww-split` measured in `fit()`, hidden until the tube is on); GAS at 72% in the
+  bundle's picture (`--mv-k`, phones too). Claude's call: the menu darker, the page keeps the glow (Dan can flip it).
+  Checked on dev, WebKit 1312x740 + Chromium 1141x636: the line exactly halfway (287 between 278 and 296), BF, CM, off
+  the sale, after a channel change; phones unchanged but GAS. Sale test + smoke: 53 passed, the /drift WebKit one failed.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 

@@ -158,7 +158,8 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     round any), standing on one line in two rows, each name in its own channel's colour. Black Friday plays it in warm
     white, Cyber Monday in the scan tool's green. Its key = the cart's add ("Add all 8 to cart", $69 in the price
     spot). A phone with nothing asked for opens on the bundle's page (no history entry). Off the sale the script takes
-    it all out: the TV is exactly as before. The sale's pop-up (SaleIntro) is off: the TV carries the offer.
+    it all out: the TV is exactly as before. The sale's pop-up (SaleIntro) is off: the TV carries the offer. GAS
+    stands at 72% in that picture (tall and wide at once, it towered over its row and reached the strip; Dan's note).
   - Laptop layout B, "the channel strip" (Dan 2026-11-23, picked on `/__wwlayout` over two others; branch
     `feat/home-tv-layout`, being tuned on the live bench `/?bench`): from plugin to plugin the words jumped up to 356 px
     and the picture swung from 130 to 419 px tall. Now the plugins are one row of channels under the categories, the lit
@@ -166,6 +167,11 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     grid) and never move, and the picture changes in a fixed stage on the right. The words change in place (they fade,
     never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
     it on laptops.
+    - The menu and the page (Dan 2026-11-25, on the bundle's page: "a dividing line ... a section a bit darker so you
+      feel the difference between the sections"): the glass behind the categories and the strip is a shade darker
+      (black at 25% over the glow), and it ends in a 1 px line in the channel's ink, halfway between the strip and the
+      panel, on every channel. The page below keeps the tube's full glow, so the eye lands on the plugin, not the menu.
+      Hidden until the tube is on (an unlit screen shows no line). Laptop only.
     - The keys in B (Dan's bench export, 2026-11-24): row 1 = Try (one fixed width for every plugin, 16rem) with the
       price beside it, big (Bebas 3.4rem; "Free beta" 2.4rem), at the same spot on every plugin; row 2 = Product page
       and Add to cart, left, side by side.

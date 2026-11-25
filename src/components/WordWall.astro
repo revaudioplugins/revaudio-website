@@ -289,7 +289,7 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
       <figure class="ww-ui">
         <ul class="ww-mv" role="img" aria-label={`The ${bundleIn.length} plugins in the bundle: ${bundleIn.map((b) => b.name).join(', ')}`}>
           {bundleIn.map((b) => (
-            <li class="ww-mv-i" style={`--h:var(--ww-ch-${b.slug}-h);--s:var(--ww-ch-${b.slug}-s)`}>
+            <li class="ww-mv-i" data-mv={b.slug} style={`--h:var(--ww-ch-${b.slug}-h);--s:var(--ww-ch-${b.slug}-s)`}>
               <span class="ww-mv-pic"><Image src={b.img} alt="" width={480} widths={[240, 480]} sizes="(max-width: 860px) 22vw, 12vw" format="webp" quality={80} loading="lazy" /></span>
               <span class="ww-mv-name">{b.name}</span>
             </li>
@@ -558,9 +558,15 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
     // the layout height, to the sub-pixel: getBoundingClientRect would include the reveal's transform (the first
     // window rises in scaled), offsetHeight rounds
     const tall = (el: HTMLElement) => parseFloat(getComputedStyle(el).height) || 0;
+    const glassEl = wall.querySelector<HTMLElement>('.ww-screen');
     const fit = () => {
       // rounded UP, + 1 px: a TV one pixel taller than the screen already shifts the lock's landing
       if (osdEl?.offsetParent) wall.style.setProperty('--ww-osd-h', `${Math.ceil(tall(osdEl))}px`);
+      // the menu's darker glass (laptop): from the glass's top to halfway between the strip and the panel
+      if (!phone.matches && glassEl && list?.offsetParent && list.offsetParent === glassEl.offsetParent) {
+        const gap = parseFloat(getComputedStyle(wall).rowGap) || 0;
+        wall.style.setProperty('--ww-split', `${list.offsetTop + list.offsetHeight + gap / 2 - glassEl.offsetTop}px`);
+      }
       panels.forEach((p) => {
         const fig = p.querySelector<HTMLElement>('.ww-ui');
         if (!fig || !p.offsetParent) return; // a closed panel on a phone (display:none): measured when it opens
@@ -574,6 +580,7 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
     if ('ResizeObserver' in window) {
       const ro = new ResizeObserver(() => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fit); });
       if (osdEl) ro.observe(osdEl);
+      if (list) ro.observe(list); // the strip's height follows the screen's (the line under it moves with it)
       wall.querySelectorAll<HTMLElement>('.ww-info').forEach((el) => ro.observe(el));
     }
 
@@ -2683,7 +2690,9 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
   .ww-mv { list-style: none; margin: 0; padding: 0; width: 100cqw; height: 100cqh; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: clamp(0.5rem, 4cqh, 1.6rem) clamp(0.4rem, 2cqw, 1.4rem); }
   .ww-mv-i { min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: clamp(0.25rem, 1.6cqh, 0.55rem); }
   .ww-mv-pic { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
-  .ww-ui .ww-mv :global(img) { width: auto; height: auto; max-width: 100%; max-height: min(100%, calc(50cqh - 2.4rem)); aspect-ratio: auto; border-radius: 0; box-shadow: none; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.6)); }
+  .ww-ui .ww-mv :global(img) { width: auto; height: auto; max-width: 100%; max-height: min(100%, calc((50cqh - 2.4rem) * var(--mv-k, 1))); aspect-ratio: auto; border-radius: 0; box-shadow: none; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.6)); }
+  /* GAS is tall and wide at once: at full height it towered over its row and reached the strip (Dan 2026-11-25) */
+  .ww-mv-i[data-mv='gas'] { --mv-k: 0.72; }
   .ww-mv-name {
     font-family: var(--font-display);
     font-size: clamp(0.66rem, 3.2cqh, 1rem);
@@ -2798,8 +2807,20 @@ html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel {
 }
 /* the sale bundle's picture (WordWall's scoped CSS): its plugins keep their own shapes, not the window rule above */
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui .ww-mv img {
-  width: auto !important; height: auto !important; max-width: 100% !important; max-height: min(100%, calc(50cqh - 2.4rem)) !important;
+  width: auto !important; height: auto !important; max-width: 100% !important; max-height: min(100%, calc((50cqh - 2.4rem) * var(--mv-k, 1))) !important;
   aspect-ratio: auto !important; border-radius: 0 !important; box-shadow: none !important;
 }
+/* the menu and the page (Dan 2026-11-25: "a dividing line ... a section a bit darker so you feel the difference between
+   the sections"): the glass behind the categories and the strip a shade darker, ending in a line in the channel's ink
+   halfway between the strip and the panel. --ww-split = that line's distance from the glass's top (the script measures
+   it); off until the tube is on, so an unlit screen shows no line. Every channel, not just the bundle's. */
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-screen::before {
+  content: ''; position: absolute; inset: 0 0 auto; height: var(--ww-split, 0px); z-index: 1; pointer-events: none;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid color-mix(in srgb, var(--ww-ink) 65%, transparent);
+  box-shadow: 0 0 10px var(--ww-glow);
+  transition: opacity 320ms ease;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen']:not([data-ww-power='on']) > .ww-screen::before { opacity: 0; }
   }
 </style>
