@@ -60,6 +60,12 @@ bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro u
   bundle's picture (`--mv-k`, phones too). Claude's call: the menu darker, the page keeps the glow (Dan can flip it).
   Checked on dev, WebKit 1312x740 + Chromium 1141x636: the line exactly halfway (287 between 278 and 296), BF, CM, off
   the sale, after a channel change; phones unchanged but GAS. Sale test + smoke: 53 passed, the /drift WebKit one failed.
+- Dan: "give me 3 more option for this" (the split). Round 2 of the pick page (artifact 7K6g8eBK61qKSMcs8UV4MQ, db
+  `notes-r2`): A built, B the page darker (35%), C his line as drawn (content width, 2 px, glow; menu 35%), D bold
+  (menu 50%, 2 px glowing line), each on the bundle's page + RevLimiter, cropped to the seam; asks: which split, and
+  every channel or the bundle's page only. Claude's pick: C. B/C/D live behind a TEMPORARY dev-only `?split=b|c|d`
+  block in WordWall's script, NOT committed: build the pick properly, then delete that block before any commit of
+  WordWall. Until he picks, the branch carries A (a "push" ships A on every channel).
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
