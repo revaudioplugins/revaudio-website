@@ -2,6 +2,7 @@
 import { getImage } from 'astro:assets';
 import { pluginImage } from '../lib/images';
 import { plugins } from '../data/plugins';
+import { saleBundle } from '../data/sale';
 import TermsContent from './legal/TermsContent.astro';
 import EulaContent from './legal/EulaContent.astro';
 import PrivacyContent from './legal/PrivacyContent.astro';
@@ -49,7 +50,7 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  */
 import { site } from '../data/site';
 const checkoutMap: Record<string, string> = {};
-const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string }> = {};
+const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string; until?: number }> = {};
 for (const p of plugins) {
   const target = p.paddlePriceId;
   if (target) {
@@ -59,6 +60,10 @@ for (const p of plugins) {
     cartCatalog[p.slug] = { name: p.name, price: p.introPriceUsd ?? p.regularPriceUsd ?? 0, img: thumbnail?.src ?? '', formats: p.systemReq.formats };
   }
 }
+// The Black Friday / Cyber Monday bundle (the sale strip's and intro's bundle line add it);
+// read() drops it once the sale is over.
+checkoutMap[saleBundle.slug] = saleBundle.paddlePriceId;
+cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceUsd, img: '', formats: saleBundle.formats, until: Date.parse(saleBundle.until) };
 ---
 
 <script is:inline type="application/json" data-cart-catalog set:html={JSON.stringify(cartCatalog).replace(/</g, '\\u003c')}></script>
@@ -320,6 +325,7 @@ for (const p of plugins) {
         return saved.reduce(function (items, item) {
           var slug = item && item.slug;
           if (!Object.prototype.hasOwnProperty.call(catalog, slug) || seen[slug]) return items;
+          if (catalog[slug].until && Date.now() >= catalog[slug].until) return items;
           seen[slug] = true;
           items.push(Object.assign({ slug: slug, qty: 1 }, catalog[slug]));
           return items;

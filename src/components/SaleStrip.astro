@@ -12,7 +12,7 @@
 //       BaseLayout; home only until Yoni 2026-11-22): the same slat, "Black Friday in" and the odometer. At zero
 //       the clock below swaps it for the Black Friday bar, no reload.
 // Click the code to copy it. The countdown is to the real end (no extensions).
-import { salePhases, saleBundleCount, saleBundleUrl } from '../data/sale';
+import { salePhases, saleBundleCount, saleBundleUrl, saleBundle } from '../data/sale';
 const bf = salePhases.find((p) => p.id === 'bf')!;
 const cm = salePhases.find((p) => p.id === 'cm')!;
 const clock = JSON.stringify(salePhases.map((p) => ({ id: p.id, start: p.start, end: p.end })));
@@ -39,7 +39,7 @@ const clock = JSON.stringify(salePhases.map((p) => ({ id: p.id, start: p.start, 
       <span class="ss-tag-code">{bf.code}</span>
       <span class="ss-copied" aria-live="polite" data-sale-copied></span>
     </button>
-    <a class="ss-bundle" href={saleBundleUrl}>All {saleBundleCount} plugins <b>${bf.bundleUsd}</b><span aria-hidden="true"> →</span></a>
+    <a class="ss-bundle" href={saleBundleUrl} data-add-to-cart data-cart-open data-slug={saleBundle.slug} data-name={saleBundle.name} data-price={saleBundle.priceUsd}>All {saleBundleCount} plugins <b>${bf.bundleUsd}</b><span aria-hidden="true"> →</span></a>
     <span class="ss-ends">
       <span class="ss-ends-label">Ends in</span>
       <span class="ss-odo" aria-hidden="true" data-sale-count="bf"></span>
@@ -56,7 +56,7 @@ const clock = JSON.stringify(salePhases.map((p) => ({ id: p.id, start: p.start, 
       <span class="ss-cm-with">code</span> <span class="ss-cm-chip">{cm.code}</span>
       <span class="ss-copied" aria-live="polite" data-sale-copied></span>
     </button>
-    <a class="ss-cm-item ss-bundle" href={saleBundleUrl}>All {saleBundleCount} plugins ${cm.bundleUsd}<span aria-hidden="true"> →</span></a>
+    <a class="ss-cm-item ss-bundle" href={saleBundleUrl} data-add-to-cart data-cart-open data-slug={saleBundle.slug} data-name={saleBundle.name} data-price={saleBundle.priceUsd}>All {saleBundleCount} plugins ${cm.bundleUsd}<span aria-hidden="true"> →</span></a>
     <span class="ss-cm-item ss-ends">
       <span class="ss-ends-label">Ends in</span>
       <span class="ss-cm-count" aria-hidden="true" data-sale-count="cm"></span>

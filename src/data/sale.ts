@@ -58,6 +58,19 @@ export const saleSoonFrom = '2026-11-20T00:00:00-08:00';
 export const saleBundlePlugins = ['RevLimiter', 'RevFX', 'Radio Roulette', 'GAS', 'GAS 2', 'DRIFT', 'OBDTune', 'Wide Beam'];
 export const saleBundleCount = saleBundlePlugins.length;
 
-/** Where the bundle line points: the plugins page (the TV) until the bundle has its own
- *  place to buy it (Paddle bundle product). */
+/** Where the bundle line points without JS: the plugins page (the TV). With JS the line is
+ *  a buy button: it puts the bundle in the cart and opens it (Cart.astro). */
 export const saleBundleUrl = '/plugins';
+
+/** The bundle in the cart (Gil 2026-11-25): one Paddle price, $69 on both days. The licence
+ *  worker's PADDLE_BUNDLE_PRICE (revlimiter-license) mints every paid plugin's key for it, so
+ *  the two ids must match. Product pro_01m89q42p15tjnxjjbbbcw5v72. */
+export const saleBundle = {
+  slug: 'bundle',
+  name: `RevAudio bundle (all ${saleBundleCount} plugins)`,
+  paddlePriceId: 'pri_01m89s443rzzrxj4180yj2ny91',
+  priceUsd: 69,
+  formats: 'VST3 · AU · AAX',
+  /** The cart drops it from here on (a bundle left in a cart after the sale can't be bought). */
+  until: salePhases[salePhases.length - 1].end,
+};
