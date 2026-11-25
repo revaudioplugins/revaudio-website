@@ -179,6 +179,11 @@ Files: `src/lib/widebeam/{intro,init,face,story}.ts`, `src/styles/widebeam.css`,
         another page of our own site to this page is from Chrome's docs, not tested.
       - The Pit Wall script (`~/.claude/scripts/pitwall_workflow.py`, Dan's machine) got 4 end-state fixes; the old
         one is saved as `.bak-2026-11-24`.
+    - State 2026-11-25 (this session): the title card looks like a frame of the film (Dan: "doesn't look all the way
+      like a film"); his pick is "Intertitle", saved in the look's db `pick/dan` = {look p1, card title}. Seen sharp on
+      a real iPhone (the Simulator) after the blur came out. Pushed to main on Dan's word "commit and push main".
+      Main only stores the look: `bench/` is not built into the site, so the live /widebeam page is unchanged. The
+      real build of the three sections has not started.
     - QA for Gil, PUSHED 2026-11-23 on Dan's word ("send to gil for qa lets push the branch to gil"):
       `qa/widebeam-page-1121` = `05dab5e` (was `7b3e9ba`, a fast-forward) = this branch at `9660b65` + `origin/main`
       `22bdd2e` (the temp home hero, the BF strip on every page; only `tasks/handoff.md` clashed, both sides kept).

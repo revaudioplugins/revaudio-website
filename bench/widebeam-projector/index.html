@@ -376,6 +376,46 @@ button, input, textarea { font: inherit; }
 .endcard .done b { color: #f3eddd; } .endcard .done span, .endcard .done button { color: #b9b2a2; } .endcard .done em { color: #f3eddd; }
 .endcard .plate-foot { margin-top: 2px; }
 .fx-splice { background: #f4efe2; opacity: 0; }
+/* The title card as a frame of the print (Dan, 2026-11-25: "doesn't look all the way like a film"). Next to the film's
+   own frames the card was too clean: razor-sharp letters and rules, one flat black, web-style keys. Two treatments,
+   switched in the Look controls ("Title card"):
+   - Print: the card shot on the same stock. Lifted, uneven blacks (a brighter centre, darker edges), film white with
+     halation (the light that bleeds round white letters on a print; that glow is all the softness it gets, since a blur
+     filter smeared the letters on a real iPhone, whose Safari draws a filtered layer at a lower resolution), the film's grain showing in
+     the lifted blacks. The gate keeps its shapes.
+   - Intertitle (my pick): Print, and the gate lettered like the card: the field is a double-ruled box like the card's
+     frame, the keys are cartouches (a film-white plate with a black inner rule), Watch again is underlined lettering.
+   Both are still: no weave, no extra flicker (Dan, 2026-11-23). "Now" is the card as it was. */
+.s2:is([data-card="print"], [data-card="title"]) .endcard {
+  color: #e8e2d4;
+  background:
+    radial-gradient(ellipse 64% 58% at 50% 45%, rgba(255, 246, 226, .085), transparent 72%),
+    radial-gradient(ellipse 125% 105% at 50% 48%, #1f1d18 0%, #161411 52%, #0b0a08 100%);
+}
+.s2:is([data-card="print"], [data-card="title"]) .endcard::before {
+  border-color: rgba(236, 230, 214, .78); outline-color: rgba(236, 230, 214, .34);
+  box-shadow: 0 0 9px rgba(255, 240, 214, .2), inset 0 0 9px rgba(255, 240, 214, .12); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard img.ec-title { filter: grayscale(1) brightness(1.3) contrast(1.04) drop-shadow(0 0 7px rgba(255, 240, 214, .3)); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard :is(.ec-head, .ec-tag, .eng, .fine, .status, .done b, .done span) {
+  text-shadow: 0 0 1px rgba(255, 248, 232, .4), 0 0 10px rgba(255, 240, 214, .24); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard .ec-tag::before, .s2:is([data-card="print"], [data-card="title"]) .endcard .ec-tag::after { box-shadow: 0 0 6px rgba(255, 240, 214, .3); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard .key:not(.key--ghost) { box-shadow: 0 0 12px rgba(255, 240, 214, .2); }
+.s2:is([data-card="print"], [data-card="title"]) .endcard .rail input { box-shadow: 0 0 10px rgba(255, 240, 214, .12); }
+/* the film's grain shows in the card's lifted blacks (on the old flat black it vanished) */
+.s2[data-look="p1"]:is([data-card="print"], [data-card="title"]).carded .fx-grain { opacity: .3; }
+.s2[data-look="p3"]:is([data-card="print"], [data-card="title"]).carded .fx-grain { opacity: .27; }
+/* Intertitle: the gate in the card's own hand */
+.s2[data-card="title"] .endcard .rail input { background: rgba(0, 0, 0, .22); border: 1.5px solid rgba(236, 230, 214, .9); border-radius: 0;
+  outline: 1px solid rgba(236, 230, 214, .36); outline-offset: 3px; font-style: italic; letter-spacing: .02em; }
+.s2[data-card="title"] .endcard .rail input:focus-visible { outline: 1.5px solid #fff; outline-offset: 3px; border-color: #fff; }
+.s2[data-card="title"] .endcard .gate.is-err .rail input { border: 2px dashed #fff; outline: 1px solid rgba(255, 255, 255, .5); outline-offset: 3px; }
+.s2[data-card="title"] .endcard .key:not(.key--ghost) { border-radius: 1px; background: #e9e3d3; color: #0c0b09; letter-spacing: .1em;
+  box-shadow: inset 0 0 0 3px #e9e3d3, inset 0 0 0 4.5px rgba(12, 11, 9, .9), 0 0 12px rgba(255, 240, 214, .22); }
+.s2[data-card="title"] .endcard .key:not(.key--ghost):hover { background: #fff; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 4.5px rgba(12, 11, 9, .9), 0 0 14px rgba(255, 240, 214, .3); }
+.s2[data-card="title"] .endcard .key:not(.key--ghost):active { background: #d6cfbd; box-shadow: inset 0 0 0 3px #d6cfbd, inset 0 0 0 4.5px rgba(12, 11, 9, .9); }
+.s2[data-card="title"] .endcard .key--ghost { box-shadow: none; background: none; color: #d8d1bf; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+.s2[data-card="title"] .endcard .key--ghost:hover { background: none; color: #fff; }
+.s2[data-card="title"] .endcard .gate .done { outline: 1px solid rgba(236, 230, 214, .36); outline-offset: 3px; }
 .fx-dust { opacity: 0; } /* a speck of dust on one frame now and then (script) */
 .s2.carding .cap, .s2.carded .cap, .s2.carding .tap, .s2.carded .tap { display: none; }
 .s2.carded:not(.rm) .fx-grain { animation: grain .21s steps(1) infinite; }
@@ -583,7 +623,7 @@ button, input, textarea { font: inherit; }
   </section>
 
   <!-- ============ 2. the manual film on the projector ============ -->
-  <section class="s2" id="s2" data-look="p1" data-flip="f0" data-hw="none" aria-label="The WIDE BEAM film">
+  <section class="s2" id="s2" data-look="p1" data-flip="f0" data-hw="none" data-card="title" aria-label="The WIDE BEAM film">
     <div class="room" aria-hidden="true"><canvas class="beam" id="beam"></canvas><canvas class="beam dust" id="dust"></canvas></div>
     <div class="roller" aria-hidden="true"></div>
     <div class="stage" id="stage">
@@ -682,6 +722,13 @@ button, input, textarea { font: inherit; }
         <button type="button" data-v="p3"><b>P3</b>Garage wall</button>
       </div>
     </div>
+    <div class="cp-row"><span>Title card</span>
+      <div class="seg" data-set="card">
+        <button type="button" data-v="now">Now</button>
+        <button type="button" data-v="print">Print</button>
+        <button type="button" data-v="title">Intertitle</button>
+      </div>
+    </div>
     <div class="cp-row"><span>Phase</span>
       <div class="seg" data-set="phase">
         <button type="button" data-v="pre">Before launch</button>
@@ -710,7 +757,7 @@ button, input, textarea { font: inherit; }
   const rmq = matchMedia('(prefers-reduced-motion: reduce)');
   const RM = () => rmq.matches;
 
-  const state = { look: 'p1', flip: 'f0', phase: 'pre', hw: 'none' };
+  const state = { look: 'p1', flip: 'f0', phase: 'sale', hw: 'none', card: 'title' }; // on sale since 2026-11-23 (Gil)
   const s1 = $('#s1'), s2 = $('#s2'), s3 = $('#s3');
   const stage = $('#stage'), rig = $('#rig'), panel = $('#panel'), front = $('#front'), back = $('#back');
   const film = $('#film'), manual = $('#manual'), louvers = $('#louvers'), plateRest = $('#plateRest');
@@ -739,7 +786,7 @@ button, input, textarea { font: inherit; }
         <div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
         <div class="or"><span class="eng" style="font-size:.95rem">or try it free for 30 days</span></div>
         ${railHTML('card-email', 'Send my trial ' + ICON)}
-        <p class="fine">Full version, no credit card. Mac VST3 · AU · Windows VST3.</p>${again}</div>`;
+        <p class="fine">Full version, no credit card. Mac VST3 · AU · AAX · Windows VST3.</p>${again}</div>`;
   }
   function plateHTML(where, phase) {
     if (where === 'card') return cardHTML(phase);
@@ -767,7 +814,7 @@ button, input, textarea { font: inherit; }
         <div class="well"><button class="key key--big" type="button" data-buy>Buy WIDE BEAM · $9</button></div>
         <div class="or"><span class="eng" style="font-size:.95rem">or try it free for 30 days</span></div>
         ${railHTML(id, 'Send my trial ' + ICON)}
-        <p class="fine">Full version, no credit card. Mac VST3 · AU · Windows VST3.</p>${again}</div>`;
+        <p class="fine">Full version, no credit card. Mac VST3 · AU · AAX · Windows VST3.</p>${again}</div>`;
   }
   function renderPlates() {
     for (const el of $$('[data-plate]')) el.innerHTML = plateHTML(el.dataset.plate, state.phase);
@@ -1350,13 +1397,14 @@ button, input, textarea { font: inherit; }
   }
   function setPhase(v) { state.phase = v; renderPlates(); layout(); updateSeg(); }
   function setHw(v) { state.hw = v; s2.dataset.hw = v; updateSeg(); placeLatches(); }
+  function setCard(v) { state.card = v; s2.dataset.card = v; layout(); updateSeg(); }
   function updateSeg() {
     for (const seg of $$('.seg')) for (const b of $$('button', seg)) b.setAttribute('aria-pressed', String(state[seg.dataset.set] === b.dataset.v));
     $('#cpNow').textContent = state.look.toUpperCase();
   }
   for (const seg of $$('.seg')) seg.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    ({ look: setLook, flip: setFlip, phase: setPhase, hw: setHw })[seg.dataset.set](b.dataset.v);
+    ({ look: setLook, flip: setFlip, phase: setPhase, hw: setHw, card: setCard })[seg.dataset.set](b.dataset.v);
   });
   $('#cpTop').addEventListener('click', () => { const c = $('#cp').classList.toggle('closed'); $('#cpTop').setAttribute('aria-expanded', String(!c)); });
   $('#skip').addEventListener('click', () => {
@@ -1380,12 +1428,13 @@ button, input, textarea { font: inherit; }
   const note = $('#note'), pickStatus = $('#pickStatus');
   function showPick(where) {
     if (!pick || !pick.look) { pickStatus.textContent = 'No pick saved yet.'; return; }
-    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()} · ` + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
+    pickStatus.textContent = `Pick: ${pick.look.toUpperCase()}` + (pick.card ? ` · card ${pick.card}` : '') + ' · ' + (where === 'db' ? 'saved to the page' : 'saved in this browser only');
   }
   function readLocal() { try { const v = JSON.parse(localStorage.getItem(LS) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; } }
   function writeLocal(v) { try { localStorage.setItem(LS, JSON.stringify(v)); return true; } catch (e) { return false; } }
   function applyPick(v) {
-    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', hw: v.hw || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (!v) return; pick = { look: v.look || '', flip: v.flip || '', hw: v.hw || '', card: v.card || '', note: typeof v.note === 'string' ? v.note : '', updatedAt: v.updatedAt || '' };
+    if (/^(now|print|title)$/.test(pick.card) && pick.card !== state.card) setCard(pick.card);
     if (/^(pivot|none|catch)$/.test(pick.hw) && pick.hw !== state.hw) setHw(pick.hw);
     if (document.activeElement !== note) note.value = pick.note;
     if (/^p[123]$/.test(pick.look) && pick.look !== state.look) setLook(pick.look);
@@ -1394,7 +1443,7 @@ button, input, textarea { font: inherit; }
   async function flush() {
     if (saving) { dirty = true; return; }
     saving = true;
-    const v = { look: pick.look, flip: pick.flip, hw: pick.hw || '', note: pick.note, updatedAt: new Date().toISOString() };
+    const v = { look: pick.look, flip: pick.flip, hw: pick.hw || '', card: pick.card || '', note: pick.note, updatedAt: new Date().toISOString() };
     let where = 'local';
     if (db) { try { await db.doc('pick/dan').set(v); where = 'db'; } catch (e) { where = 'local'; } }
     writeLocal(v); showPick(where);
@@ -1402,8 +1451,8 @@ button, input, textarea { font: inherit; }
     if (dirty) { dirty = false; flush(); }
   }
   function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
-  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, hw: state.hw, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
-  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', hw: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
+  $('#pickBtn').addEventListener('click', () => { pick = { look: state.look, flip: state.flip, hw: state.hw, card: state.card, note: note.value, updatedAt: '' }; pickStatus.textContent = 'Saving…'; queueSave(); });
+  note.addEventListener('input', () => { if (!pick) pick = { look: '', flip: '', hw: '', card: '', note: '', updatedAt: '' }; pick.note = note.value; queueSave(); });
   applyPick(readLocal()); showPick('local');
   (async () => {
     try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
@@ -1444,7 +1493,7 @@ button, input, textarea { font: inherit; }
   const stillImg = $('.still', film); if (stillImg && stillImg.decode) stillImg.decode().catch(() => {});
 
   // test hooks (the crane door's #cranep idea): scrub a turn without real time
-  window.__wb = { voice, sound: () => ({ soundOn, soundBlocked, voiceUnlocked, voiceHeard, audible: audible() }), flipAt: scrubAt, runFlip, settlePlate, settleFront, setLook, setFlip, setPhase, state, seekEnd, layout, setWidth,
+  window.__wb = { setCard, voice, sound: () => ({ soundOn, soundBlocked, voiceUnlocked, voiceHeard, audible: audible() }), flipAt: scrubAt, runFlip, settlePlate, settleFront, setLook, setFlip, setPhase, state, seekEnd, layout, setWidth,
     get onPlate() { return onPlate; }, get turning() { return turning; }, get clock() { return anims.length ? anims[anims.length - 1].currentTime : null; } };
 })();
 </script>

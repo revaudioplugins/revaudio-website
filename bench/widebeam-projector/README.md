@@ -47,4 +47,8 @@ The direction, in Dan's words: no player, no music. Three sections:
     voice (Dan's pick A); this happens only the first time.
   - Until that touch, the film plays with live captions and the key says "Tap for sound".
   - Checked in real iPhone Safari (the Simulator, via safaridriver).
-
+- **The film's title card (2026-11-25, Dan: "doesn't look all the way like a film"):** it now takes the film's own look:
+  lifted, uneven blacks (a brighter centre), a glow round the white letters, the film's grain on it, no blur (a blur
+  filter smeared the letters on a real iPhone). The gate is lettered like the card: the keys are title-card plates
+  (film white with a black inner rule), the field is double-ruled like the card's frame, Watch again is underlined.
+  Dan's pick: "Intertitle" (Look controls → Title card: Now / Print / Intertitle; saved in `pick/dan`).
