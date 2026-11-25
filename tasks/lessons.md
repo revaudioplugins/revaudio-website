@@ -573,3 +573,12 @@ to read through `tail -3`: send it to a log file (one failed `pack.mjs build` ru
   floated off). Bake them as rules: one fixed Try width, one fixed spot for the price. Then replay the export on the
   old layout and measure the baked page against it. That replay caught the 8 px key gap lost to the component's
   scoped 1rem (scoped CSS out-ranks the global block: `!important` there).
+
+## 2026-11-25 — a time-gated sale UI: test the real date path, and never freeze the clock under GSAP
+- `?sale=bf|cm` is a dev-only preview: it never runs the date path the live site uses. The first checks of the bundle on
+  the TV used only it.
+- `page.clock.setFixedTime` freezes `Date.now`, and GSAP's ticker reads `Date.now`: every TV channel change stood still,
+  and a phone's "All plugins" looked broken. I reported it to Dan as a bug, then took it back.
+- Rule: a time-gated feature gets a test on the built site with `page.clock.setSystemTime` (time flows from the set
+  point; a second `setSystemTime` jumps past a deadline with the page open). `tests/sale-bundle-tv.spec.ts` is the
+  pattern. Use `setFixedTime` only where no GSAP motion is under the check.

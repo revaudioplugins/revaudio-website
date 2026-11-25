@@ -1,6 +1,6 @@
-## 2026-11-25 — The $69 bundle on the site: where it shows on phones, round 1 (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), NOT on main
+## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 
-Claim: OPEN (Dan's Mac). Files: `src/components/WordWall.astro` (the BUNDLES tab, the bundle's channel and page),
+Claim: OPEN (Dan's Mac) until the merge (waiting on Gil's QA, then Dan's word). Files: `src/components/WordWall.astro` (the BUNDLES tab, the bundle's channel and page),
 `src/data/sale.ts` (`saleBundle.meta`, `.slugs`, `.tv`), `src/assets/sale/bundle-thumb.png` + `tools/sale/bundle-thumb.cjs`
 (new), `src/components/Cart.astro` (bundle thumbnail + row line, no paying twice), `src/components/SaleStrip.astro` (the
 bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro unmounted), `src/pages/plugins.astro` +
@@ -83,6 +83,23 @@ bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro u
 - Dan's round-1 notes (pick page "The $69 Bundle", artifact 8yYU5gsCbcoSYKuWWbNixU, pasted 22:56): the card "Not
   now" ("all these sections should be a part of the screen we have right now", also for Cyber Monday); value line:
   none; the cart name stays "RevAudio bundle (all 8 plugins)". All three already as built; written into Gil's note.
+- Recap page for Dan ("show me what we did"): "The $69 Bundle" round 2 = the 8 screens as built, each with his last note
+  and what changed (artifact 8yYU5gsCbcoSYKuWWbNixU, db `notes-r2`, one ask: keep $69?). Private: Gil sees it only if
+  Dan shares it.
+- **SESSION END 2026-11-25 (rv close).**
+  - State: `feat/bundle-checkout` pushed at `c44adf8`, plus this close's tasks commit. It is 0 behind and 14 ahead of
+    origin/main `7598f36` (Gil's 2 + this session's). Worktree clean, main untouched.
+  - **Next:** Gil's QA. His note is `tasks/bundle-qa-handoff-gil-2026-11-25.md`, and Dan sends him the message. Then
+    Dan's word merges into main before Fri Nov 27 00:00 PT (10:00 Israel).
+  - **Merge trap:** the branch ends on `[skip ci]` tasks commits. A push to main that ends on one skips the deploy
+    (wiki `website-update` step 5). Push the last code commit first, `git push origin 94845ce:main` (`pull --rebase`
+    first), then the rest.
+  - **Open:**
+    - 🔴 The $69 price against the singles with REDLINE ($55.50) or CYBER40 ($66.60): Dan + Gil. It is the ask on
+      the recap page.
+    - Gil's: the real Paddle overlay with the bundle price, and whether the 10% welcome code works on the bundle.
+  - Left running: the dev server on 127.0.0.1:4392, from this worktree, for Dan's Safari tab. Stop it with
+    `lsof -ti tcp:4392 | xargs kill`.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
