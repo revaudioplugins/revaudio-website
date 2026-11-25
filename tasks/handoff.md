@@ -1,10 +1,12 @@
 ## 2026-11-25 — The $69 bundle on the site: where it shows on phones, round 1 (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), NOT on main
 
-Claim: OPEN (Dan's Mac). Files: `src/components/SaleBundleCard.astro` (new), `src/assets/sale/bundle-thumb.png` (new),
-`tools/sale/bundle-thumb.cjs` (new), `src/components/Cart.astro` (bundle thumbnail + row line, the swap offer, no paying
-twice), `src/components/SaleStrip.astro` (the bundle line stays on phones, short), `src/data/sale.ts` (`saleBundle.meta`,
-`.slugs`), `src/pages/plugins.astro` + `src/pages/index.astro` (the card under the TV), this entry. `Cart.astro` is also
-in the open garage-home claim (2026-11-18): different lines.
+Claim: OPEN (Dan's Mac). Files: `src/components/WordWall.astro` (the BUNDLES tab, the bundle's channel and page),
+`src/data/sale.ts` (`saleBundle.meta`, `.slugs`, `.tv`), `src/assets/sale/bundle-thumb.png` + `tools/sale/bundle-thumb.cjs`
+(new), `src/components/Cart.astro` (bundle thumbnail + row line, no paying twice), `src/components/SaleStrip.astro` (the
+bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro unmounted), `src/pages/plugins.astro` +
+`src/pages/index.astro` (round 1's card mounts, gone again), `src/components/SaleBundleCard.astro` (round 1, deleted),
+`tests/sale-bundle-tv.spec.ts` (new), `tools/wwbench/bundle-options.cjs` (new, dev only), `DESIGN.md` §4, this entry.
+`Cart.astro` is also in the open garage-home claim (2026-11-18): different lines.
 - Gil's handoff `tasks/bundle-checkout-handoff-dan-2026-11-25.md`: the site's look and placement are Dan's. Licence worker
   live with the bundle (`/version` stamp `43a2105`, the bundle price commit) on 2026-11-25 20:55 Israel.
 - Found: on phones the strip hides the bundle and the pop-up shows on home only, once per phase, so a phone visitor on
@@ -40,7 +42,9 @@ in the open garage-home claim (2026-11-18): different lines.
   the singles cost less, so it would steer a buyer to pay more; it lives in `8f245b2` / `2da146f` if wanted; the
   no-paying-twice and the bundle row stay; `saleBundle.free` went with it). The TV steps to ALL and its first plugin
   when the sale ends with the page open (the strip clears html[data-sale]; a MutationObserver in WordWall). The dev
-  bench (`?bench`) no longer copies moves to or from the bundle's page. New `tests/sale-bundle-tv.spec.ts`: the real
+  bench (`?bench`) no longer copies moves to or from the bundle's page (run: a move on the bundle's picture stays there,
+  one on RevLimiter's reaches RevFX and DRIFT, not the bundle). Today's countdown week on the build (real clock, laptop +
+  WebKit 390): the TV as before (ALL, RevLimiter, no bundle, 8 rows, no pop-up). New `tests/sale-bundle-tv.spec.ts`: the real
   date path on the built site (BF, CM, off, the end with the page open), 8/8 in Chromium + WebKit. Use
   `page.clock.setSystemTime`, never `setFixedTime`, for the TV: GSAP's ticker reads `Date.now`, so a frozen clock
   freezes every channel change (a phone's "All plugins" looks broken). Full suite: 96 passed, 3 failed in pages this

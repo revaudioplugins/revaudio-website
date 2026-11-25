@@ -47,9 +47,10 @@ test.describe('the sale bundle on the TV', () => {
   });
 
   test('the sale ends with the page open: the TV steps from the bundle to ALL', async ({ page }) => {
-    await open(page, new Date(Date.parse(last.end) - 6000));
-    await expect.poll(() => tv(page), { timeout: 4000 }).toMatchObject({ pressed: ['bundles'], on: 'bundle' });
-    await expect.poll(() => tv(page), { timeout: 12000 }).toMatchObject({ pressed: ['all'] });
+    await open(page, new Date(Date.parse(last.end) - 10 * 60e3)); // ten minutes left, however slow the load
+    await expect.poll(() => tv(page)).toMatchObject({ pressed: ['bundles'], on: 'bundle' });
+    await page.clock.setSystemTime(new Date(Date.parse(last.end) + 1000)); // the end passes, the page still open
+    await expect.poll(() => tv(page), { timeout: 10000 }).toMatchObject({ pressed: ['all'] }); // the strip's next tick
     expect((await tv(page)).on).not.toBe('bundle');
     await expect(page.locator('[data-ww-panel="bundle"]')).toBeHidden();
   });
