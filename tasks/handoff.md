@@ -1,3 +1,15 @@
+## 2026-11-25 — WIDE BEAM: the projector look becomes the live /widebeam page (Claude Code `Wide Beam projector page build [2a7fb9]`, Dan's Mac) — branch `feat/widebeam-projector-live` (worktree `.claude/worktrees/widebeam-projector-live`, from origin/main `7598f36`) — NOT on main: main waits for Dan's "push"
+
+Claim: OPEN 2026-11-25 `Wide Beam projector page build [2a7fb9]`. Files: `src/pages/widebeam.astro`, `src/components/widebeam/**`,
+`src/lib/widebeam/**`, `src/styles/widebeam.css` + `src/styles/widebeam/**`, `src/data/widebeam.ts`, `src/assets/widebeam/**`,
+`public/widebeam/**`, `tests/widebeam.spec.ts`, `tools/widebeam-gates/**`, this entry.
+- Dan: "push what we did to the wide beam page" = the projector look (`bench/widebeam-projector/`, his title-card pick
+  Intertitle) built into the real page, one section at a time, his look after each. Picks (2026-11-25): **A** = the
+  stand-in film without its "STAND-IN · Gil's film goes here" label until the real one exists, and "let's do the manual
+  ourselves" = we make the manual film, not Gil (Gil to be told by Dan).
+- The trial gate's worker calls and the cart / Paddle path keep their code; tests fake both (no real email, no real buy).
+- Not started: the go-live date (proposed: not during the sale, Fri Nov 27 to Mon Nov 30 PT).
+
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
 Claim: CLOSED 2026-11-24 `revaudio-cc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `widebeam`), `src/pages/review.astro`, `DESIGN.md` (Review picker bullet only), this entry.
