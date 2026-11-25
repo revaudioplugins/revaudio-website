@@ -1296,6 +1296,13 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
       viewWant = 'panel';
       go(false);
     }
+    // the sale ends with the page open (the strip clears html[data-sale] on the stroke): the bundle's tab, channel and
+    // page hide with it, so the TV steps over to ALL and its first plugin instead of showing an empty glass
+    if (onSale) new MutationObserver((_, mo) => {
+      if (document.documentElement.dataset.sale) return; // Black Friday → Cyber Monday: the bundle stays
+      mo.disconnect();
+      if (cat === 'bundles') { setCat('all', false, false); go(false); }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-sale'] });
     // a browser that already animated the Back (an iOS swipe) gets a cut
     window.addEventListener('popstate', (e) => fromUrl(true, !(e as PopStateEvent & { hasUAVisualTransition?: boolean }).hasUAVisualTransition));
 
@@ -1470,15 +1477,17 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
         return o;
       };
       const seen = new WeakMap<Element, string>();
+      // the sale bundle's page is laid out on its own (eight pictures, not one): it neither copies out nor takes copies
+      const apart = (el: Element) => el.matches('[data-ww-panel="bundle"]');
       const mirror = (src: HTMLElement) => {
         const root = src.closest(GROUP);
         const path = root && relPath(src, root);
-        if (!root || !path) return;
+        if (!root || !path || apart(root)) return;
         const want = own(src);
         const key = JSON.stringify(want);
         const kind = KINDS.find(([k]) => root.matches(k))![0];
         wall.querySelectorAll(kind).forEach((other) => {
-          if (other === root) return;
+          if (other === root || apart(other)) return;
           const to = (path === ':scope' ? other : other.querySelector(path)) as HTMLElement | null;
           if (!to) return;
           const has = own(to);

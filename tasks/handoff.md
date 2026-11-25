@@ -36,6 +36,19 @@ in the open garage-home claim (2026-11-18): different lines.
   before); phone: lands on the bundle's page, "All plugins" -> the list (BUNDLES first, the bundle on top), ALL -> the
   plugins only; "Add all 8 to cart" -> cart = `bundle`, drawer open; home: the opening screen first, the first scroll
   -> the TV on BUNDLES, no pop-up; no page errors; `astro build` green.
+- Follow-ups the same night: the cart's "Make it all 8" swap offer taken OUT (Dan never answered it, and with REDLINE
+  the singles cost less, so it would steer a buyer to pay more; it lives in `8f245b2` / `2da146f` if wanted; the
+  no-paying-twice and the bundle row stay; `saleBundle.free` went with it). The TV steps to ALL and its first plugin
+  when the sale ends with the page open (the strip clears html[data-sale]; a MutationObserver in WordWall). The dev
+  bench (`?bench`) no longer copies moves to or from the bundle's page. New `tests/sale-bundle-tv.spec.ts`: the real
+  date path on the built site (BF, CM, off, the end with the page open), 8/8 in Chromium + WebKit. Use
+  `page.clock.setSystemTime`, never `setFixedTime`, for the TV: GSAP's ticker reads `Date.now`, so a frozen clock
+  freezes every channel change (a phone's "All plugins" looks broken). Full suite: 96 passed, 3 failed in pages this
+  doesn't touch (widebeam's robots test waits forever on the missing meta since `listed: true`; /drift on WebKit
+  logs the video controls' icons), 1 skipped; main's CI is red since 2026-11-23 for another reason (`webServer` 60 s
+  timeout, no test runs). WebKit on the real build with the clock: 1141x636 BF + CM, 390 /plugins and home (the
+  opening screen, a tap -> the bundle's page -> All plugins -> ALL), off the sale. Before the page's script arrives the
+  TV shows RevLimiter unassembled, as it always did; the bundle comes with the script.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 

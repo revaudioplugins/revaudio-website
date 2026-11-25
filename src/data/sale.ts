@@ -75,11 +75,9 @@ export const saleBundle = {
   until: salePhases[salePhases.length - 1].end,
   /** The cart row's second line (where a single plugin says "1 licence · Digital download"). */
   meta: '6 licence keys in one email · GAS + GAS 2 free',
-  /** The plugins it holds, as src/data/plugins.ts slugs, in saleBundlePlugins' order (the card under the TV,
-   *  the cart's thumbnail). Every paid one is in it, so the cart swaps singles out for it. */
+  /** The plugins it holds, as src/data/plugins.ts slugs, in saleBundlePlugins' order (the TV's BUNDLES tab and
+   *  bundle page). Every paid one is in it, so the cart takes singles out when the bundle goes in. */
   slugs: ['revlimiter', 'revfx', 'radio-roulette', 'gas', 'gas2', 'drift', 'obdtune', 'widebeam'],
-  /** The free ones: the cart's offer names only the paid plugins the bundle adds. */
-  free: ['gas', 'gas2'],
   /** On the TV (WordWall.astro, Dan's pick A 2026-11-25): the BUNDLES tab, the bundle's channel, its page. */
   tv: {
     name: `All ${saleBundleCount} plugins`,
