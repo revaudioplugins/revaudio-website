@@ -168,10 +168,13 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
     it on laptops.
     - The menu and the page (Dan 2026-11-25, on the bundle's page: "a dividing line ... a section a bit darker so you
-      feel the difference between the sections"): the glass behind the categories and the strip is a shade darker
-      (black at 25% over the glow), and it ends in a 1 px line in the channel's ink, halfway between the strip and the
-      panel, on every channel. The page below keeps the tube's full glow, so the eye lands on the plugin, not the menu.
-      Hidden until the tube is on (an unlit screen shows no line). Laptop only.
+      feel the difference between the sections"; his pick C of four, "your line, as drawn"): the glass behind the
+      categories and the strip is black at 35% over the glow, across the whole glass; halfway between the strip and the
+      panel it ends in a 2 px line in the channel's ink with a soft glow over it, running only from the words' left
+      edge to the pictures' right edge, as he drew it. On every channel. The page below keeps the tube's full glow, so
+      the eye lands on the plugin, not the menu. Hidden until the tube is on (an unlit screen shows no line). Laptop
+      only. Passed over on the pick page: 25% with a 1 px line across the glass (too quiet), the page darker instead
+      (pulled the eye to the menu), 50% with a bold line (the loudest).
     - The keys in B (Dan's bench export, 2026-11-24): row 1 = Try (one fixed width for every plugin, 16rem) with the
       price beside it, big (Bebas 3.4rem; "Free beta" 2.4rem), at the same spot on every plugin; row 2 = Product page
       and Add to cart, left, side by side.

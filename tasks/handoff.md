@@ -66,6 +66,16 @@ bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro u
   every channel or the bundle's page only. Claude's pick: C. B/C/D live behind a TEMPORARY dev-only `?split=b|c|d`
   block in WordWall's script, NOT committed: build the pick properly, then delete that block before any commit of
   WordWall. Until he picks, the branch carries A (a "push" ships A on every channel).
+- Dan picked **C** (page db `notes-r2`: choice c, no notes; the every-channel question unanswered, so it stays on every
+  channel as built). Built in WordWall (the band at 35%, the 2 px line + glow from `--ww-split-l` over `--ww-split-w`,
+  both measured in `fit()`); the `?split=` dev block is deleted. Checked on dev: WebKit 1312x740 (BF, CM, an ordinary
+  channel) + Chromium 1141x636, the line from 88 to 1225 px against the strip's 88 to 1224, the same as the picked
+  crop; sale test + smoke 53 passed, the /drift WebKit one failed. Pre-push sync (an agent, 2026-11-25 ~23:00):
+  origin/main is still `7598f36` and origin/feat/bundle-checkout still `f461175`, so both pushes are fast-forwards and
+  merge-tree is clean; the shared repo pulled to `ddbd7f2` (nothing on the site or the sale). Other sessions' unmerged
+  branches on our files: `feat/garage-home` (index, Cart) and `feat/phone-dive` (WordWall +103/-14) clash with this
+  only in `tasks/handoff.md`, `tasks/lessons.md` (+ `.impeccable/config.json` for phone-dive); WordWall auto-merges
+  (not built). Whoever lands second merges those notes by hand.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
