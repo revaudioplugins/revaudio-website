@@ -108,7 +108,7 @@
         <button class="chip" type="button" data-look="shop">2 · Bumper</button>
         <button class="chip" type="button" data-look="radio">3 · Radio</button>
       </nav>
-      <nav class="abc" id="pages" aria-label="The page on the phone">
+      <nav class="abc" id="pages" aria-label="The page on the phone" hidden>
         <button class="chip" type="button" data-page="today">Today</button>
         <button class="chip" type="button" data-page="glass">A · Glass</button>
         <button class="chip" type="button" data-page="plain">B · Plain</button>
@@ -171,7 +171,7 @@ const frame = $('room'), box = $('box');
 // the room in its phone cut (room.html ?dive: only what this camera sees is loaded); ?full = the whole room, to compare
 // the room's look, as on the laptop's home page (?look=today | vhs | vhs-more; the room's default is VHS, Dan's pick 2026-11-18)
 const ROOM_LOOK = ['today', 'vhs', 'vhs-more'].includes(Q.get('look')) ? Q.get('look') : null;
-const PAGE0 = ['today', 'plain', 'glass'].includes(Q.get('page')) ? Q.get('page') : 'glass'; // my pick to start on (glass: the screen's glow all the way down); Dan's pick pending
+const PAGE0 = ['today', 'plain', 'glass'].includes(Q.get('page')) ? Q.get('page') : 'today'; // Dan 2026-11-25, after A Glass / B Plain: "keep it as today" (the page as it is, the TV's frame and all)
 frame.src = 'room.html?capture=0&expose' + (Q.has('full') ? '' : '&dive') + (REC ? '' : '&live') + (ROOM_LOOK ? '&look=' + ROOM_LOOK : '') + '&page=' + PAGE0 + (REC && Q.has('mp') ? '&mp=' + encodeURIComponent(Q.get('mp')) : '') + (REC && Q.has('novig') ? '&novig' : ''); // (?rec&mp=: a still's pixel budget, for the first picture's render) // &live: the room runs live as on the laptop (grain, lights, dust, governor); a recording keeps it still
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
@@ -266,13 +266,13 @@ showUi();
 for (const b of document.querySelectorAll('[data-look]')) b.addEventListener('click', () => { setLook(b.dataset.look); w.__room.arrange(); shown = -1; }); // (arrange: the room's shadows are drawn once, so once more for the new body)
 $('looks').hidden = REC || !Q.has('looks'); // ?looks: the three looks as buttons on the picture
 if (REC || !Q.has('abc')) $('abc').hidden = true; // Dan picked B: the buttons are off the picture, ?abc brings them back to compare
-// the page on the phone, and the same page after the landing: the three on buttons until Dan picks (?page= opens on one; ?pages=0 hides the buttons)
+// the page on the phone, and the same page after the landing: Today (Dan's pick); ?page=glass|plain opens a frameless one, ?pages=1 shows the three buttons
 const pageDir = (n) => `assets/dive/page-${n}/`;
 const showPage = (n) => { for (const im of document.querySelectorAll('img[data-pic]')) { const src = pageDir(n) + im.dataset.pic + '.webp'; if (!im.src.endsWith(src)) im.src = src; }
   for (const b of document.querySelectorAll('[data-page]')) b.setAttribute('aria-pressed', String(b.dataset.page === n)); };
 showPage(PAGE0);
 for (const b of document.querySelectorAll('[data-page]')) b.addEventListener('click', async () => { await SETR.setPage(b.dataset.page); showPage(b.dataset.page); shown = -1; R.lockDrawn = false; });
-$('pages').hidden = REC || Q.get('pages') === '0';
+$('pages').hidden = REC || Q.get('pages') !== '1';
 // The hand-over. Once the dive has landed the site's picture comes on over the 3D screen (the same pixels by then), and the room stops drawing under it:
 // a page that scrolls on must not pay for a 3D room nobody sees.
 const liveEl = $('live'), render0 = w.__room.composer.render.bind(w.__room.composer); let liveK = 0, liveSet = -1;

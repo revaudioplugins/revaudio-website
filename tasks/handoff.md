@@ -80,8 +80,17 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
 - **Next, Dan's to decide:** the phone garage on the home page for phones (HomeOpening.astro: a phone branch, the room in
   `?dive&live` as the frame's srcdoc, the real phone TV photographed in the browser as on the laptop, the hand-over onto
   it, pins only first). Main merged in first. Then a push of this branch on his word.
-- **At the close (2026-11-25, rv close):** open for Dan: (1) the page under the phone, **A Glass or B Plain** (the
-  page opens on Glass, my pick; his pick pending); (2) the test on his own phone (the Wi-Fi line under Run). Seen, not
+- **Dan picked Today** (2026-11-25, after A Glass / B Plain in the Simulator: "keep it as today"): the page on the phone is
+  the home page as it is, the TV's frame and all. `phone-dive.html` opens on Today, the three buttons only with `?pages=1`
+  (A and B stay on `?page=glass|plain`, their pictures kept in `assets/dive/page-glass|plain/`). The opening picture
+  `open-wide.webp` re-rendered with Today on the phone (`?rec&novig&mp=2.2e6&pages=0&page=today`, 640x844 @2; it had
+  been rendered with Glass). First picture vs the live room: 390x844 Chromium 0.61, 402x754 WebKit 0.67 / 0.69, 440x880
+  Chromium 0.65, 360x640 WebKit 0.86 (before 0.63 / 0.64 / 0.52 / 0.95).
+  🔴 **Black after the hand-over, seen twice now:** one WebKit run of three at 402x754 captured a fully black live room
+  1.9 s after the first picture went (the two re-runs fine); and the Pro Max's first boot in the Simulator (11-24). A
+  visitor could get a black screen where the room should be. Not yet investigated: next step is to log the room's
+  first drawn frame against the moment the first picture fades, over ~20 cold WebKit loads.
+- **At the close (2026-11-25, rv close):** open for Dan: the test on his own phone (the Wi-Fi line under Run). Seen, not
   fixed: in Simulator Safari the live room reads about 5 levels (of 255) darker than the Chrome-rendered first picture (the
   Simulator's known lamp difference; on the Mac's Chromium and WebKit the seam is 0.5-0.95). Left running: the no-store
   server on 4691 and the iPhone 17 Pro Max simulator. The check scripts (fling, seam, perf, phone capture, diff) lived in
