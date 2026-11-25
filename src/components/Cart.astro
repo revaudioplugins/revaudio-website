@@ -51,7 +51,7 @@ import { TERMS_LAST_UPDATED } from '../data/legal';
  */
 import { site } from '../data/site';
 const checkoutMap: Record<string, string> = {};
-const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string; until?: number; meta?: string; includes?: string[] }> = {};
+const cartCatalog: Record<string, { name: string; price: number; img: string; formats: string; until?: number; meta?: string; includes?: string[]; adds?: Record<string, string> }> = {};
 for (const p of plugins) {
   const target = p.paddlePriceId;
   if (target) {
@@ -65,7 +65,9 @@ for (const p of plugins) {
 // read() drops it once the sale is over.
 checkoutMap[saleBundle.slug] = saleBundle.paddlePriceId;
 const bundleThumb = await getImage({ src: bundleThumbSrc, width: 288, format: 'webp' });
-cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceUsd, img: bundleThumb.src, formats: saleBundle.formats, until: Date.parse(saleBundle.until), meta: saleBundle.meta, includes: saleBundle.slugs };
+cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceUsd, img: bundleThumb.src, formats: saleBundle.formats, until: Date.parse(saleBundle.until), meta: saleBundle.meta, includes: saleBundle.slugs,
+  // the paid plugins it holds, by name, for the offer's "Adds …" line
+  adds: Object.fromEntries(saleBundle.slugs.filter((s) => !saleBundle.free.includes(s)).map((s) => [s, plugins.find((p) => p.slug === s)?.name ?? s])) };
 ---
 
 <script is:inline type="application/json" data-cart-catalog set:html={JSON.stringify(cartCatalog).replace(/</g, '\\u003c')}></script>
@@ -107,8 +109,9 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
   </div>
   <div class="cd-bundle" data-cart-bundle-offer hidden>
     <p><b>All {saleBundle.slugs.length} plugins, ${saleBundle.priceUsd}.</b> <span data-cart-bundle-why></span></p>
-    <button type="button" class="cd-bundle-swap" data-cart-bundle-swap>Swap for the bundle</button>
+    <button type="button" class="cd-bundle-swap" data-cart-bundle-swap>Make it all {saleBundle.slugs.length}</button>
   </div>
+  <p class="cd-note" data-cart-note role="status" hidden></p>
   <ul class="cd-items" data-cart-items aria-label="Plugins in your cart"></ul>
   <div class="cd-foot" data-cart-foot hidden>
     <div class="cd-summary">
@@ -440,9 +443,10 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
       for (var i = 0; i < c.length; i++) if (c[i].includes) return c[i];
       return null;
     }
+    // said on the drawer itself (a line over the items), cleared when the drawer closes
     function announce(text) {
-      var a = drawer && drawer.querySelector('[data-cart-announcement]');
-      if (a) a.textContent = text;
+      var n = drawer && drawer.querySelector('[data-cart-note]');
+      if (n) { n.textContent = text; n.hidden = !text; }
     }
     function add(item) {
       if (!item || !item.slug) return;
@@ -564,8 +568,9 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
         bOffer.hidden = !(b && html.dataset.sale && held.length && !bundleIn(c));
         if (!bOffer.hidden) {
           bOffer.setAttribute('data-bundle-slug', b);
-          var others = catalog[b].includes.length - held.length;
-          bOffer.querySelector('[data-cart-bundle-why]').textContent = (held.length > 2 ? 'These ' + held.length : held.map(function (i) { return i.name; }).join(' and ')) + ' plus the other ' + others + ', in one order.';
+          var heldSlugs = held.map(function (i) { return i.slug; });
+          var adds = Object.keys(catalog[b].adds || {}).filter(function (s) { return heldSlugs.indexOf(s) < 0; }).map(function (s) { return catalog[b].adds[s]; });
+          bOffer.querySelector('[data-cart-bundle-why]').textContent = adds.length ? 'Adds ' + adds.slice(0, -1).join(', ') + (adds.length > 1 ? ' and ' : '') + adds[adds.length - 1] + ', plus GAS and GAS 2.' : '';
         }
       }
     }
@@ -771,7 +776,7 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
         var r = drawer.getBoundingClientRect();
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) drawer.close();
       });
-      drawer.addEventListener('close', lock);
+      drawer.addEventListener('close', function () { lock(); announce(''); });
       drawer.addEventListener('change', function (e) {
         if (e.target && e.target.matches('[data-cart-agree]') && e.target.checked) setAgreeError(false);
       });
@@ -930,6 +935,7 @@ cartCatalog[saleBundle.slug] = { name: saleBundle.name, price: saleBundle.priceU
   .cd-bundle b { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; letter-spacing: 0.06em; color: var(--brass-bright); }
   .cd-bundle-swap { flex: none; font-family: var(--font-display); font-size: 1rem; letter-spacing: 0.08em; color: #1d1916; padding: 0.45rem 0.8rem 0.36rem; border: 0; border-radius: 4px; cursor: pointer; background: linear-gradient(180deg, var(--brass-bright), var(--brass) 45%, var(--brass-dark)); box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.6), 0 2px 0 #5e4a26; }
   .cd-bundle-swap:focus-visible { outline: 2px solid var(--brass-bright); outline-offset: 3px; }
+  .cd-note { margin: 0 0 0.9rem; font-size: 0.84rem; line-height: 1.4; color: var(--brass-bright); }
   .cd-next { font-size: 0.8125rem; color: #b9b0a2; line-height: 1.6; margin: 0; padding-top: 0.4rem; }
 
   /* Consent checkbox — required before checkout; its links open the reader popup. */

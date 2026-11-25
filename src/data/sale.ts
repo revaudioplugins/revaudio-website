@@ -78,4 +78,6 @@ export const saleBundle = {
   /** The plugins it holds, as src/data/plugins.ts slugs, in saleBundlePlugins' order (the card under the TV,
    *  the cart's thumbnail). Every paid one is in it, so the cart swaps singles out for it. */
   slugs: ['revlimiter', 'revfx', 'radio-roulette', 'gas', 'gas2', 'drift', 'obdtune', 'widebeam'],
+  /** The free ones: the cart's offer names only the paid plugins the bundle adds. */
+  free: ['gas', 'gas2'],
 };
