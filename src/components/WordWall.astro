@@ -224,7 +224,7 @@ const first = items[0]?.slug ?? '';
     </div>
 
     {/* the plugins: links to their pages; the script makes them the TV's channel buttons (tabs) */}
-    <ul class="ww-list" role="list" data-ww-list data-reveal-group data-stagger="0.07">
+    <ul class="ww-list" id="ww-list" role="list" data-ww-list data-reveal-group data-stagger="0.07">
       {items.map((it, i) => (
         <li class="ww-item" data-ww-item={it.slug} data-ww-cats={it.cats.join(' ')} data-reveal-item>
           <a
@@ -245,6 +245,13 @@ const first = items[0]?.slug ?? '';
         </li>
       ))}
     </ul>
+    {/* the strip's arrows (layout B, laptop): six channels in view, the rest a scroll or a drag away (Gil 2026-11-24) */}
+    <button type="button" class="ww-strip-arrow is-prev" data-ww-strip="-1" aria-controls="ww-list" aria-label="Previous plugins" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+    </button>
+    <button type="button" class="ww-strip-arrow is-next" data-ww-strip="1" aria-controls="ww-list" aria-label="More plugins" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+    </button>
 
     {/* the lit plugin: one panel per plugin, stacked in one cell (swapping never shifts the page) */}
     {items.map((it, i) => {
@@ -1082,6 +1089,68 @@ const first = items[0]?.slug ?? '';
     };
     light(lit, false); // the tabs' starting state
 
+    // THE STRIP (layout B, laptop; Gil 2026-11-24): six channels in view, the rest scroll sideways. The arrows page
+    // by a screenful, a mouse drags it (touch and trackpads scroll natively), and the lit channel is kept in view.
+    // On the phone the list is its own pane and none of this runs (the arrows stay hidden, no overflow).
+    const arrows = Array.from(wall.querySelectorAll<HTMLButtonElement>('[data-ww-strip]'));
+    if (list && arrows.length) {
+      const scroller = list;
+      const overflow = () => scroller.scrollWidth - scroller.clientWidth > 2;
+      let down = false, dragged = false, sx = 0, s0 = 0; // the mouse drag, below
+      const syncArrows = () => {
+        const on = overflow();
+        const x = scroller.scrollLeft, max = scroller.scrollWidth - scroller.clientWidth;
+        arrows.forEach((b) => {
+          b.hidden = !on;
+          b.disabled = +b.dataset.wwStrip! < 0 ? x <= 2 : x >= max - 2;
+        });
+      };
+      arrows.forEach((b) => b.addEventListener('click', () => {
+        scroller.scrollBy({ left: +b.dataset.wwStrip! * scroller.clientWidth * 0.84, behavior: reduced.matches ? 'auto' : 'smooth' });
+      }));
+      scroller.addEventListener('scroll', syncArrows, { passive: true });
+      new ResizeObserver(syncArrows).observe(scroller);
+      // the lit tab into view, inside the strip only (never scrolls the page)
+      const keepLit = () => {
+        syncArrows(); // a category swap changes how many channels there are
+        if (!overflow()) { if (scroller.scrollLeft) scroller.scrollLeft = 0; return; }
+        const a = rows.find((r) => slugOf(r) === lit);
+        const li = a?.parentElement;
+        if (!li || li.hidden) return;
+        // the item's box in the strip's scroll space; pad = the strip's inset, where the arrows sit
+        const pad = parseFloat(getComputedStyle(scroller).paddingLeft) || 0;
+        const l = li.offsetLeft - scroller.offsetLeft, r = l + li.offsetWidth;
+        const x = scroller.scrollLeft, w = scroller.clientWidth;
+        const how = reduced.matches ? 'auto' : 'smooth';
+        if (l - pad < x) scroller.scrollTo({ left: l - pad, behavior: how });
+        else if (r + pad > x + w) scroller.scrollTo({ left: r + pad - w, behavior: how });
+      };
+      rows.forEach((a) => a.addEventListener('focus', keepLit));
+      // a tab lit (is-lit) or a category swap (hidden): never the strip's own classes, and never mid-drag
+      new MutationObserver((ms) => { if (!down && ms.some((m) => m.target !== scroller)) keepLit(); })
+        .observe(list, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+      // a mouse drag scrolls it; a real drag (past 6 px) eats the click that follows, so the channel never changes
+      scroller.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'mouse' || e.button !== 0 || !overflow()) return;
+        down = true; dragged = false; sx = e.clientX; s0 = scroller.scrollLeft;
+      });
+      window.addEventListener('pointermove', (e) => {
+        if (!down) return;
+        const dx = e.clientX - sx;
+        if (!dragged && Math.abs(dx) > 6) { dragged = true; scroller.classList.add('is-dragging'); }
+        if (dragged) scroller.scrollLeft = s0 - dx;
+      });
+      window.addEventListener('pointerup', () => {
+        if (!down) return;
+        down = false;
+        scroller.classList.remove('is-dragging');
+      });
+      scroller.addEventListener('click', (e) => { if (dragged) { e.preventDefault(); e.stopImmediatePropagation(); dragged = false; } }, true);
+      scroller.addEventListener('dragstart', (e) => e.preventDefault()); // links and thumbnails never ghost-drag
+      syncArrows();
+      requestAnimationFrame(() => { syncArrows(); keepLit(); });
+    }
+
     // pick a category: its plugins stay (one after another), the lit one stays if it is in it, else the first lights
     const setCat = (c: string, announce = true, move = announce) => {
       if (!catBtns.some((b) => b.dataset.wwCat === c)) c = 'all';
@@ -1614,6 +1683,7 @@ const first = items[0]?.slug ?? '';
     align-content: center;
   }
   .ww-item[hidden] { display: none; }
+  .ww-strip-arrow { display: none; } /* layout B (laptop) shows them, below; the phone and high contrast never do */
   .ww-row {
     display: grid;
     /* the thumbnail fits the room's height too, as the name does (16:10; 1.15rem = the row's padding + its share of the
@@ -2554,6 +2624,33 @@ html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] {
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { gap: .45rem; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list { container-type: normal; height: var(--lay-strip); grid-template-columns: repeat(var(--ww-rows, 6), minmax(0, 1fr)); grid-auto-flow: column; align-content: stretch; gap: 0 clamp(.5rem, 1.2vw, 1rem); }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-item { min-width: 0; min-height: 0; }
+/* THE STRIP scrolls (Gil 2026-11-24): six channels in view, the rest sideways; arrows at the ends (WordWall script) */
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list {
+  --strip-gap: clamp(.5rem, 1.2vw, 1rem); --strip-in: 2.6rem;
+  grid-template-columns: none; grid-auto-columns: calc((100% - 2 * var(--strip-in) - 5 * var(--strip-gap)) / 6);
+  justify-content: safe center; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--strip-in); padding-inline: var(--strip-in); overscroll-behavior-x: contain;
+  scrollbar-width: none; cursor: grab;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--strip-in), #000 calc(100% - var(--strip-in)), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--strip-in), #000 calc(100% - var(--strip-in)), transparent 100%);
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list::-webkit-scrollbar { display: none; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list.is-dragging { cursor: grabbing; scroll-snap-type: none; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-list.is-dragging .ww-row { pointer-events: none; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-item { scroll-snap-align: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow:not([hidden]) {
+  grid-area: list; align-self: center; z-index: 3; display: grid; place-items: center;
+  width: 2.2rem; height: 2.2rem; padding: 0; border-radius: 50%; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--ww-ink) 45%, transparent);
+  background: color-mix(in srgb, #000 55%, transparent); color: var(--ww-ink);
+  box-shadow: 0 0 12px var(--ww-glow); transition: opacity .2s, color .2s, border-color .2s;
+}
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow.is-prev { justify-self: start; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow.is-next { justify-self: end; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow:hover:not(:disabled) { color: var(--ww-ink-hot); border-color: var(--ww-ink-hot); }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow:disabled { opacity: .25; cursor: default; box-shadow: none; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow:focus-visible { outline: 2px solid var(--ww-ink-hot); outline-offset: 3px; }
+html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-strip-arrow svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--ww-glow)); }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-row { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; row-gap: .3rem; padding: .3rem .25rem; --ww-thumb-col: auto; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb { height: calc(var(--lay-strip) - 2.4rem); width: auto; min-height: 0; aspect-ratio: 16 / 10; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb img, html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb.is-tall img { width: auto !important; height: auto !important; max-width: 100%; max-height: calc(var(--lay-strip) - 2.4rem) !important; }
