@@ -560,7 +560,9 @@ export const plugins: Plugin[] = [
     // Yoni 2026-10-10: the trial is live, so the store shows DRIFT with the live plugins
     trialOpen: true,
     introPriceUsd: null,
-    regularPriceUsd: null,
+    regularPriceUsd: 49, // = drift.ts listPriceUsd (the cart's price; Paddle charges its own $49.00)
+    // The cart's Paddle item (Gil 2026-11-25: buyable before release); the licence worker maps it to DRIFT's keys.
+    paddlePriceId: 'pri_01m4362j96wvbqtwf2v45k2pt9',
     checkoutPaused: false,
     demoUrl: null,
     releaseTarget: '2026',

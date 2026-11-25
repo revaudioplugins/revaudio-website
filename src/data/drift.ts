@@ -9,9 +9,9 @@
  * the page). 30 days (Dan 2026-10-08 "its 30 days free" = the plugin's
  * LicenseManager kTrialDays; was 14). After the trial you keep DRIFT one of three ways: free with a
  * qualifying video (creator deal via /affiliate), free by filling in the
- * feedback form (Yoni 2026-10-26; was $39) by Fri Nov 20, or $69 at release on Tue Dec 1. Prices show;
- * nothing is on sale before Dec 1 (no buy button, no checkout, no coupon or
- * discount wording). D2/H1: DRIFT pans the WHOLE sound; the LOW/HIGH CUT band
+ * feedback form (Yoni 2026-10-26; was $39) by Fri Nov 20, or buy it: $49, on sale before release since
+ * Gil 2026-11-25 (`onSale`; was $69 at release on Tue Dec 1). The TV and the cart sell it; the page keeps its
+ * trial. D2/H1: DRIFT pans the WHOLE sound; the LOW/HIGH CUT band
  * is only where echo, reverb, tremolo and pitch play.
  *
  * assertDriftConfig() runs in drift.astro's frontmatter, so a flip the page
@@ -31,7 +31,10 @@ export const drift = {
   feedbackClosesLabel: 'Fri Nov 20',
   releaseLabel: 'Tue Dec 1',
   trialDays: 30,
-  listPriceUsd: 69,
+  listPriceUsd: 49,
+  /** Buyable now, before release (Gil 2026-11-25): the TV's add-to-cart key and the cart (plugins.ts
+   *  paddlePriceId), and the page says "on sale now" instead of the release date. */
+  onSale: true,
   /** The feedback route's price: 0 = the form keeps DRIFT free (Yoni 2026-10-26; was 39). */
   driverPriceUsd: 0,
   showPrices: true,
@@ -148,10 +151,10 @@ export function routesFor(phase: DriftPhase = drift.phase): Route[] {
   };
   const release: Route = {
     id: 'release',
-    cond: 'Buy it at release',
-    heroCond: 'Wait for release',
-    keepNote: `Full price · ${nb(noDay(drift.releaseLabel))}`,
-    note: `DRIFT goes on sale ${drift.releaseLabel}.`,
+    cond: drift.onSale ? 'Buy it' : 'Buy it at release',
+    heroCond: drift.onSale ? 'Buy it now' : 'Wait for release',
+    keepNote: drift.onSale ? 'Full price · on sale now' : `Full price · ${nb(noDay(drift.releaseLabel))}`,
+    note: drift.onSale ? 'DRIFT is on sale now.' : `DRIFT goes on sale ${drift.releaseLabel}.`,
     value: p ? `$${drift.listPriceUsd}` : undefined,
   };
   switch (phase) {
@@ -190,7 +193,7 @@ export function lapFor(phase: DriftPhase = drift.phase): Lap | null {
         chip: p ? { label: 'Today', value: '$0' } : undefined },
       { id: 'check', flag: 'Checkpoint', date: nb(noDay(drift.feedbackClosesLabel)), what: 'Feedback form closes',
         chip: p ? { label: 'Filled the form', value: driverValue() } : undefined },
-      { id: 'finish', flag: 'Finish', date: nb(noDay(drift.releaseLabel)), what: 'On sale',
+      { id: 'finish', flag: 'Finish', date: nb(noDay(drift.releaseLabel)), what: drift.onSale ? 'Release' : 'On sale',
         chip: p ? { label: 'Everyone else', value: `$${drift.listPriceUsd}` } : undefined },
     ],
     shortcut: video?.href ? { label: 'Post a DRIFT video', value: video.value ?? 'Keep it', note: 'Video shortcut: we check it first', href: video.href } : undefined,

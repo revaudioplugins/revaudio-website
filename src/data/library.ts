@@ -77,6 +77,7 @@ export function priceLine(p: Plugin): string {
   if (p.isFree) return 'Free';
   if (p.status === 'live' && p.introPriceUsd != null) return fmtPrice(p.introPriceUsd);
   if (p.slug === 'revfx' && buyable()) return fmtPrice(revfx.priceUsd);
+  if (p.slug === 'drift' && drift.onSale) return fmtPrice(drift.listPriceUsd);
   if (p.slug === 'drift') return drift.phase === 'preopen' || drift.phase === 'open' ? 'Free beta' : `On sale ${drift.releaseLabel}`;
   return '';
 }
@@ -131,6 +132,7 @@ export function tryAction(p: Plugin): TvAction | null {
 export function cartAction(p: Plugin): { price: number } | null {
   if (p.isFree || !p.paddlePriceId || p.checkoutPaused) return null;
   if (p.slug === 'revfx') return buyable() ? { price: revfx.priceUsd! } : null;
+  if (p.slug === 'drift') return drift.onSale ? { price: drift.listPriceUsd } : null;
   if (p.status !== 'live') return null;
   const price = p.introPriceUsd ?? p.regularPriceUsd; // the cart catalog's own price (Cart.astro)
   return price == null ? null : { price };
