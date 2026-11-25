@@ -76,6 +76,10 @@ bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro u
   branches on our files: `feat/garage-home` (index, Cart) and `feat/phone-dive` (WordWall +103/-14) clash with this
   only in `tasks/handoff.md`, `tasks/lessons.md` (+ `.impeccable/config.json` for phone-dive); WordWall auto-merges
   (not built). Whoever lands second merges those notes by hand.
+- Dan: "push the branch, send to Gil for QA" (not main). Gil's QA note: `tasks/bundle-qa-handoff-gil-2026-11-25.md`
+  (what changed from his reference, how to run it, a 9-item QA list, what we checked, the open price question). The
+  cart rules were clicked through in WebKit for it (bundle in -> RevLimiter out with a note; RevFX refused with a
+  note; subtotal $69.00). The merge into main waits for Gil's QA and Dan's word. Claim stays OPEN until then.
 
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
