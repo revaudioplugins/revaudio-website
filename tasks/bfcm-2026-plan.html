@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RevAudio BFCM 2026</title>
+<style>
+:root{
+  --bg:#13100d; --panel:#1c1814; --panel2:#241f1a; --line:#3a322a;
+  --text:#ece6dc; --muted:#a79c8d; --brass:#d1a54e; --oxide:#d0643a;
+  --cyber:#4fd1a5; --chip:#2c261f; --warn-bg:#3a2417; --ok:#8fbf6a;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f6f2ea; --panel:#fffdf8; --panel2:#f1ebe0; --line:#ddd2c1;
+    --text:#221c15; --muted:#6c6152; --brass:#8a6418; --oxide:#a8431c;
+    --cyber:#137a5a; --chip:#efe7d9; --warn-bg:#fbe9dc; --ok:#4c7a2a;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:30px;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:21px;margin:44px 0 12px;padding-top:12px;border-top:1px solid var(--line)}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:8px 0}
+.muted{color:var(--muted)}
+.brass{color:var(--brass)} .cyber{color:var(--cyber)} .oxide{color:var(--oxide)}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 0}
+nav a{color:var(--text);text-decoration:none;background:var(--chip);border:1px solid var(--line);padding:4px 10px;border-radius:999px;font-size:13px}
+nav a:hover{border-color:var(--brass)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h3{margin-top:0}
+.big{font-size:28px;font-weight:700;line-height:1.1}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.bf{color:var(--brass);border-color:var(--brass)}
+.tag.cm{color:var(--cyber);border-color:var(--cyber)}
+.tag.ok{color:var(--ok);border-color:var(--ok)}
+.tag.open{color:var(--oxide);border-color:var(--oxide)}
+.tbl{width:100%;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--panel2);font-size:13px;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.warn{background:var(--warn-bg);border:1px solid var(--oxide);border-radius:10px;padding:12px 16px;margin:12px 0}
+.warn b{color:var(--oxide)}
+ul,ol{padding-left:22px;margin:8px 0} li{margin:4px 0}
+code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--chip);padding:1px 5px;border-radius:4px}
+.day{font-weight:700;white-space:nowrap}
+.check{list-style:none;padding-left:0}
+.check li{display:flex;gap:8px;align-items:flex-start}
+.check input{margin-top:4px;accent-color:var(--brass)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.filters button{font:inherit;font-size:13px;background:var(--chip);color:var(--text);border:1px solid var(--line);padding:4px 12px;border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{border-color:var(--brass);color:var(--brass)}
+.prompt{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:12px 0}
+.prompt summary{cursor:pointer;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;list-style:none}
+.prompt summary::-webkit-details-marker{display:none}
+.prompt summary::before{content:"\25B8";color:var(--muted)}
+.prompt[open] summary::before{content:"\25BE"}
+.prompt .body{padding:0 16px 14px}
+.prompt pre{white-space:pre-wrap;word-wrap:break-word;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:420px;overflow:auto;margin:8px 0 0}
+.copy{font:inherit;font-size:13px;background:var(--brass);color:#1a140c;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:600}
+.copy:focus-visible,.filters button:focus-visible,nav a:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.sp{flex:1}
+footer{margin-top:50px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="muted">RevAudio · plan · written 2026-10-26 from Gil's approvals</div>
+  <h1>Black Friday &amp; Cyber Monday 2026</h1>
+  <p class="muted">The offer, the site themes, the emails (with ready-to-send Claude prompts), the reels and posts, and one timetable. Plus a small paid ads push.</p>
+  <nav aria-label="Sections">
+    <a href="#glance">At a glance</a><a href="#open">Open decisions</a><a href="#offer">Offer</a><a href="#drift">DRIFT</a>
+    <a href="#site">Site themes</a><a href="#email">Emails</a><a href="#prompts">Email prompts</a>
+    <a href="#social">Reels &amp; posts</a><a href="#ads">Ads</a><a href="#timeline">Timetable</a><a href="#runofshow">Launch-day checklists</a>
+  </nav>
+</header>
+
+<h2 id="glance">At a glance</h2>
+<div class="grid">
+  <div class="card"><span class="tag bf">Black Friday</span>
+    <div class="big brass" style="margin-top:8px">50% off</div><p>everything paid</p>
+    <div class="big brass">$69</div><p>the 8-plugin bundle</p>
+    <p class="muted">Public: Fri Nov 27 → Sun Nov 29<br>Email list early: from Mon Nov 23</p></div>
+  <div class="card"><span class="tag cm">Cyber Monday</span>
+    <div class="big cyber" style="margin-top:8px">40% off</div><p>everything paid</p>
+    <div class="big cyber">$69</div><p>the same 8-plugin bundle</p>
+    <p class="muted">Mon Nov 30, one day</p></div>
+  <div class="card"><h3>Emails</h3>
+    <p><b>5 sends</b> to each of 4 groups:</p>
+    <ul><li>Mon Nov 23 (early access)</li><li>Thu Nov 26 (tomorrow is Black Friday)</li><li>Fri Nov 27 (Black Friday)</li><li>Sun Nov 29 (last day of Black Friday, Cyber Monday tomorrow)</li><li>Mon Nov 30 (Cyber Monday)</li></ul>
+    <p class="muted">20 prompts below, ready for Claude.</p></div>
+  <div class="card"><h3>Social</h3>
+    <p><b>6 reels + 2 photo posts</b></p>
+    <ul><li>Nov 24 reel, Nov 26 reel</li><li>Nov 27: reel + photo</li><li>Nov 28 reel</li><li>Nov 29 reel (CM teaser)</li><li>Nov 30: reel + photo</li></ul>
+    <p class="muted">Plus a small paid ads push (see Ads).</p></div>
+</div>
+
+<h2 id="open">Open decisions <span class="tag open">needed before building</span></h2>
+<p>Everything else on this page is approved. These are gaps I found while writing it. Each one has my suggestion so you can just say yes or change it.</p>
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>Decision</th><th>My suggestion</th><th>Decide by</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Exact sale windows and timezone</td><td><span class="tag ok">Decided Nov 2</span> Black Friday price runs Fri Nov 27 00:00 → Sun Nov 29 23:59 <b>US Pacific</b>. Cyber Monday price Mon Nov 30 00:00 → 23:59 PT. Everything back to normal Tue Dec 1 00:00 PT (10:00 Israel). Pacific is the latest US clock, so nobody in the US loses a day.</td><td>—</td></tr>
+<tr><td>2</td><td>Prices of RevFX, GAS2, OBDTune</td><td><span class="tag ok">Decided</span> RevFX <b>$19</b>, GAS2 <b>free</b> (Oct 26). OBDTune is renamed <b>OBDTune</b>, <b>$15</b> (Nov 2). RevFX, GAS2 and OBDTune still need adding to <code>src/data/plugins.ts</code>.</td><td>—</td></tr>
+<tr><td>3</td><td>Is OBDTune in the bundle?</td><td><span class="tag ok">Decided Nov 2</span> OBDTune is in <b>only if it's released by Sun Nov 22</b>, the day before early access. If not, the bundle ships without it at the same $69, and the copy's plugin count drops by one (Wide Beam, added Nov 17, follows the same rule). No "coming soon" promise. The emails and the site skin are prepared with OBDTune in. On Nov 22 either nothing changes, or one change drops it: the skin config, the Paddle bundle and the plugin count in the 5 email sends.</td><td>Nov 22</td></tr>
+<tr><td>4</td><td>DRIFT beta promise vs the sale price</td><td><span class="tag ok">Not relevant</span> Nobody bought DRIFT at $39 (nobody finished the form). The beta is extended to <b>Fri Nov 20</b>, and everyone who finishes the form gets DRIFT <b>free</b>, so the sale price doesn't undercut anyone.</td><td>—</td></tr>
+<tr><td>5</td><td>Buyers' extra</td><td><span class="tag ok">Decided Nov 2</span> No extra bundle coupon. Buyers get <b>early Black Friday access from Mon Nov 23</b>, same prices as everyone.</td><td>—</td></tr>
+<tr><td>6</td><td>The "50% off $49" claim</td><td><span class="tag ok">Decided Oct 26</span> No crossed-out price. Same as Halloween's <code>BOO</code>: the site shows the normal price, and a <b>50% code</b> sits next to the skin's prop, entered at checkout. Cyber Monday works the same way with a 40% code. The bundle has its own price ($69 on both days), so it needs no code.</td><td>—</td></tr>
+<tr><td>7</td><td>Code names</td><td>Early access (list only): <code>PITLANE</code>. Black Friday public: <code>REDLINE</code>. Cyber Monday: <code>CYBER40</code>. Codes are the mechanism (decision 6), so they need to be short and easy to type.</td><td>Nov 9</td></tr>
+<tr><td>8</td><td>Email sending limits</td><td><span class="tag ok">Not a limit</span> We're on an unlimited Resend plan. The only limit is the worker's 35 sends per press, which the loop script in the prep tasks takes care of.</td><td>—</td></tr>
+<tr><td>9</td><td>Popup-only signups</td><td><span class="tag ok">Decided Nov 2</span> <b>Left out</b> of every email. Popup signups (<code>popuplead:</code>) didn't clearly agree to marketing, so no legal risk is worth it.</td><td>—</td></tr>
+<tr><td>10</td><td>Paid ads: budget, platforms, days</td><td>Small and warm. <b>Meta (Instagram):</b> boost the Black Friday and Cyber Monday reels to people who already know us (site visitors in the last 30 days, Instagram engagers), about $15–25 a day Nov 27–30. <b>Google:</b> Search on the brand and product names only, at the current budget, only if the "free desktop software" certification (case 4-6073000041684) is approved. Every ad names the plugin and uses the same codes. No cold audiences.</td><td>Nov 13</td></tr>
+</tbody></table></div>
+
+<h2 id="offer">The offer</h2>
+<div class="tbl"><table>
+<thead><tr><th>Plugin</th><th>List</th><th>Black Friday (−50%)</th><th>Cyber Monday (−40%)</th><th>In bundle</th></tr></thead>
+<tbody>
+<tr><td>RevLimiter</td><td class="num">$49</td><td class="num brass">$24.50</td><td class="num cyber">$29.40</td><td>✓</td></tr>
+<tr><td>Radio Roulette</td><td class="num">$19</td><td class="num brass">$9.50</td><td class="num cyber">$11.40</td><td>✓</td></tr>
+<tr><td>DRIFT</td><td class="num">$69</td><td class="num brass">$34.50</td><td class="num cyber">$41.40</td><td>✓ (see <a href="#drift" class="brass">DRIFT</a>)</td></tr>
+<tr><td>RevFX</td><td class="num">$19</td><td class="num brass">$9.50</td><td class="num cyber">$11.40</td><td>✓</td></tr>
+<tr><td>GAS2</td><td class="num">Free</td><td class="num">Free</td><td class="num">Free</td><td>✓</td></tr>
+<tr><td>OBDTune</td><td class="num">$15</td><td class="num brass">$7.50</td><td class="num cyber">$9.00</td><td>✓ only if released by Nov 22</td></tr>
+<tr><td>GAS</td><td class="num">Free</td><td class="num">Free</td><td class="num">Free</td><td>✓</td></tr>
+<tr><td><b>The bundle</b> (all 8)</td><td class="num">$180 ($171 without Wide Beam, $165 without OBDTune)</td><td class="num brass"><b>$69</b></td><td class="num cyber"><b>$69</b></td><td></td></tr>
+</tbody></table></div>
+
+<h3>Rules</h3>
+<ul>
+  <li><b>"Everything"</b> means every paid plugin on the store. GAS and GAS2 stay free.</li>
+  <li>The bundle is its own Paddle product with its own price. The percentage codes don't stack on it.</li>
+  <li>The bundle is $69 on both Black Friday and Cyber Monday (Gil, Nov 17): one Paddle price, no switch at midnight. 8 plugins, Wide Beam ($9) included.</li>
+  <li>Cyber Monday is a smaller discount than Black Friday. Say it plainly: "Black Friday prices ended Sunday. Cyber Monday is 40% off, today only." Never imply Cyber Monday is the better deal.</li>
+  <li>Real end times on every countdown. No extensions after Dec 1. The honesty rule in PRODUCT.md is the brand.</li>
+  <li>The Halloween <code>BOO</code> code (15%) ends Oct 31 and is removed from the site Nov 1.</li>
+</ul>
+
+<h3>Paddle setup (prep)</h3>
+<ul class="check" data-list="paddle">
+  <li><input type="checkbox" id="p1"><label for="p1">Bundle product with all bundle plugins as one licence order. The licence worker's Paddle webhook mints one key per plugin in it (check it handles a multi-plugin product before Nov 16).</label></li>
+  <li><input type="checkbox" id="p2"><label for="p2">Bundle price: $69, the same on Black Friday and Cyber Monday.</label></li>
+  <li><input type="checkbox" id="p3"><label for="p3">Discount codes: early access 50% (Nov 23 → Nov 29), public Black Friday 50% (Nov 27 → Nov 29), Cyber Monday 40% (Nov 30). Each with a hard expiry in Paddle, excluding the bundle.</label></li>
+  <li><input type="checkbox" id="p4"><label for="p4">One full test order per code and per bundle price with a 100% test code, like Yoni's Oct 7 test. Check keys arrive for every bundle plugin.</label></li>
+</ul>
+
+<h2 id="drift">DRIFT in the bundle</h2>
+<ul>
+  <li>DRIFT is sold in the bundle (and on its own at 50% / 40% off), so buyers can buy it from Nov 23.</li>
+  <li>Buyers get the current build right away. When the release build ships a few days later, they get it as a <b>free update</b> with the same licence. If we don't put out a new build, they keep what they have.</li>
+  <li>Copy must say this plainly: "DRIFT is included. You get the current build today, and the release build as a free update when it ships." No release date unless we've fixed one.</li>
+  <li>Before Nov 23: confirm the bundle licence unlocks the DRIFT build that's live, and that the update check or download portal will offer the release build to bundle buyers.</li>
+  <li>The DRIFT beta runs until <b>Fri Nov 20</b>. Everyone who finishes the beta form gets DRIFT free, so they shouldn't be pitched DRIFT itself in the sale emails (the bundle's other plugins, yes).</li>
+  <li><b>Check:</b> the worker's <code>/drift-feedback</code> handler still mints a <b>$30-off</b> code ($69 → $39) for a finished form (<code>DRIFT_FB_OFF_CENTS</code>). For "free", change it to a 100%-off DRIFT code, or mint the licence directly. Also update the beta page and email copy that still says $39 and Nov 1.</li>
+</ul>
+
+<h2 id="site">Site themes</h2>
+<p>Same system as the Halloween skin (commits <code>9bcfb79</code> → <code>eb73dff</code>): a seasonal overlay on home + store, page-transition scenes mounted in <code>BaseLayout</code>, and the code next to a prop in the store. Halloween lives on this worktree's branch, so the Black Friday and Cyber Monday skins build on it.</p>
+<div class="grid">
+  <div class="card"><span class="tag bf">Black Friday skin</span><h3 style="margin-top:8px">"Lights out in the garage"</h3>
+    <ul><li>The garage goes black, with one work lamp on the car. Brass and oxide only.</li>
+    <li>The price as a stamped licence plate: "50% OFF" and "BUNDLE $69".</li>
+    <li>Transition scene: the roll-up door slams down to black and comes back up.</li>
+    <li>A real countdown to Sun Nov 29 23:59 PT.</li>
+    <li>A bundle card on the store and home page, listing all 8 plugins and their total value.</li></ul></div>
+  <div class="card"><span class="tag cm">Cyber Monday skin</span><h3 style="margin-top:8px">"Diagnostic mode"</h3>
+    <ul><li>Same garage, but a scan-tool / ECU screen takes over: green readout, scanlines.</li>
+    <li>"40% OFF" and "BUNDLE $69" on the digital readout.</li>
+    <li>Transition scene: a boot sequence on the dash screen.</li>
+    <li>Countdown to Mon Nov 30 23:59 PT.</li>
+    <li>Same bundle card, new price.</li></ul></div>
+</div>
+<h3>Rules for both skins</h3>
+<ul>
+  <li>The skin switches itself by date (PT): Black Friday on Fri Nov 27 00:00, Cyber Monday on Mon Nov 30 00:00, off Tue Dec 1 00:00. The code shown and the bundle price switch from the same date table, so nobody has to push at midnight. Plugin prices on the site stay at list, like Halloween: the code next to the prop is the discount.</li>
+  <li>Early access (Nov 23–26) is email-only: the public site shows normal prices, and the code works at checkout.</li>
+  <li>Reduced-motion versions of every animation. Countdown announced politely (aria-live), visible keyboard focus. WCAG AA like the rest of the site.</li>
+  <li>Test with a date override (e.g. <code>?now=2026-11-30T08:00-08:00</code>, dev only) to preview each phase before it's live.</li>
+  <li>The push is Dan's call ("push" in chat), same as every live deploy.</li>
+</ul>
+
+<h2 id="email">Emails</h2>
+<p>Every address gets <b>one</b> email per send day, from the first group it matches in this order. Groups are re-computed on each send day, so someone who buys on Nov 24 moves to "Buyers" (and gets no more sale pitches for what they bought).</p>
+<div class="tbl"><table>
+<thead><tr><th>Group</th><th>Who</th><th>The angle</th><th>Data source and caveats</th></tr></thead>
+<tbody>
+<tr><td><b>1. Buyers</b></td><td>Anyone in the <code>sale:</code> ledger (non-test)</td><td>Thanks. The bundle fills in what they don't own. Early Black Friday access from Nov 23. No extra coupon.</td><td>Solid. Bought during the sale = skip later sends for that purchase.</td></tr>
+<tr><td><b>2. Tried it</b></td><td>Opened a paid plugin's trial (first-open record), <b>or</b> downloaded a RevLimiter / Radio Roulette trial. Not a buyer.</td><td>Warmest group. "You've heard what it does. It's half price." The plugin they tried + the bundle.</td><td>RevLimiter and Radio Roulette don't send the first-open ping, so their trial users count as "tried" by default.</td></tr>
+<tr><td><b>3. Never opened</b></td><td>Downloaded a DRIFT / RevFX / OBDTune trial, no first-open record on any plugin. Not a buyer.</td><td>"Did it install OK? Reply and we'll sort it." Then the deal.</td><td>Open linking is by network, so some of these did open it. Copy must <b>never</b> say "you didn't open it".</td></tr>
+<tr><td><b>4. Free only</b></td><td>Downloaded GAS / GAS2 only. No paid trial, not a buyer.</td><td>"You know GAS. Here's the rest of the garage." RevLimiter at half price + the bundle.</td><td>Solid.</td></tr>
+</tbody></table></div>
+<p class="muted">Popup signups are never emailed (decision 9).</p>
+
+<h3>Send timetable</h3>
+<div class="tbl"><table>
+<thead><tr><th>Send</th><th>When</th><th>Groups</th><th>What it says</th></tr></thead>
+<tbody>
+<tr><td><span class="tag bf">Early access</span></td><td class="day">Mon Nov 23, 16:00 Israel / 09:00 ET</td><td>1–4</td><td>You're on the list, so you get Black Friday 4 days early. Code works now, ends Sun Nov 29 23:59 PT.</td></tr>
+<tr><td><span class="tag bf">Tomorrow</span></td><td class="day">Thu Nov 26, 16:00 Israel / 09:00 ET</td><td>1–4, minus anyone who bought the bundle since Nov 23</td><td>Tomorrow is Black Friday. Your early access code already works, so no need to wait for the crowd. Bundle $69.</td></tr>
+<tr><td><span class="tag bf">Black Friday</span></td><td class="day">Fri Nov 27, 16:00 Israel / 09:00 ET</td><td>1–4, minus anyone who bought the bundle since Nov 23</td><td>It's live for everyone now. Ends Sunday night.</td></tr>
+<tr><td><span class="tag bf">Last day</span></td><td class="day">Sun Nov 29, 16:00 Israel / 09:00 ET</td><td>1–4, minus bundle buyers since Nov 23</td><td>Last day of Black Friday: 50% off and the $69 bundle end tonight 23:59 PT. Tomorrow is Cyber Monday: 40% off, so today is the better price on single plugins (the bundle stays $69).</td></tr>
+<tr><td><span class="tag cm">Cyber Monday</span></td><td class="day">Mon Nov 30, 16:00 Israel / 09:00 ET</td><td>1–4, minus bundle buyers since Nov 23</td><td>Black Friday ended. Today only: 40% off, and the bundle is still $69. Ends tonight 23:59 PT.</td></tr>
+</tbody></table></div>
+
+<h3>Prep: make the worker able to send per group</h3>
+<p>Today <code>/admin/campaign/send</code> sends to the whole marketing audience, minus a <code>skip</code> rule that only sees the lead record. It can't send "buyers only" or "never opened" yet. Before the drafts get uploaded:</p>
+<ul class="check" data-list="worker">
+  <li><input type="checkbox" id="w1"><label for="w1">Add an <code>audience</code> field to <code>CAMPAIGNS</code> entries: <code>buyers | tried | unopened | freeonly</code> (popup signups never included), with the precedence above and "bought since Nov 23" handling. A dry run shows the count per group.</label></li>
+  <li><input type="checkbox" id="w2"><label for="w2">A test that every address lands in exactly one group per send day.</label></li>
+  <li><input type="checkbox" id="w3"><label for="w3">A small script that keeps pressing send (35 per press) until <code>remaining: 0</code>, so a launch-day send isn't 30 manual clicks. It stops on any error.</label></li>
+  <li><input type="checkbox" id="w5"><label for="w5">All 20 campaign entries + HTML in R2 + worker deployed by <b>Sat Nov 21</b>. Then each send day is just: test → OK → send.</label></li>
+</ul>
+<details class="prompt" data-group="prep" data-wave="prep"><summary><span class="tag">Prep prompt</span><b>Worker: per-group campaign audiences</b><span class="sp"></span><button class="copy" type="button">Copy</button></summary><div class="body"><pre></pre></div></details>
+
+<h2 id="prompts">Email prompts</h2>
+<p>Copy one, paste it into Claude Code from the Revlimiter or revaudio-website folder. Claude writes the email, shows it to you, sends a test only to the two test inboxes, and sends to the group <b>only after you say so</b>. Drafts can be done ahead (by Nov 18) and the sending part run on the day.</p>
+<div class="filters" role="group" aria-label="Filter prompts by send day">
+  <button type="button" data-f="all" aria-pressed="true">All</button>
+  <button type="button" data-f="early" aria-pressed="false">Mon Nov 23 · Early access</button>
+  <button type="button" data-f="eve" aria-pressed="false">Thu Nov 26 · Tomorrow</button>
+  <button type="button" data-f="bf" aria-pressed="false">Fri Nov 27 · Black Friday</button>
+  <button type="button" data-f="last" aria-pressed="false">Sun Nov 29 · Last day</button>
+  <button type="button" data-f="cm" aria-pressed="false">Mon Nov 30 · Cyber Monday</button>
+</div>
+<div id="promptList"></div>
+
+<h2 id="social">Reels &amp; posts</h2>
+<p>Instagram (cross-post to TikTok / YouTube Shorts if you want). All edited and approved by <b>Fri Nov 20</b>. Times are suggestions.</p>
+<div class="tbl"><table>
+<thead><tr><th>Day</th><th>Post</th><th>Suggested time</th><th>Idea</th></tr></thead>
+<tbody>
+<tr><td class="day">Tue Nov 24</td><td><span class="tag bf">Reel 1</span></td><td>17:00 IL / 10:00 ET</td><td>Teaser, 3 days out: the garage door rolls down, black screen, "Friday. 50% off everything. All 7 plugins $69." End card with the date.</td></tr>
+<tr><td class="day">Thu Nov 26</td><td><span class="tag bf">Reel 2</span></td><td>17:00 IL / 10:00 ET</td><td>"Tomorrow." Quick tour of the 7 plugins in the bundle, 1–2 seconds each, a real before/after sound on each.</td></tr>
+<tr><td class="day" rowspan="2">Fri Nov 27</td><td><span class="tag bf">Reel 3</span></td><td>15:00 IL / 08:00 ET</td><td>"It's live." RevLimiter on a master, needle hitting the redline, price stamp slams: $24.50.</td></tr>
+<tr><td><span class="tag bf">Photo post</span></td><td>19:00 IL / 12:00 ET</td><td>Price card: the 8-plugin bundle as licence plates on a wall, $69, end time "Sun Nov 29, 23:59 PT".</td></tr>
+<tr><td class="day">Sat Nov 28</td><td><span class="tag bf">Reel 4</span></td><td>17:00 IL / 10:00 ET</td><td>Black Friday bundle walkthrough: one track, add plugins one by one (GAS → RevLimiter, DRIFT on the vocal, Radio Roulette on a send). "All of this, $69. Ends tomorrow 23:59 PT."</td></tr>
+<tr><td class="day">Sun Nov 29</td><td><span class="tag cm">Reel 5</span></td><td>17:00 IL / 10:00 ET</td><td>"Black Friday ends tonight. Tomorrow: Cyber Monday." The garage dash switches to diagnostic mode. 40% / bundle still $69 teaser.</td></tr>
+<tr><td class="day" rowspan="2">Mon Nov 30</td><td><span class="tag cm">Reel 6</span></td><td>15:00 IL / 08:00 ET</td><td>"Cyber Monday is live." Scan-tool screen boots, reads out 40% OFF and BUNDLE $69.</td></tr>
+<tr><td><span class="tag cm">Photo post</span></td><td>19:00 IL / 12:00 ET</td><td>Cyber price card: ECU-screen style, all 8 plugins, still $69, "ends tonight 23:59 PT".</td></tr></tbody></table></div>
+<p class="muted">Same honesty rules as the site: real prices, real end times, real audio, no invented quotes.</p>
+
+<h2 id="ads">Ads</h2>
+<p><span class="tag ok">Decided Nov 2</span> A small paid push on top of email and social. Budget, platforms and days are <a href="#open" class="oxide">decision 10</a>. My suggestion is there: warm audiences only, mostly boosting the reels we're already making.</p>
+<ul>
+  <li>Purchase tracking is already live: the server-side Purchase conversion for Google and Meta, consent-gated. Each sale shows up per campaign.</li>
+  <li>Google Search can't advertise trials until the "free desktop software" certification is approved. Check info@revaudio.net for case 4-6073000041684 first.</li>
+  <li>Same honesty rules as everywhere: the real code, the real end time, the plugin's name in every ad.</li>
+  <li>The Meta Ads connector isn't connected to Claude yet. Connect it in the claude.ai connector settings if Claude should help set up the boosts.</li>
+  <li>Ads on Fri Nov 27 00:00 PT, off Tue Dec 1 00:00 PT.</li>
+</ul>
+
+<h2 id="timeline">Master timetable</h2>
+<div class="tbl"><table>
+<thead><tr><th>When</th><th>What</th></tr></thead>
+<tbody>
+<tr><td class="day">Mon Oct 26</td><td>Plan approved (this page).</td></tr>
+<tr><td class="day">Sat Oct 31 / Sun Nov 1</td><td>Halloween ends. Remove the skin and the <code>BOO</code> code.</td></tr>
+<tr><td class="day">by Mon Nov 2</td><td>Decision 1 (sale windows and timezone).</td></tr>
+<tr><td class="day">by Mon Nov 9</td><td>Decisions 5 and 7 (buyer extra, code names). Paddle bundle + codes created.</td></tr>
+<tr><td class="day">Fri Nov 13</td><td>Ads budget and platforms decided (decision 10). Black Friday skin ready for review.</td></tr>
+<tr><td class="day">by Mon Nov 16</td><td>Worker per-group audiences done and tested. Paddle test orders pass (all codes, the bundle price, keys for every plugin). Cyber Monday skin ready for review.</td></tr>
+<tr><td class="day">by Wed Nov 18</td><td>All 20 email drafts written and approved.</td></tr>
+<tr><td class="day">Thu Nov 19</td><td>Test sends of all 20 to the two test inboxes. Fix anything.</td></tr>
+<tr><td class="day">Fri Nov 20</td><td>DRIFT beta ends. Everyone who finished the beta form gets a free DRIFT licence. All 6 reels + 2 photo posts and the ad versions edited and approved. Site skins pushed live (dormant until Nov 27 by date). Previews checked with the date override.</td></tr>
+<tr><td class="day">Sat Nov 21</td><td>Campaign entries + HTML in R2, worker deployed. Early access code goes live in Paddle Mon Nov 23.</td></tr>
+<tr><td class="day">Fri Nov 20</td><td>"Black Friday in…" countdown appears on the home page at 00:00 PT (automatic, runs until the Black Friday skin takes over).</td></tr>
+<tr><td class="day">Sun Nov 22</td><td>OBDTune released? If not: drop it from the bundle (skin config, Paddle bundle, email copy says "6 plugins").</td></tr>
+<tr><td class="day brass">Mon Nov 23</td><td>Early access code on. <b>Email send 1</b> (all 4 groups) 16:00 IL.</td></tr>
+<tr><td class="day brass">Tue Nov 24</td><td>Reel 1.</td></tr>
+<tr><td class="day brass">Thu Nov 26</td><td><b>Email send 2</b> ("tomorrow is Black Friday") 16:00 IL. Reel 2.</td></tr>
+<tr><td class="day brass">Fri Nov 27</td><td>Black Friday skin + prices live 00:00 PT (10:00 IL). <b>Email send 3</b> 16:00 IL. Reel 3, photo post. Ads on.</td></tr>
+<tr><td class="day brass">Sat Nov 28</td><td>Reel 4 (Black Friday).</td></tr>
+<tr><td class="day brass">Sun Nov 29</td><td><b>Email send 4</b> ("last day of Black Friday, Cyber Monday tomorrow") 16:00 IL. Reel 5 (Cyber Monday teaser). Black Friday ends 23:59 PT.</td></tr>
+<tr><td class="day cyber">Mon Nov 30</td><td>Cyber Monday skin, 40% code live 00:00 PT (bundle stays $69). <b>Email send 5</b> 16:00 IL. Reel 6, photo post. Ends 23:59 PT.</td></tr>
+<tr><td class="day">Tue Dec 1</td><td>Everything off at 00:00 PT (10:00 IL): skin, codes, bundle price, ads. Check the site and Paddle show normal prices.</td></tr>
+<tr><td class="day">Thu Dec 3</td><td>Recap: orders by product, bundle vs single, by send and group (utm A/B counts), refunds. Write down what to repeat in 2027.</td></tr>
+<tr><td class="day">When DRIFT release ships</td><td>Release build as a free update to everyone who bought DRIFT or the bundle.</td></tr>
+</tbody></table></div>
+
+<h2 id="runofshow">Launch-day checklists</h2>
+<div class="grid">
+  <div class="card"><span class="tag bf">Mon Nov 23</span>
+    <ul class="check" data-list="d23">
+      <li><input type="checkbox" id="a1"><label for="a1">Early access code works (one real-card test, refund it)</label></li>
+      <li><input type="checkbox" id="a2"><label for="a2">Dry run counts per group look right</label></li>
+      <li><input type="checkbox" id="a3"><label for="a3">Send 1 to groups 1 → 4</label></li>
+      <li><input type="checkbox" id="a4"><label for="a4">Watch replies at info@ / support@ for 2 hours</label></li>
+    </ul></div>
+  <div class="card"><span class="tag bf">Thu Nov 26</span>
+    <ul class="check" data-list="d26">
+      <li><input type="checkbox" id="t1"><label for="t1">Early access code still works</label></li>
+      <li><input type="checkbox" id="t2"><label for="t2">Dry run: Nov 23–26 bundle buyers are out</label></li>
+      <li><input type="checkbox" id="t3"><label for="t3">Send 2 ("tomorrow is Black Friday")</label></li>
+      <li><input type="checkbox" id="t4"><label for="t4">Reel 2</label></li>
+    </ul></div>
+  <div class="card"><span class="tag bf">Fri Nov 27</span>
+    <ul class="check" data-list="d27">
+      <li><input type="checkbox" id="b1"><label for="b1">10:00 IL: skin live, 50% code shown and working, bundle $69, on home, store, each product page, phone too</label></li>
+      <li><input type="checkbox" id="b2"><label for="b2">Bundle checkout at $69 works, keys arrive</label></li>
+      <li><input type="checkbox" id="b3"><label for="b3">Send 3</label></li>
+      <li><input type="checkbox" id="b4"><label for="b4">Reel 3, photo post</label></li>
+      <li><input type="checkbox" id="b5"><label for="b5">Ads running, spend on track</label></li>
+    </ul></div>
+  <div class="card"><span class="tag bf">Sun Nov 29</span>
+    <ul class="check" data-list="d29">
+      <li><input type="checkbox" id="l1"><label for="l1">Black Friday code and $69 bundle still work</label></li>
+      <li><input type="checkbox" id="l2"><label for="l2">Dry run: bundle buyers since Nov 23 are out</label></li>
+      <li><input type="checkbox" id="l3"><label for="l3">Send 4 ("last day, Cyber Monday tomorrow")</label></li>
+      <li><input type="checkbox" id="l4"><label for="l4">Reel 5 (Cyber Monday teaser)</label></li>
+    </ul></div>
+  <div class="card"><span class="tag cm">Mon Nov 30</span>
+    <ul class="check" data-list="d30">
+      <li><input type="checkbox" id="c1"><label for="c1">10:00 IL: Cyber skin live, 40% code shown and working, bundle still $69</label></li>
+      <li><input type="checkbox" id="c2"><label for="c2">The Black Friday code no longer works</label></li>
+      <li><input type="checkbox" id="c3"><label for="c3">Send 5</label></li>
+      <li><input type="checkbox" id="c4"><label for="c4">Reel 6, photo post</label></li>
+    </ul></div>
+  <div class="card"><span class="tag">Tue Dec 1</span>
+    <ul class="check" data-list="d01">
+      <li><input type="checkbox" id="e1"><label for="e1">10:00 IL: skin gone, normal prices</label></li>
+      <li><input type="checkbox" id="e2"><label for="e2">All codes expired, bundle not on sale</label></li>
+      <li><input type="checkbox" id="e4"><label for="e4">Ads paused</label></li>
+      <li><input type="checkbox" id="e3"><label for="e3">No email or post says the sale is still on</label></li>
+    </ul></div>
+</div>
+
+<footer>Plan file: /Users/gilmichaeli/revaudio-website-halloween/tasks/bfcm-2026-plan.html · Checkboxes are saved in this browser only.</footer>
+</div>
+
+<script>
+(function(){
+  var PLAN = "/Users/gilmichaeli/revaudio-website-halloween/tasks/bfcm-2026-plan.html";
+  var WORKER = "Revlimiter/tools/RevLicenseKeygen/gumroad-worker/src/worker.js";
+
+  var CONTEXT = [
+    "You're writing one RevAudio marketing email and then sending it through the licence worker's campaign system (" + WORKER + ": CAMPAIGNS, /admin/campaign/test, /admin/campaign/send).",
+    "",
+    "READ FIRST",
+    "- The plan: " + PLAN + " (the offer, the groups, the open decisions). If any open decision this email depends on is still undecided (OBDTune in or out, code names), stop and ask me. Never guess a price or a code.",
+    "- Brand voice: revaudio-website PRODUCT.md.",
+    "- The existing drift-01 campaign in CAMPAIGNS and its email.html series folder in revaudio-shared/marketing: copy its layout, its {{TOKENS}} ({{CTA_URL}}, {{UNSUB_URL}}, {{IMG}}, {{PREVIEW}}) and its plain-text version style.",
+    "",
+    "THE OFFER (approved)",
+    "- Black Friday: 50% off every paid plugin, and the bundle of all 8 plugins (RevLimiter, RevFX, Radio Roulette, GAS, GAS2, DRIFT, OBDTune if released, Wide Beam if released) for $69, the same price on Cyber Monday. Public Fri Nov 27 to Sun Nov 29 23:59 PT. Email list gets it early from Mon Nov 23 with the early access code.",
+    "- Cyber Monday: 40% off every paid plugin; the bundle stays $69. Mon Nov 30 only, ends 23:59 PT.",
+    "- Prices: RevLimiter $49 -> $24.50 BF / $29.40 CM. Radio Roulette $19 -> $9.50 / $11.40. DRIFT $69 -> $34.50 / $41.40. RevFX $19 -> $9.50 / $11.40. OBDTune $15 -> $7.50 / $9.00. Wide Beam $9 -> $4.50 / $5.40. GAS and GAS2 are free (part of the bundle, never 'discounted'). Bundle: 8 plugins, $69 on both days. List value $180 ($171 without Wide Beam, $165 without OBDTune, $156 without both).",
+    "- DRIFT in the bundle: buyers get the current build now and the release build as a free update when it ships. Don't give a release date.",
+    "- DRIFT beta: ended Fri Nov 20. Everyone who finished the beta form got DRIFT free. Never mention a $39 DRIFT price. If a reader got DRIFT free from the beta, don't pitch DRIFT to them (the worker's lead record shows the beta form); pitch the rest of the bundle.",
+    "- The plugin discount is a code entered at checkout, like Halloween's BOO. No crossed-out or 'was' prices anywhere. Fine to write 'RevLimiter: $24.50 with code X'. The bundle has its own price, no code needed, and codes don't stack on it.",
+    "",
+    "VOICE RULES",
+    "- Honest, nerdy, short. The car/garage metaphor for the headline and feel, plain words for the facts (what it costs, what you get, when it ends).",
+    "- No em dashes. No 'unleash', 'next level', 'pristine', 'game-changer'. No fake scarcity, no invented quotes or numbers, no 'last chance ever'. Only the real end time.",
+    "- One clear button. Subject lines under 50 characters, at most one emoji.",
+    "",
+    "DELIVER",
+    "1. Two subject lines (A and B), a preview line, the email.html, and the plain-text version. Show me all of it and wait for my OK before touching the worker.",
+    "2. After my OK: add the CAMPAIGNS entry with the id below and its audience (the per-group 'audience' field from the plan's prep task; if it doesn't exist yet, stop and tell me), upload email.html and images to R2 under email/<id>/. Ask me before deploying the worker.",
+    "3. Send the test with /admin/campaign/test (it goes only to the two test inboxes). Tell me, and wait while I read it.",
+    "4. After I say 'send': do a dry run, show me the audience count, then send in presses until remaining is 0. Report sent / failed / remaining.",
+    "Never send to anyone outside this group. Unsubscribed and team addresses are always out. Anyone who bought the bundle since Nov 23 is out."
+  ].join("\n");
+
+  var GROUPS = {
+    buyers: { name: "1. Buyers", rule: "audience 'buyers': everyone in the sale: ledger (non-test).",
+      angle: "They already own at least one of our plugins. Lead with thanks, not a pitch. Show what's in the bundle they don't have yet (the email goes to all buyers, so phrase it as 'fill in the rest of the garage'). Their perk is early access from Nov 23, no extra coupon." },
+    tried: { name: "2. Tried it", rule: "audience 'tried': opened a paid plugin's trial (first-open record), or downloaded a RevLimiter or Radio Roulette trial, and never bought.",
+      angle: "Warmest group. They've heard the plugin on their own tracks. 'You know what it does. Now it's half price.' Mention the single-plugin prices and the bundle. Don't name one plugin as 'the one you tried', the email goes to trial users of all plugins." },
+    unopened: { name: "3. Never opened", rule: "audience 'unopened': downloaded a DRIFT, RevFX or OBDTune trial, no first-open record on any plugin, never bought. (OBDTune was called RevTune; its id in the worker may still be revtune.)",
+      angle: "Open with help, not the sale: 'If the install gave you trouble, reply to this email and we'll sort it.' Then the deal. NEVER say or imply 'you didn't open it'. Our open tracking misses people, so some of them did open it." },
+    freeonly: { name: "4. Free only", rule: "audience 'freeonly': downloaded GAS or GAS2 only, no paid trial, never bought.",
+      angle: "They like GAS. 'You know GAS. Here's the rest of the garage.' RevLimiter at half price as the natural next plugin, and the bundle as the big deal." }
+  };
+
+  var WAVES = {
+    early: { tag: "bf", label: "Mon Nov 23 · Early access", id: "bf-early", when: "Send day: Mon Nov 23, 16:00 Israel / 09:00 ET.",
+      msg: "This is the EARLY ACCESS email. Being on the list means they get Black Friday 4 days before everyone else. The early access code works from now until Sun Nov 29 23:59 PT. The public sale starts Friday. Put the code in the email big and plain." },
+    eve: { tag: "bf", label: "Thu Nov 26 · Tomorrow", id: "bf-eve", when: "Send day: Thu Nov 26, 16:00 Israel / 09:00 ET (Thanksgiving in the US).",
+      msg: "This is the 'TOMORROW IS BLACK FRIDAY' email. Tomorrow the sale opens to everyone. This group has had the early access code since Monday, and it already works, so they can buy now without waiting for the crowd. Repeat the code plainly. Short and light (it's Thanksgiving in the US). Lead with the bundle at $69. Ends Sun Nov 29 23:59 PT. No pressure tricks: this is a heads-up, not a countdown scare." },
+    bf: { tag: "bf", label: "Fri Nov 27 · Black Friday", id: "bf-day", when: "Send day: Fri Nov 27, 16:00 Israel / 09:00 ET.",
+      msg: "This is the BLACK FRIDAY DAY email. The sale is now live for everyone. This group already got the early access email on Monday and the heads-up on Thursday, so don't repeat them: short, 'It's on. Ends Sunday 23:59 PT.' Lead with the bundle at $69." },
+    last: { tag: "bf", label: "Sun Nov 29 · Last day", id: "bf-last", when: "Send day: Sun Nov 29, 16:00 Israel / 09:00 ET.",
+      msg: "This is the 'LAST DAY OF BLACK FRIDAY' email. Black Friday ends tonight, Sun Nov 29 23:59 PT: 50% off every paid plugin and the bundle at $69. Tomorrow is Cyber Monday (40% off, Mon Nov 30 only; the bundle stays $69). Say plainly that today's single-plugin price is the better one, so if they were waiting, today is the day; Cyber Monday is the smaller discount. Repeat the code plainly. This group already got the Monday, Thursday and Friday emails, so keep it short and don't repeat them. One honest deadline, no fake scarcity." },
+    cm: { tag: "cm", label: "Mon Nov 30 · Cyber Monday", id: "cm", when: "Send day: Mon Nov 30, 16:00 Israel / 09:00 ET.",
+      msg: "This is the CYBER MONDAY email. Black Friday prices ended Sunday. Today only: 40% off every paid plugin and the bundle still $69 (all 8 plugins), ends tonight 23:59 PT. Say plainly that it's a smaller discount than Black Friday, never imply it's better. Theme: the garage in 'diagnostic mode' (scan-tool / ECU screen), matching the Cyber Monday site skin." }
+  };
+
+  function buildPrompt(w, g){
+    var W = WAVES[w], G = GROUPS[g];
+    return [
+      "RevAudio email: " + W.label + " / " + G.name,
+      "Campaign id: " + W.id + "-" + g,
+      W.when,
+      "",
+      CONTEXT,
+      "",
+      "THIS SEND",
+      W.msg,
+      "",
+      "THIS GROUP",
+      "Who: " + G.rule,
+      "Angle: " + G.angle
+    ].join("\n");
+  }
+
+  var PREP = [
+    "In " + WORKER + ", make the campaign system able to send to one group at a time, for the Black Friday / Cyber Monday emails. Plan: " + PLAN + " (section 'Emails').",
+    "",
+    "1. Add an 'audience' field to CAMPAIGNS entries: 'buyers' | 'tried' | 'unopened' | 'freeonly' (no field = today's behaviour, so drift-01 is unchanged).",
+    "   - buyers: in the sale: ledger, non-test.",
+    "   - tried: a first-open record on any paid plugin, or a verified/downloaded RevLimiter or Radio Roulette trial. Not a buyer.",
+    "   - unopened: downloaded a DRIFT, RevFX or OBDTune (formerly RevTune, its plugin id may still be revtune) trial, no first-open record on any plugin. Not a buyer.",
+    "   - freeonly: GAS or GAS2 downloads only. Not a buyer, no paid trial.",
+    "   - popuplead: signups are never in any group (legal decision), even if they match nothing else.",
+    "   Precedence buyers > tried > unopened > freeonly: every address is in exactly one group. Unsubscribed and team are always out. A campaign can also skip anyone who bought the bundle after a given date (2026-11-23).",
+    "2. The dry run of /admin/campaign/send returns the count for the campaign's group, plus the size of all 4 groups.",
+    "3. Tests (follow the existing tests in test/): each fixture address lands in exactly one group, and precedence holds.",
+    "4. A small script that calls /admin/campaign/send for one campaign id until remaining is 0, stopping on any error or failed > 0. It needs the admin cookie and the typed confirm, and asks me before the first real press.",
+    "Show me the diff and test results. Don't deploy until I say so."
+  ].join("\n");
+
+  var list = document.getElementById("promptList");
+  ["early","eve","bf","last","cm"].forEach(function(w){
+    Object.keys(GROUPS).forEach(function(g){
+      var d = document.createElement("details");
+      d.className = "prompt"; d.dataset.wave = w;
+      d.innerHTML = '<summary><span class="tag ' + WAVES[w].tag + '"></span><b></b><span class="sp"></span><button class="copy" type="button">Copy</button></summary><div class="body"><pre></pre></div>';
+      d.querySelector(".tag").textContent = WAVES[w].label;
+      d.querySelector("b").textContent = GROUPS[g].name;
+      d.querySelector("pre").textContent = buildPrompt(w, g);
+      list.appendChild(d);
+    });
+  });
+  document.querySelector('.prompt[data-wave="prep"] pre').textContent = PREP;
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest(".copy");
+    if (!b) return;
+    e.preventDefault();
+    var text = b.closest(".prompt").querySelector("pre").textContent;
+    var done = function(){ b.textContent = "Copied"; setTimeout(function(){ b.textContent = "Copy"; }, 1500); };
+    if (navigator.clipboard && window.isSecureContext !== false) {
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); });
+    } else { fallback(text); done(); }
+  });
+  function fallback(t){
+    var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand("copy"); } catch(_){} ta.remove();
+  }
+
+  document.querySelectorAll(".filters button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var f = btn.dataset.f;
+      document.querySelectorAll(".filters button").forEach(function(x){ x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+      list.querySelectorAll(".prompt").forEach(function(p){ p.hidden = !(f === "all" || p.dataset.wave === f); });
+    });
+  });
+
+  var KEY = "bfcm2026-checks";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(_){}
+  document.querySelectorAll('.check input[type="checkbox"]').forEach(function(cb){
+    if (state[cb.id]) cb.checked = true;
+    cb.addEventListener("change", function(){
+      state[cb.id] = cb.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(_){}
+    });
+  });
+})();
+</script>
+</body>
+</html>
