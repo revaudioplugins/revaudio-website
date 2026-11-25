@@ -86,10 +86,14 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
   `open-wide.webp` re-rendered with Today on the phone (`?rec&novig&mp=2.2e6&pages=0&page=today`, 640x844 @2; it had
   been rendered with Glass). First picture vs the live room: 390x844 Chromium 0.61, 402x754 WebKit 0.67 / 0.69, 440x880
   Chromium 0.65, 360x640 WebKit 0.86 (before 0.63 / 0.64 / 0.52 / 0.95).
-  🔴 **Black after the hand-over, seen twice now:** one WebKit run of three at 402x754 captured a fully black live room
-  1.9 s after the first picture went (the two re-runs fine); and the Pro Max's first boot in the Simulator (11-24). A
-  visitor could get a black screen where the room should be. Not yet investigated: next step is to log the room's
-  first drawn frame against the moment the first picture fades, over ~20 cold WebKit loads.
+- **Fixed: black after the first picture** (seen twice: one WebKit run of three at 402x754, a flat `#060509` = room.html's
+  `.cam` with nothing drawn, 1.9 s after the picture went; and the Pro Max's first boot, 11-24). Cause: `phone-dive.html`
+  counted its 12 frames from `window.__room`, which room.html sets BEFORE `renderer.compileAsync`; a cold compile (a
+  phone's first visit) ran past them and the picture faded over a room not drawing yet. Now the 12 frames count from the
+  room's own first frame (`R.liveAt`). Checked (WebKit 402x754, a cold load each): with the compile made 2.5 s slower on
+  purpose (the probe wraps `compileAsync`), before = the picture went with the room not started, the shot dark; after =
+  the picture goes 201-219 ms after the room's loop starts, the room in the shot (3 of 3); normal loads 203-209 ms
+  (before: 89-145 ms, the margin that a cold compile ate). Seam after: WebKit 402x754 0.64, Chromium 390x844 0.75.
 - **At the close (2026-11-25, rv close):** open for Dan: the test on his own phone (the Wi-Fi line under Run). Seen, not
   fixed: in Simulator Safari the live room reads about 5 levels (of 255) darker than the Chrome-rendered first picture (the
   Simulator's known lamp difference; on the Mac's Chromium and WebKit the seam is 0.5-0.95). Left running: the no-store

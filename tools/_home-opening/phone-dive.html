@@ -350,7 +350,9 @@ clearTimeout(giveUp);
 window.__dive = { DIVE, FEEL, get held() { return held; }, get holds() { return holds; }, get lastHold() { return lastHold; }, get p() { return shown; }, get t() { return target; }, get end() { return diveLen; }, look: (n) => { setLook(n); w.__room.arrange(); shown = -1; }, set: (p, sec) => { draw(clamp(p)); if (sec != null) for (const a of [...(R.modelAnims || [])]) if (a.o.name === 'fan_rotor') a.o.rotation.y = sec * 2; if (sec != null && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = sec * 2 + 0.6; }, ready: true };
 // the live room takes over from the first picture once it has drawn a few frames of its own, its fan where the picture has it
 if (!REC && fan2?.userData.rotor) fan2.userData.rotor.rotation.y = 1.4; // (the picture was taken with set(0, 0.4): 0.4 s x 2 rad/s + 0.6)
-await new Promise((res) => { let n = 0; const tick = () => (++n > 12 ? res() : w.requestAnimationFrame(tick)); w.requestAnimationFrame(tick); });
+// (counted from the room's own first frame, R.liveAt: window.__room is there before its shaders compile, and on a cold phone
+// that compile ran past the 12 frames, so the picture went over a room not drawing yet, its bare dark: seen 2026-11-24/25)
+await new Promise((res) => { let n = 0; const tick = () => (R.liveAt && ++n > 12 ? res() : w.requestAnimationFrame(tick)); w.requestAnimationFrame(tick); });
 $('wait').classList.add('gone');
 document.querySelector('.rest img[loading="lazy"]')?.setAttribute('loading', 'eager'); // the rest of the page (108 KB) once the room is up: never competing with it, and in before a fast thumb reaches it
 </script>
