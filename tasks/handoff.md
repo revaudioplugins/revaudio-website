@@ -94,7 +94,8 @@ Not on main, not live. Main itself is not merged in (Gil's temporary hero, the B
   purpose (the probe wraps `compileAsync`), before = the picture went with the room not started, the shot dark; after =
   the picture goes 201-219 ms after the room's loop starts, the room in the shot (3 of 3); normal loads 203-209 ms
   (before: 89-145 ms, the margin that a cold compile ate). Seam after: WebKit 402x754 0.64, Chromium 390x844 0.75.
-- **At the close (2026-11-25, rv close):** open for Dan: the test on his own phone (the Wi-Fi line under Run). Seen, not
+- **At the close (2026-11-26, rv close):** `a30de96` on GitHub (Dan: "push the branch"), not on main. Open for Dan: the test on
+  his own phone (the Wi-Fi line under Run; he runs it in the Terminal app: auto mode refused it even as his own `!` line). Seen, not
   fixed: in Simulator Safari the live room reads about 5 levels (of 255) darker than the Chrome-rendered first picture (the
   Simulator's known lamp difference; on the Mac's Chromium and WebKit the seam is 0.5-0.95). Left running: the no-store
   server on 4691 and the iPhone 17 Pro Max simulator. The check scripts (fling, seam, perf, phone capture, diff) lived in

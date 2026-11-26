@@ -568,3 +568,12 @@ Pro Max and the view jumped when the live room took over.
 
 Rule: for any picture that stands in for a live view (a first frame, a landing), step on past the hand-over to where
 the visitor scrolls next, and check it on at least 390x844, 402x754, 440x880 and 360x640 before calling it seamless.
+
+## 2026-11-25 — a stand-in picture leaves on the live view's first frame, not on its object
+
+The phone garage's first picture faded after 12 frames counted from `window.__room`, which room.html sets before its
+shaders compile. On a cold load (a phone's first visit, the Simulator's first boot) the compile outlasted the 12 frames
+and the visitor got a black screen for seconds. It was invisible in warm runs: the margin was only 0.1 s.
+
+Rule: a picture standing in for a live view waits for a signal set AFTER the view's first real frame (here `R.liveAt`),
+and the check slows the producer on purpose (wrap `compileAsync` with a delay) instead of hoping a cold run shows up.
