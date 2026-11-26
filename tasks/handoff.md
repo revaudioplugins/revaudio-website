@@ -1,6 +1,17 @@
 ## 2026-11-26/27 — OBDTUNE one-pager: Dan picked A "Sheet", then screen C; NEXT = the garage desk + PUSH LIVE before 2026-11-28 (Claude Code, Dan's Mac) — branch `feat/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, from origin/main `d619810`), NOT on main
 
-Claim: closed 2026-11-27 by the session that built it; HANDED TO THE NEXT SESSION (one session per worktree). Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
+Claim: OPEN 2026-11-27, Claude Code `danavivi-d9 [562cc2]` (took it over from the session that built the one-pager, now idle). Adds: `src/assets/obdtune/garage-{a,b,c}.jpg`, `tools/obdtune-garage/` (new).
+- **11-27 garage round (danavivi-d9):** the three desks are built on the page, dev switcher `?desk=a|b|c` (A by default;
+  `import.meta.env.DEV` only). Renders: `tools/obdtune-garage/shots.sh` (the three cameras, how to serve the room from a
+  detached worktree of `14ba0ff` at `.claude/worktrees/room-render-obd`, port 4761; one render at a time). The frame is
+  laid out in the tool's box (`.obd-garage`, % of `.obd-unitwrap`), so it works on phones too. The tool stands still (no
+  bob, no pointer lean); the plugin paints its own FLOATING shadow (`public/obdtune/ui/obdtune.css` `.obd`), so the page
+  adds only a contact shadow. `--obd-ink-3` #7f766e -> #8a8178 + `--obd-halo` on the name, index, fine print: AA >= 4.5
+  measured at the glyphs on all three desks (Chromium 1312x734, WebKit 1141x636 sale on, Chromium 390). 18 readings fit,
+  presses switch, no page errors, no sideways scroll, `astro build` green, tsc clean. Pick page: claude.ai artifact
+  CLC3UwMtPdBeH5228DNeo6 (db `picks/desk1`); Claude's pick A. Dan's Safari opened on `/obdtune/?desk=a` (dev 4744).
+  After his pick: keep that jpg, delete the other two, the B/C imports, the switcher (nav + inline script + CSS).
+Earlier claim: closed 2026-11-27 by the session that built it. Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
 `src/data/obdtune-parts.ts` (new); removed `src/lib/obdtune/story.ts`, `bench.ts`, `graph.ts` (only the old page used them);
 this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
 - Dan: redesign /obdtune as a minimal one-pager: the scan tool hovering on the house background, press a part of the plugin

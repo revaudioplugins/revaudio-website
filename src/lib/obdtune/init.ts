@@ -1,5 +1,6 @@
 /**
- * /obdtune boot (the one-pager, 2026-11-26): the live signal, the hovering scanner (the plugin's own UI, unit.ts), and
+ * /obdtune boot (the one-pager, 2026-11-26): the live signal, the scanner standing on its desk in the garage (the
+ * plugin's own UI, unit.ts; it stands still since 2026-11-27: no lean to the pointer), and
  * the reading that follows the hand. A press on a part of the tool, or the page its screen opens, picks a reading
  * (src/data/obdtune-parts.ts); the index lamps light the part being read, and an index press also opens that page on
  * the tool's screen. BACK and the D-pad keep their own reading while they walk the screen; OK, a tile or a code's jump
@@ -17,8 +18,6 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 export function initObdtune() {
   const page = document.querySelector<HTMLElement>('[data-obd-page]');
   if (!page) return;
-  const stage = page.querySelector<HTMLElement>('[data-obd-stage]')!;
-  const wrap = page.querySelector<HTMLElement>('[data-obd-wrap]')!;
   const host = page.querySelector<HTMLElement>('[data-obd-unit]')!;
   const read = page.querySelector<HTMLElement>('[data-obd-read]')!;
   const ixs = [...page.querySelectorAll<HTMLButtonElement>('[data-ix]')];
@@ -145,24 +144,6 @@ export function initObdtune() {
       else if (k === 'detect') pressDetect();
       show(k);
     }));
-
-    // the tool leans a little toward the pointer (mouse only)
-    if (!reduced()) {
-      let rx = 0, ry = 0, tx = 0, ty = 0;
-      stage.addEventListener('pointermove', (e) => {
-        if (e.pointerType !== 'mouse') return;
-        const r = wrap.getBoundingClientRect();
-        ty = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / r.width)) * 4;
-        tx = -Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / r.height)) * 3;
-      });
-      stage.addEventListener('pointerleave', () => { tx = 0; ty = 0; });
-      const tilt = () => {
-        requestAnimationFrame(tilt);
-        rx += (tx - rx) * 0.07; ry += (ty - ry) * 0.07;
-        host.style.transform = `perspective(1600px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
-      };
-      tilt();
-    }
   });
   lightIndex(cur);
 }
