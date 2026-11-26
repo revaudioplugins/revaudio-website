@@ -16,7 +16,7 @@
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { obdtune, buyable, registerUrl, fmtUsd } from '../data/obdtune';
-import { READINGS, INDEX } from '../data/obdtune-parts';
+import { READINGS, INDEX, KEY_LABEL, shortFor } from '../data/obdtune-parts';
 import stillSrc from '../assets/obdtune/unit-still.png';
 import '../styles/obdtune.css';
 
@@ -25,13 +25,25 @@ const trialRegister = registerUrl();
 // the scanner's still (the plugin's home screen, as the page opens): shows until unit.ts mounts the live UI
 const still = await getImage({ src: stillSrc, format: 'webp', width: 1080, quality: 82 });
 const home = READINGS.home;
+// ROUND 2 (Dan's bench notes, 2026-11-27): each area comes three ways for his pick; the defaults are Claude's picks.
+// Dev only: ?name=a|b|c (the name's frame) &ix=a|b|c (the index) &read=a|b|c (how the readings are written)
+// &cta=a|b|c (the free-trial key), read before the first paint; the switcher top right flips them live.
+const LOOK = { name: 'b', ix: 'a', read: 'a', cta: 'a' };
+const hs = shortFor(LOOK.read, 'home');
+const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
 ---
 <BaseLayout
   title="OBDTUNE: plug in, read the note, tune it"
   description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Free 30-day trial."
   index={true}
 >
-  <div class="obd" data-obd-page>
+  <div class="obd" data-obd-page data-name={LOOK.name} data-ixl={LOOK.ix} data-read={LOOK.read} data-cta={LOOK.cta}>
+    {import.meta.env.DEV && (
+      <script is:inline>
+        (function () { var q = new URLSearchParams(location.search), d = document.currentScript.parentElement.dataset;
+          [['name', 'name'], ['ix', 'ixl'], ['read', 'read'], ['cta', 'cta']].forEach(function (k) { var v = q.get(k[0]); if (/^[abc]$/.test(v || '')) d[k[1]] = v; }); })();
+      </script>
+    )}
     <section class="obd-stage" data-obd-stage aria-labelledby="obd-title">
       <header class="obd-name">
         <p class="obd-maker" aria-hidden="true">RevAudio</p>
@@ -56,27 +68,47 @@ const home = READINGS.home;
           </div>
           <div class="obd-read" data-obd-read aria-live="polite">
             <p class="obd-r-label"><span class="obd-r-n" data-r-n>{home.n}</span><span data-r-label>{home.label}</span></p>
-            <h2 class="obd-r-h" data-r-h>{home.h}</h2>
-            <p class="obd-r-p" data-r-p>{home.p}</p>
-            <p class="obd-r-spec" data-r-spec>{home.spec}</p>
+            <h2 class="obd-r-h" data-r-h>{hs.h}</h2>
+            <p class="obd-r-p" data-r-p>{hs.p ?? ''}</p>
+            <dl class="obd-r-rows" data-r-rows>{(hs.rows ?? []).map(([l, v]) => (<div><dt>{l}</dt><dd>{v}</dd></div>))}</dl>
+            <p class="obd-r-spec" data-r-spec>{hs.spec ?? ''}</p>
           </div>
           <canvas class="obd-scr-fx" data-scr-fx aria-hidden="true"></canvas>
         </div>
       </div>
 
       <nav class="obd-index" aria-label="The parts of OBDTUNE">
+        <span class="obd-ix-lead" aria-hidden="true">Press a part ◂</span>
         {INDEX.map((k) => (
-          <button type="button" class="obd-ix" data-ix={k}><i aria-hidden="true"></i>{READINGS[k].label}</button>
+          <button type="button" class="obd-ix" data-ix={k}><i aria-hidden="true"></i><span>{KEY_LABEL[k]}</span></button>
         ))}
       </nav>
 
       <div class="obd-get">
-        <div class="obd-keys">
+        {/* A · the big key: the trial the width of the column, what you get under it, Buy as a quiet line */}
+        <div class="obd-cta obd-cta--a">
           <button
-            type="button" class="rv-btn rv-btn--sm"
+            type="button" class="rv-btn rv-btn--stack obd-try"
             data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
             data-register-url={trialRegister ?? undefined}
-          >Try free · {obdtune.trialDays} days</button>
+          ><span class="rv-btn__label">Try free · {obdtune.trialDays} days</span><span class="rv-btn__sub">Full version · no credit card</span></button>
+          {canBuy && (
+            <button
+              type="button" class="obd-buylink"
+              data-add-to-cart data-cart-open
+              data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+            >or buy · {fmtUsd(obdtune.priceUsd!)}</button>
+          )}
+        </div>
+        {/* B · the lit key: today's pair, the trial key with its pilot lamp lit and a warm glow */}
+        <div class="obd-cta obd-cta--b">
+          <span class="obd-glow">
+            <button
+              type="button" class="rv-btn rv-btn--sm rv-btn--shine obd-try"
+              data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
+              data-register-url={trialRegister ?? undefined}
+            ><i class="obd-try-lamp" aria-hidden="true"></i>Try free · {obdtune.trialDays} days</button>
+          </span>
           {canBuy && (
             <button
               type="button" class="rv-btn rv-btn--ghost rv-btn--sm"
@@ -85,9 +117,31 @@ const home = READINGS.home;
             >Buy · {fmtUsd(obdtune.priceUsd!)}</button>
           )}
         </div>
-        <p class="obd-fine">{obdtune.formats}</p>
+        {/* C · the ticket: a stamped card-stock tag is the trial key */}
+        <div class="obd-cta obd-cta--c">
+          <button
+            type="button" class="obd-ticket"
+            data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
+            data-register-url={trialRegister ?? undefined}
+          ><span class="obd-ticket-big">Free · {obdtune.trialDays} days</span><span class="obd-ticket-small">Try the full version</span></button>
+          {canBuy && (
+            <button
+              type="button" class="rv-btn rv-btn--ghost rv-btn--sm"
+              data-add-to-cart data-cart-open
+              data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+            >Buy · {fmtUsd(obdtune.priceUsd!)}</button>
+          )}
+        </div>
+        <p class="obd-fine">{fmts}</p>
       </div>
     </section>
+    {import.meta.env.DEV && (
+      <nav class="obd-looks" aria-label="Round 2 options (dev only)">
+        {[['name', 'Name'], ['ix', 'Index'], ['read', 'Reading'], ['cta', 'Trial']].map(([k, t]) => (
+          <div><span>{t}</span>{['a', 'b', 'c'].map((v) => <button type="button" data-look={k} data-v={v}>{v.toUpperCase()}</button>)}</div>
+        ))}
+      </nav>
+    )}
   </div>
 </BaseLayout>
 

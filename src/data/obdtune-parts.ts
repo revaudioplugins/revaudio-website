@@ -127,8 +127,89 @@ export const READINGS: Record<string, Reading> = {
   },
 };
 
-/** the index, in the order a hand meets the tool */
-export const INDEX = ['detect', 'tune', 'notes', 'fx', 'harm', 'live', 'custom', 'codes', 'power', 'keys', 'service'] as const;
+/** the index (Dan 2026-11-27, bench round 1: "make it much more appealing and intuitive to press"): the eight parts that
+ * open a page or start a scan, in the order a hand meets the tool. POWER, BACK · OK and SERVICE keep their readings when
+ * pressed on the tool itself. */
+export const INDEX = ['detect', 'tune', 'notes', 'fx', 'harm', 'live', 'custom', 'codes'] as const;
+/** the index keys' own short names (the reading's header row keeps the full one) */
+export const KEY_LABEL: Record<string, string> = {
+  detect: 'DETECT', tune: 'TUNE', notes: 'NOTES', fx: 'FX', harm: 'HARMONY', live: 'LIVE', custom: 'CUSTOM', codes: 'CODES',
+};
+
+/** the short readings (Dan 2026-11-27: "minimize all text, make them punchy and clear to understand"), three ways of
+ * writing them for his pick (?read=a|b|c, dev only): A a headline + one line + the value box, B a headline + LCD rows,
+ * C a headline + the value box. Facts only from READINGS above (Gil's copy + the plugin's labels). */
+export type ReadStyle = 'a' | 'b' | 'c';
+export interface Short { h: string; p?: string; rows?: [string, string][]; spec?: string }
+export const SHORT: Record<ReadStyle, Partial<Record<string, Short>>> = {
+  a: {
+    home: { h: 'Press any part.', p: 'It reads every note you sing and finds the key by itself.', spec: 'TUNE · HARMONY · FX' },
+    detect: { h: 'Don\'t know the key?', p: 'Plug in the connector, sing, and OBDTUNE sets KEY and SCALE.', spec: 'UNDO? FOR 8 SEC' },
+    tune: { h: 'Hard snap to no trace.', p: 'At 1 ms it snaps; near 200 ms nobody hears a tuner.', spec: '1–200 MS · 13 SCALES' },
+    voice: { h: 'Tell it who is singing.', p: 'VOICE sets the range OBDTUNE listens in.', spec: 'SOPRANO · ALTO · TENOR' },
+    notes: { h: 'Cut a note out.', p: 'Turn a note off and OBDTUNE never lands there.', spec: '12 NOTE SWITCHES' },
+    fx: { h: 'Finish the vocal here.', p: 'EQ, SQUEEZE, ECHO and REVERB, built into the tool.', spec: '4 EFFECTS' },
+    eq: { h: 'Shape it.', p: 'Cut the lows and highs, and add two bells.', spec: '2 CUTS · 2 BELLS' },
+    sqz: { h: 'Squeeze it.', p: 'A FET-style parallel compressor for the vocal.', spec: 'FET-STYLE · PARALLEL' },
+    echo: { h: 'Echo on the beat.', p: 'An echo that syncs to your DAW\'s tempo.', spec: 'TEMPO SYNC' },
+    verb: { h: 'Put it in a room.', p: 'Choose the space the vocal sits in.', spec: 'ROOM · PLATE · HALL' },
+    harm: { h: 'Stack the harmonies.', p: 'Add two voices that follow your key and scale.', spec: '2 VOICES · ±1 OCTAVE' },
+    pos: { h: 'Early or late.', p: 'Each harmony voice moves in ms, or locks to your tempo.', spec: '−250 MS TO +2 S' },
+    live: { h: 'Read every note.', p: 'See each note you sing and how many cents off it is.', spec: 'NOTE · CENTS · GRAPH' },
+    custom: { h: 'Draw your own line.', p: 'Capture a take, then drag each note where you want it.', spec: 'NOTE BY NOTE' },
+    codes: { h: 'Four lamps. No guessing.', p: 'T, H, F, C light when TUNE, HARMONY, FX or CUSTOM sounds.', spec: 'CODES NAME WHAT\'S OFF' },
+    power: { h: 'One switch, whole plugin.', p: 'Bypass it all; before and after stay lined up in time.', spec: 'SAME LATENCY ON OR OFF' },
+    keys: { h: 'Drive it like a scanner.', p: 'Move with the D-pad, enter with OK, step back with BACK.', spec: 'DRAG ANY VALUE' },
+    service: { h: 'Float it, or bench it.', p: 'FLOATING hovers it over your session; ROOM sets it on the bench.', spec: 'DRAG CORNER TO RESIZE' },
+  },
+  b: {
+    home: { h: 'Press any part.', rows: [['TYPE', 'PITCH CORRECTION'], ['INPUT', 'VOCALS'], ['KEY', 'FOUND BY DETECT']] },
+    detect: { h: 'Don\'t know the key?', rows: [['KEY', 'FOUND BY ITSELF'], ['SCALE', 'FOUND TOO'], ['UNDO?', 'FOR 8 SECONDS']] },
+    tune: { h: 'Snap hard or glide.', rows: [['SPEED', '1–200 MS'], ['HUMANIZE', 'HELD NOTES BREATHE'], ['FLEX', 'SMALL ERRORS KEPT']] },
+    voice: { h: 'Who is singing?', rows: [['OPTIONS', 'SOPRANO/ALTO/TENOR'], ['RANGE', 'WHERE IT LISTENS']] },
+    notes: { h: 'Cut a note out.', rows: [['SWITCHES', '12, ONE PER NOTE'], ['NOTE OFF', 'SKIPPED'], ['TARGET', 'NEAREST NOTE KEPT']] },
+    fx: { h: 'Finish the vocal.', rows: [['BUILT IN', 'EQ · SQUEEZE'], ['PLUS', 'ECHO · REVERB']] },
+    eq: { h: 'Shape it.', rows: [['CUTS', 'LOW + HIGH'], ['BELLS', '2'], ['ON', 'THE TUNED VOICE']] },
+    sqz: { h: 'Squeeze it.', rows: [['TYPE', 'FET-STYLE COMP'], ['ROUTING', 'PARALLEL']] },
+    echo: { h: 'Echo in time.', rows: [['TEMPO', 'FROM YOUR DAW'], ['REPEATS', 'ON THE BEAT']] },
+    verb: { h: 'Pick a space.', rows: [['SPACES', '3'], ['TYPES', 'ROOM, PLATE, HALL']] },
+    harm: { h: 'Stack the harmonies.', rows: [['VOICES', '2'], ['KEY', 'FOLLOWS YOURS'], ['RANGE', '±1 OCTAVE']] },
+    pos: { h: 'Early or late.', rows: [['RANGE', '−250 MS TO +2 S'], ['TIMING', 'FREE OR TEMPO SYNC'], ['VOICES', 'EACH ON ITS OWN']] },
+    live: { h: 'Read every note.', rows: [['NOTE', 'WHAT YOU SING'], ['CENTS', 'HOW FAR OFF'], ['GRAPH', 'THE TUNED LINE']] },
+    custom: { h: 'Draw your own line.', rows: [['STEP 1', 'CAPTURE A TAKE'], ['STEP 2', 'DRAG EACH NOTE']] },
+    codes: { h: 'Four lamps. No guessing.', rows: [['T · H', 'TUNE · HARMONY'], ['F · C', 'FX · CUSTOM'], ['CODE', 'NAMES WHAT IS OFF']] },
+    power: { h: 'One switch, whole plugin.', rows: [['BYPASS', 'TUNE, HARMONY, FX'], ['LATENCY', 'SAME, ON OR OFF'], ['A/B', 'LINES UP IN TIME']] },
+    keys: { h: 'Drive the tool.', rows: [['BACK', 'UP A LEVEL'], ['D-PAD', 'MOVE AROUND'], ['OK', 'ENTER']] },
+    service: { h: 'Float or bench it.', rows: [['FLOATING', 'OVER YOUR SESSION'], ['ROOM', 'ON THE BENCH'], ['RESIZE', 'DRAG THE CORNER']] },
+  },
+  c: {
+    home: { h: 'Read the note. Tune it.', spec: 'PRESS ANY PART OF IT' },
+    detect: { h: 'Sing. It finds the key.', spec: 'KEY + SCALE · 8 S UNDO' },
+    tune: { h: 'Tune hard, or tune soft.', spec: '1–200 MS · 13 SCALES' },
+    voice: { h: 'Tell it who is singing.', spec: 'SOPRANO · ALTO · TENOR' },
+    notes: { h: 'Cut a note from the scale.', spec: '12 NOTE SWITCHES' },
+    fx: { h: 'Finish the vocal here.', spec: 'EQ SQUEEZE ECHO REVERB' },
+    eq: { h: 'Shape the tuned voice.', spec: 'LOW/HIGH CUT · 2 BELLS' },
+    sqz: { h: 'Compress it in parallel.', spec: 'FET-STYLE' },
+    echo: { h: 'Echo on the beat.', spec: 'SYNCED TO YOUR TEMPO' },
+    verb: { h: 'Put it in a room.', spec: 'ROOM · PLATE · HALL' },
+    harm: { h: 'Stack the harmonies.', spec: '2 VOICES · IN YOUR KEY' },
+    pos: { h: 'Each voice, early or late.', spec: '−250 MS TO +2 S' },
+    live: { h: 'See every note you sing.', spec: 'NOTE · CENTS · GRAPH' },
+    custom: { h: 'Drag each note by hand.', spec: 'CAPTURE, THEN DRAG' },
+    codes: { h: 'Something off? A code names it.', spec: 'T H F C LAMPS · CODES' },
+    power: { h: 'One switch bypasses it all.', spec: 'SAME LATENCY ON OR OFF' },
+    keys: { h: 'Move around the screen.', spec: 'D-PAD · OK · BACK' },
+    service: { h: 'Float the tool, or bench it.', spec: 'FLOATING/ROOM · RESIZE' },
+  },
+};
+/** the reading for a key in a style; falls back to the long reading while a set is incomplete */
+export const shortFor = (style: string, k: string): Short => {
+  const s = SHORT[(style as ReadStyle)]?.[k];
+  if (s) return s;
+  const r = READINGS[k];
+  return { h: r.h, p: r.p, spec: r.spec };
+};
 
 /** the plugin's screen page -> its reading (OBD.ui.page, obdtune.js PAGE_LABEL) */
 export const PAGE_TO_KEY: Record<string, string> = {

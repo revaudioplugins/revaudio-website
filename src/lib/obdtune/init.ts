@@ -5,7 +5,7 @@
  * the tool's screen. BACK and the D-pad keep their own reading while they walk the screen; OK, a tile or a code's jump
  * hands over to the page they open.
  */
-import { KEY_TO_PAGE, PAGE_TO_KEY, PART_TO_KEY, READINGS } from '../../data/obdtune-parts';
+import { KEY_TO_PAGE, PAGE_TO_KEY, PART_TO_KEY, READINGS, shortFor } from '../../data/obdtune-parts';
 import { pressDetect, startLive } from './live';
 import { mountUnit } from './unit';
 
@@ -25,13 +25,18 @@ export function initObdtune() {
   let cur = 'home';
 
   // ---------------------------------------------------------------- the reading: out, swap, in (one tween each way)
+  // the words: the part's number + name from READINGS, the rest from the short reading in the page's style ([data-read])
   const fill = (k: string) => {
-    const r = READINGS[k];
-    (['n', 'label', 'h', 'p', 'spec'] as const).forEach((f) => {
-      const el = read.querySelector<HTMLElement>(`[data-r-${f}]`);
-      if (el) el.textContent = r[f];
-    });
+    const r = READINGS[k], s = shortFor(page.dataset.read || 'a', k);
+    const set = (f: string, v: string) => { const el = read.querySelector<HTMLElement>(`[data-r-${f}]`); if (el) el.textContent = v; };
+    set('n', r.n); set('label', r.label); set('h', s.h); set('p', s.p ?? ''); set('spec', s.spec ?? '');
+    const rows = read.querySelector<HTMLElement>('[data-r-rows]');
+    if (rows) rows.replaceChildren(...(s.rows ?? []).map(([l, v]) => {
+      const row = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd');
+      dt.textContent = l; dd.textContent = v; row.append(dt, dd); return row;
+    }));
   };
+  fill('home');
   // ---------------------------------------------------------------- the reading screen (screen C "Data page", Dan's pick
   // of three, 2026-11-27): the words change through the tool's own scan. The glitch is the change itself: before and
   // after it the words stand still (DESIGN.md §6). Reduced motion: a plain swap.
@@ -165,4 +170,17 @@ export function initObdtune() {
     }
   });
   lightIndex(cur);
+
+  // ROUND 2 switcher (dev only): each area three ways ([data-name|ixl|read|cta] on the page, ?name= &ix= &read= &cta=)
+  const looks = [...page.querySelectorAll<HTMLButtonElement>('[data-look]')];
+  const attr = (k: string) => (k === 'ix' ? 'ixl' : k);
+  const markLooks = () => looks.forEach((b) => b.setAttribute('aria-pressed', String(page.dataset[attr(b.dataset.look!)] === b.dataset.v)));
+  looks.forEach((b) => b.addEventListener('click', () => {
+    const k = b.dataset.look!, v = b.dataset.v!;
+    page.dataset[attr(k)] = v;
+    const u = new URL(location.href); u.searchParams.set(k, v); history.replaceState(null, '', u);
+    markLooks();
+    if (k === 'read') showRead(cur);
+  }));
+  markLooks();
 }
