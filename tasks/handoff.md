@@ -1,4 +1,4 @@
-## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/home-phone-sections` (worktree `.claude/worktrees/daw-small`, from main `ccec62b`); on GitHub, NOT on main
+## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/home-phone-sections` (worktree `.claude/worktrees/daw-small`, rebased onto main `d619810` on 2026-11-26); NOT on main
 
 Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `src/components/DAWStrip.astro` (one phone block), `src/components/EmailCapture.astro`, this entry. (Branch renamed from `feat/daw-strip-phone-small`.)
 Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller".
@@ -16,9 +16,14 @@ Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller
   edge at 360, 390, 402 (WebKit). Laptops unchanged (checked at 1312: kicker and fine print hidden, centred as before).
   **Dan picked B, the sign** (2026-11-24: "B"): it is now the phone layout; A, C and the dev buttons are gone. Checked: 311 px
   at 360, 390 and 402 (WebKit), the same picture as B on the pick buttons; laptop 1312 unchanged, no buttons.
-- **State (2026-11-25, rv close):** `369d4fe` = `origin/feat/home-phone-sections` (pushed 2026-11-25 13:26; that push is not in
-  this session's transcript). Main has moved since `ccec62b`: merge it in first. Not run yet on this branch: `npm run build` and
-  `astro check` (the check started 11-24 hung for a day and was stopped). Left running: `astro dev` on 127.0.0.1:4697.
+- **State (2026-11-26):** Dan: "lets rebase first" (after the merge-main-in plan was shown). Rebased onto main `d619810`
+  (0 behind, 4 commits ahead + this note); only `tasks/handoff.md` clashed (both sides added an entry at the top: this
+  entry, then main's file untouched). Code identical to the old tip in `src/` (per-commit diff checked). `astro build`
+  green (37 pages, no warnings). Rechecked on the dev server: DAW strip 254 / 202 / 202 px at 360 / 390 / 402 (WebKit),
+  pit crew 311 at all three, laptop 1312x734 DAW 338 / pit crew 403; no sideways scroll, no page errors, the same with
+  `?sale=bf` (main's sale strip on phones). `astro check` still not run.
+  GitHub still holds the OLD tip `2648e76` (pushed 2026-11-25 13:26, not in this session's transcript): publishing the
+  rebase replaces it, `git push --force-with-lease=feat/home-phone-sections:2648e76`, on Dan's word only.
 - To ship: build green, then Dan's push word (a push to main is a live deploy).
 
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
