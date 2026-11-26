@@ -1,4 +1,4 @@
-## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), NOT on main (waits for Yoni's push word)
+## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
 
 Claim: CLOSED 2026-11-26 `revaudio-52`. Files: `src/components/TempHero.astro`, this entry.
 - Yoni: the TV on entering the site shows the line added under the plugin strip; it belongs only after the scroll.
