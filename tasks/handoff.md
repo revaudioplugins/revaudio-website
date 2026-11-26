@@ -21,7 +21,9 @@ this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
 - NOT seen: a real iPhone. Playwright WebKit at 3x draws the tool's box empty on phones, on the LIVE page too (Gil's), and
   draws it at 1x: likely the emulator, but only a real iPhone settles it. The cookie banner covers the keys on a first visit
   (site-wide). Keyboard: the index and keys are buttons; the tool itself is pointer-only (D / P keys as before).
-- Next: Dan looks at /obdtune (dev) and on his iPhone; then his push word for the branch; merge to main = live, his word.
+- Dan's Safari (laptop, Retina) first showed NO tool: the box had width 0 (aspect-ratio + max-width:100% in an auto grid
+  column); Playwright WebKit drew it. Fixed in 5a2532b (width + height in length); Dan: "it's back".
+- Next: Dan's notes on /obdtune (dev) and a look on his iPhone; then his push word for the branch; merge to main = live, his word.
 
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 
