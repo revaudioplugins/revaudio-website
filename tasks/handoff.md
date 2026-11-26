@@ -40,15 +40,28 @@ this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
   before tomorrow".** Target = main (a push to main is the live deploy).
 - NEXT SESSION, in order:
   1. Do `tasks/obdtune-garage-plan.md`: the three garage views, Dan's pick (pick page + his Safari), build the pick.
-  2. Ship it. Before the push, one line to Dan naming what ships. If the garage isn't picked in time, ask him whether
-     to ship screen C as it is now (`5265999` + this handoff).
-  3. Push recipe: `git fetch`. The gap at handoff: origin/main 2 ahead (`d28d19c` TempHero split line, `9701578`
-     handoff), this branch 8 ahead. Short branch -> rebase onto origin/main in a temp worktree (memory
-     feedback_rebase_long_branch_merge_main). `tasks/handoff.md` will clash: keep both entries, main's first if newer.
-     Then `npx astro build` green, then `git pull --rebase` + push to main in ONE command (the push hook wants that).
-     If auto mode refuses the push to main, give Dan the exact `!` line to run.
-  4. After it: the deploy run succeeds (`gh run list -L 3`), revaudio.net/obdtune/ serves the one-pager (cache-busted),
-     open it in Dan's Safari, update this entry (ON MAIN + LIVE, sha, run id).
+  2. Ship it. "Before tomorrow" = live by the end of 2026-11-27, Israel time.
+     - The pick page is a private Artifact. Send Dan the link.
+     - Before the push, one line to Dan naming what ships.
+     - If the garage isn't picked by about 21:00, ask him once: ship screen C as it is now (`5265999` + this handoff),
+       and the garage later?
+     - Nothing ships on silence.
+  3. Push recipe. The branch is already pushed, so **merge** origin/main in; do not rebase or force-push.
+     - The gap at handoff: origin/main 2 ahead (`d28d19c` TempHero split line, `9701578` handoff), this branch 8 ahead.
+       `git merge-tree` shows one clash only: `tasks/handoff.md`. Keep both entries, newest date first.
+     - `git fetch && git merge origin/main`, then `npx astro build` green.
+       This worktree's `node_modules` is a symlink to the main checkout's; it built fine on 11-27.
+     - Then, in ONE command (the push hook wants it): `git pull --rebase=merges origin main && git push origin HEAD:main`.
+       Also push the branch.
+     - If auto mode refuses the push to main, give Dan the exact `!` line to run.
+  4. After it:
+     - "Deploy to GitHub Pages" must be green (`gh run list --branch main -L 4`).
+     - "Smoke test" was already red on main's last three pushes (`00b73b9`, `d619810`, `9701578`, 11-25/26) while Deploy
+       was green. Check whether it fails the same way without this change, and tell Dan.
+     - revaudio.net/obdtune/ serves the one-pager (cache-busted). Open it in Dan's Safari.
+     - Update this entry: ON MAIN + LIVE, sha, run id.
+- Known tight spot: the longest readings have 3 px to spare at 1312x734 (TUNE) and 1.6 px on a 390 phone (DETECT, TUNE).
+  Keep the reading box's height and these strings as they are, or re-run the fit probe (the plan's Checks).
 - Still open: a real iPhone check; Dan's notes on the page; Yoni / Gil own the commerce wiring (unchanged).
 
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
