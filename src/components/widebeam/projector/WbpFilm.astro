@@ -1,0 +1,73 @@
+---
+/**
+ * Section 2 of the projector page (bench/widebeam-projector s2, P1 + F0 + Intertitle): a beam in a dark room falls on
+ * the film's frame, the lamp strikes when the section comes into view, the film runs with live captions and the voice,
+ * and its last shot cuts to the film's own title card (the Buy key and the trial gate, lettered in the film's black and
+ * white, under its grain and flicker). film.ts runs it.
+ *
+ * The card is server-rendered VISIBLE: no script, a late or failed chunk, a refused play() still leave BUY and the gate
+ * on the page. The script hides it (visibility + inert, so it keeps its size and the frame never changes height) while
+ * the film runs. The frame is 16:9, or as tall as the card needs (the film letterboxes in it), from the CSS alone.
+ *
+ * Nothing here loads in the first view: the <source>s sit behind preload="none" and the video gets its poster from
+ * data-poster once the page's near-script marks the video [data-wb-near] (the video, not the section: at 1440x900 the
+ * section's top edge touches the fold, and an edge touch already counts as in view); the end still is a [data-wb-defer] <img>
+ * the near-script fills itself; the voice gets its src from data-src on near (or on the first act that arms it). Every
+ * URL is written here, so assetver stamps its ?v= and film.ts never builds one. A slow line drops data-wbp-tier="hi".
+ * The film files are a stand-in cut (no label, no burned-in captions, no baked grain: the page draws those), named so
+ * our own manual film replaces them one for one.
+ */
+import { getImage } from 'astro:assets';
+import posterImg from '../../../assets/widebeam/manual-film-poster.jpg';
+import endImg from '../../../assets/widebeam/manual-film-end.jpg';
+import titleImg from '../../../assets/widebeam/title.webp';
+import { projector } from '../../../data/widebeam';
+import WbpGate from './WbpGate.astro';
+
+const SMALL = '(max-width: 900px)'; // the 480 film's screens: its poster too
+const [poster, posterSm] = await Promise.all([1280, 854].map((width) => getImage({ src: posterImg, format: 'webp', width, quality: 70 })));
+const [end, endSm] = await Promise.all([1280, 854].map((width) => getImage({ src: endImg, format: 'webp', width, quality: 70 })));
+// section 1's lettering, the same files (WbpCar.astro: same widths, quality, srcset and sizes), so the browser picks the
+// file it already has and the card adds nothing to the first view
+const title = await Promise.all([616, 1231].map((width) => getImage({ src: titleImg, format: 'webp', width, quality: 90 })));
+const f = projector.film;
+---
+{/* ============ 2. the film on the projector, cut to its title card ============ */}
+<section
+  class="wbp-s2" id="manual" aria-labelledby="wbp-s2-h" data-wbp-s2
+  data-cues={JSON.stringify(f.cues)}
+>
+  <h2 class="sr-only wbp-s2-h" id="wbp-s2-h">{f.heading}</h2>
+  <div class="wbp-room" aria-hidden="true"><canvas class="wbp-beam"></canvas><canvas class="wbp-beam wbp-dust"></canvas></div>
+  <div class="wbp-stage">
+    <div class="wbp-glow" aria-hidden="true"></div>
+    <div class="wbp-front">
+      <div class="wbp-film" data-wbp-frame>
+        <video class="wbp-film-v" data-wbp-manual data-wb-defer muted playsinline preload="none" tabindex="-1" data-poster={poster.src} data-poster-sm={posterSm.src} data-small={SMALL}>
+          <source src="/widebeam/manual-film-480.mp4" type="video/mp4" media={SMALL} />
+          <source src="/widebeam/manual-film-720.mp4" type="video/mp4" data-wbp-tier="hi" />
+          <source src="/widebeam/manual-film-480.mp4" type="video/mp4" />
+        </video>
+        <img class="wbp-still" data-wb-defer data-src={end.src} data-srcset={`${endSm.src} 854w, ${end.src} 1280w`} sizes="(max-width: 900px) 100vw, 1120px" alt="" width="1280" height="720" decoding="async" />
+        <div class="wbp-card" role="group" aria-label={f.card} data-wbp-card>
+          <div class="wbp-card-body">
+            <img class="wbp-card-title" src={title[1].src} srcset={`${title[0].src} 616w, ${title[1].src} 1231w`} sizes="(max-width: 560px) min(88vw, 380px), min(560px, 46vw)" alt="" width="1231" height="82" loading="lazy" decoding="async" />
+            <p class="wbp-card-tag"><span>{projector.tagline}</span></p>
+            <WbpGate id="wbp-card" variant="card" />
+            <button class="wbp-key wbp-again" type="button" data-wbp-again data-play={f.play} data-again={f.again} hidden>
+              <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.4 1.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>{f.play}</span>
+            </button>
+          </div>
+        </div>
+        <div class="wbp-fx wbp-fx-grain"></div><div class="wbp-fx wbp-fx-lift"></div><div class="wbp-fx wbp-fx-scratch"></div><div class="wbp-fx wbp-fx-flick"></div><div class="wbp-fx wbp-fx-vig"></div><div class="wbp-fx wbp-fx-dust"></div><div class="wbp-fx wbp-fx-splice"></div>
+        <p class="wbp-cap" data-wbp-cap></p>
+      </div>
+      <button class="wbp-tap" type="button" aria-pressed="false" data-wbp-tap data-off={f.tapOff} data-on={f.tapOn}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9c1.2 1.6 1.2 4.4 0 6"/></svg>
+        <span>{f.tapOff}</span>
+      </button>
+    </div>
+  </div>
+  <audio data-wbp-voice preload="none" data-src="/widebeam/manual-voice.mp4"></audio>
+</section>

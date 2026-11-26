@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { widebeam, buyable, askFor } from '../src/data/widebeam';
+import { widebeam, buyable, askFor, projector } from '../src/data/widebeam';
 import { salePhases } from '../src/data/sale';
 
 // The durable assertions for /widebeam (lane T of the WIDE BEAM build). Run by the house config (chromium + mobile-safari) against the built preview.
@@ -29,7 +29,20 @@ async function open(page: Page, path = '/widebeam', wait = 2400) {
   await page.waitForTimeout(wait);
   return errors;
 }
-const soundOn = (page: Page) => page.evaluate(() => document.querySelector('[data-wb-sound]')?.getAttribute('aria-pressed') === 'true' || !!document.querySelector('.wb-page.is-playing'));
+// the film's voice (section 2, src/lib/widebeam/projector/film.ts): heard = the voice element playing, or its sound key pressed
+const soundOn = (page: Page) => page.evaluate(() => {
+  const v = document.querySelector<HTMLAudioElement>('[data-wbp-voice]');
+  return (!!v && !v.paused) || document.querySelector('[data-wbp-tap]')?.getAttribute('aria-pressed') === 'true';
+});
+const filmRunning = (page: Page) => page.evaluate(() => { const v = document.querySelector<HTMLVideoElement>('[data-wbp-manual]'); return !!v && !v.paused && v.currentTime > 0.3; });
+// section 2 scrolled in, and its film really running (so a check on the voice is never vacuous)
+async function toFilm(page: Page) {
+  await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+  await expect.poll(() => filmRunning(page), { timeout: 20_000, message: 'the film runs once section 2 is in view' }).toBe(true);
+}
+// Paddle is never reached from a test: the cart's script gets an empty answer
+const noPaddle = (page: Page) => page.route(/paddle\.com/, (r) => r.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+const press = (loc: import('@playwright/test').Locator, isMobile: boolean) => (isMobile ? loc.tap() : loc.click());
 const pageText = (page: Page) => page.evaluate(() => {
   const root = document.querySelector('[data-wb-page]') as HTMLElement;
   const out = [root.innerText];
@@ -89,8 +102,8 @@ test.describe('/widebeam behaviour', () => {
     for (const n of names) expect(n, 'an email field whose name is not "Your email"').toBe('Your email');
   });
 
-  // the projector page (feat/widebeam-projector-live) builds section by section: #manual comes with section 2
-  test.fixme('the Owner\'s Manual anchor is there and /widebeam/#manual lands on it', async ({ page }) => {
+  // #manual is section 2, the film (the plugin's MANUAL button lands here); its heading is visually hidden
+  test('the Owner\'s Manual anchor is there and /widebeam/#manual lands on it', async ({ page }) => {
     await open(page, '/widebeam/#manual', 3500);
     // the manual's heading lands under the nav: the section itself lands with its top padding above the screen
     // (manual.css scroll-margin-top), so the heading, the screen and its strap fit together on a 1141x636 laptop
@@ -124,30 +137,72 @@ test.describe('/widebeam behaviour', () => {
     expect(await mono(), '"m" with a dash control focused toggles MONO').not.toBe(b2);
   });
 
-  // passes vacuously without the old SOUND key ([data-wb-sound]): rewrite for the film's voice in step 2
-  test.fixme('the music never starts on Tab or on the cookie banner', async ({ page, isMobile }) => {
+  // the voice is heard only after a qualifying act on the page itself (film.ts): never a key, never the cookie banner, a gate
+  // or the Buy key. Checked with the film running in view, so a paused voice means something.
+  test('the voice never starts on Tab, a letter key, the cookie Decline, a gate field or the BUY key; a click on the film starts it', async ({ page, isMobile, browserName }) => {
+    test.skip(browserName === 'firefox', 'headless Firefox has no audio device');
     test.setTimeout(90_000);
-    await open(page, '/widebeam', 3000);
+    await noPaddle(page);
+    await open(page, '/widebeam', 1500);
+    await toFilm(page);
     expect(await soundOn(page), 'sound before any act').toBe(false);
-    if (!isMobile) { await page.keyboard.press('Tab'); await page.waitForTimeout(900); expect(await soundOn(page), 'sound after Tab').toBe(false); }
+    if (!isMobile) {
+      await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await page.keyboard.press('m');
+      await page.waitForTimeout(900);
+      expect(await soundOn(page), 'sound after Tab and a letter key').toBe(false);
+    }
     const decline = page.locator('#cookie-decline');
     if (await decline.isVisible().catch(() => false)) {
-      // a real press: a tap on a phone, a click on a laptop (not scripted el.click(): that carries no user activation)
-      if (isMobile) await decline.tap({ timeout: 15_000 }); else await decline.click({ timeout: 15_000 });
-      await page.waitForTimeout(900);
+      // a real press (a scripted el.click() carries no user activation)
+      await press(decline, isMobile); await page.waitForTimeout(900);
       expect(await soundOn(page), 'sound after the cookie Decline').toBe(false);
     }
+    await press(page.locator('[data-wbp-s1] input[type=email]'), isMobile); await page.waitForTimeout(400);
+    const buy = page.locator('[data-wbp-s1] [data-add-to-cart]');
+    if (await buy.count()) {
+      await press(buy, isMobile); await page.waitForTimeout(800);
+      await page.locator('dialog[open] [data-cart-close]').first().click({ timeout: 3000 }).catch(() => page.keyboard.press('Escape'));
+    }
+    await toFilm(page); await page.waitForTimeout(900);
+    expect(await filmRunning(page), 'the film runs').toBe(true);
+    expect(await soundOn(page), 'sound after a gate field and the BUY key').toBe(false);
+    await press(page.locator('[data-wbp-frame]'), isMobile);
+    await expect.poll(() => soundOn(page), { message: 'a click on the film starts the voice' }).toBe(true);
   });
 
-  // the SOUND key is gone with the dash: the voice and its tap key come with section 2 (step 2)
-  test.fixme('the music starts on a real act on the demo (SOUND key), and stops on a second press', async ({ page, browserName }) => {
-    test.skip(browserName === 'firefox', 'headless Firefox has no audio device: an AudioContext stays suspended even after a gesture');
-    await open(page, '/widebeam', 2500);
+  // the natural order: everything that is not a qualifying act happens first, with section 2 off screen; the browser's
+  // activation is sticky by then, so only our own gate keeps the film's 'play' from starting the voice
+  test('the voice stays off when the film starts after a Decline, Tab, a gate field and BUY', async ({ page, isMobile, browserName }) => {
+    test.skip(browserName === 'firefox', 'headless Firefox has no audio device');
+    test.setTimeout(90_000);
+    await noPaddle(page);
+    await open(page, '/widebeam', 1500);
+    const decline = page.locator('#cookie-decline');
+    if (await decline.isVisible().catch(() => false)) { await press(decline, isMobile); await page.waitForTimeout(600); }
+    if (!isMobile) await page.keyboard.press('Tab');
+    await press(page.locator('[data-wbp-s1] input[type=email]'), isMobile);
+    const buy = page.locator('[data-wbp-s1] [data-add-to-cart]');
+    if (await buy.count()) {
+      await press(buy, isMobile); await page.waitForTimeout(800);
+      await page.locator('dialog[open] [data-cart-close]').first().click({ timeout: 3000 }).catch(() => page.keyboard.press('Escape'));
+    }
+    await toFilm(page); await page.waitForTimeout(1500);
+    expect(await filmRunning(page), 'the film runs').toBe(true);
+    expect(await soundOn(page), 'sound with no qualifying act').toBe(false);
+  });
+
+  test('the sound key turns the voice on, and a second press turns it off', async ({ page, isMobile, browserName }) => {
+    test.skip(browserName === 'firefox', 'headless Firefox has no audio device');
+    test.setTimeout(60_000);
+    await open(page, '/widebeam', 1500);
     await page.evaluate(() => { const b = document.getElementById('cookie-banner'); if (b) b.remove(); });
-    const key = page.locator('[data-wb-sound]');
-    await key.click(); await page.waitForTimeout(900);
-    expect(await soundOn(page), 'sound after the SOUND key').toBe(true);
-    await key.click(); await page.waitForTimeout(600);
+    await toFilm(page);
+    const key = page.locator('[data-wbp-tap]');
+    await press(key, isMobile);
+    await expect.poll(() => soundOn(page), { message: 'sound after the sound key' }).toBe(true);
+    await expect(key).toHaveAttribute('aria-pressed', 'true');
+    await page.waitForTimeout(1000); // a second press, not the same one
+    await press(key, isMobile); await page.waitForTimeout(600);
     expect(await soundOn(page), 'sound after a second press').toBe(false);
   });
 });
@@ -320,5 +375,123 @@ test.describe('/widebeam sign-up gate', () => {
     expect(await page.evaluate(() => location.hash), 'TrialGateModal scrubs the token').not.toMatch(/dl=/);
     expect(await page.evaluate(() => localStorage.getItem('tg:gate:widebeam')), 'TrialGateModal kept the gate').not.toBeNull();
     await expect(page.locator('dialog.tg-modal')).toHaveAttribute('open', '');
+  });
+});
+
+// Section 2 (src/components/widebeam/projector/WbpFilm.astro + src/lib/widebeam/projector/film.ts): the film, its title card,
+// and every way the film can fail to play. The licence worker and Paddle are faked.
+test.describe('/widebeam section 2: the film and its title card', () => {
+  const MEDIA = /manual-film-|manual-voice/;
+  const FILM = /manual-film-\d+\.mp4/;
+  const card = (page: Page) => page.locator('[data-wbp-card]');
+  const filmKey = (page: Page) => page.locator('[data-wbp-again]');
+  // the card is shown: visible and not hidden from assistive tech
+  const cardShown = (page: Page) => page.evaluate(() => {
+    const c = document.querySelector<HTMLElement>('[data-wbp-card]')!;
+    return getComputedStyle(c).visibility === 'visible' && !c.inert && !c.hasAttribute('aria-hidden');
+  });
+  async function watch(page: Page) {
+    const seen: string[] = [];
+    page.on('request', (r) => { if (MEDIA.test(r.url())) seen.push(r.url()); });
+    await page.route(WORKER, stub); await noPaddle(page);
+    return seen;
+  }
+
+  test('no section 2 media is fetched before a scroll', async ({ page }) => {
+    const seen = await watch(page);
+    await page.goto('/widebeam/', { waitUntil: 'load' });
+    await page.waitForTimeout(5000);
+    expect(seen, 'film, voice, poster or end still in the first view').toEqual([]);
+  });
+
+  test('the title card comes up when the film ends, with Watch again, and Watch again plays it from the top', async ({ page }) => {
+    test.setTimeout(60_000);
+    await watch(page);
+    await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+    await toFilm(page);
+    expect(await cardShown(page), 'the card while the film runs').toBe(false);
+    // the sound key holds keyboard focus as the film ends: the cut hides it, so focus goes to the card's film key, never <body>
+    await page.locator('[data-wbp-tap]').focus();
+    await page.evaluate(() => { const v = document.querySelector<HTMLVideoElement>('[data-wbp-manual]')!; v.currentTime = v.duration - 0.4; });
+    await expect.poll(() => cardShown(page), { timeout: 10_000 }).toBe(true);
+    await expect(filmKey(page)).toHaveText(projector.film.again);
+    await expect(filmKey(page)).toBeFocused();
+    if (buyable()) await expect(card(page).locator('[data-add-to-cart]')).toBeVisible();
+    await expect(card(page).getByRole('textbox', { name: 'Your email', exact: true })).toBeVisible();
+    // Watch again after the film's own end: the film runs again from the top, the card hides, focus goes to the sound key
+    await page.keyboard.press('Enter');
+    await expect.poll(() => cardShown(page), { message: 'the card after Watch again' }).toBe(false);
+    await expect.poll(() => page.evaluate(() => { const v = document.querySelector<HTMLVideoElement>('[data-wbp-manual]')!; return !v.paused && v.currentTime > 0.2 && v.currentTime < 5; }), { timeout: 10_000, message: 'the film runs again from the top' }).toBe(true);
+    expect(await page.evaluate(() => document.querySelector<HTMLElement>('[data-wbp-card]')!.inert), 'the hidden card is inert').toBe(true);
+    await expect(page.locator('[data-wbp-tap]')).toBeFocused();
+  });
+
+  test('a refused play() shows the card at once, with Play the film', async ({ page }) => {
+    await page.addInitScript(() => {
+      const play = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+        return this instanceof HTMLVideoElement && this.hasAttribute('data-wbp-manual') ? Promise.reject(new DOMException('Low Power Mode', 'NotAllowedError')) : play.call(this);
+      };
+    });
+    await watch(page);
+    await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+    await expect.poll(() => cardShown(page), { timeout: 10_000 }).toBe(true);
+    await expect(filmKey(page)).toHaveText(projector.film.play);
+  });
+
+  test.describe('with reduced motion', () => {
+    test.beforeEach(({ page }) => page.emulateMedia({ reducedMotion: 'reduce' }));
+    test('the card shows first, and no film is fetched until Play the film', async ({ page }) => {
+      const seen = await watch(page);
+      await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+      await page.waitForTimeout(2500);
+      expect(await cardShown(page), 'the card').toBe(true);
+      await expect(filmKey(page)).toHaveText(projector.film.play);
+      expect(seen.filter((u) => FILM.test(u)), 'a film request before the key').toEqual([]);
+      await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+      // from the keyboard: the key had focus, so focus goes to the sound key (never <body>) as the card hides
+      await filmKey(page).focus();
+      await page.keyboard.press('Enter');
+      await expect.poll(() => seen.filter((u) => FILM.test(u)).length, { message: 'the film after the key' }).toBeGreaterThan(0);
+      expect(await cardShown(page), 'the card after the key').toBe(false);
+      await expect(page.locator('[data-wbp-tap]')).toBeFocused();
+    });
+
+    test('the card\'s gate sends the same two requests as section 1\'s, and the done state spreads both ways', async ({ page }) => {
+      const calls: { path: string; body: Record<string, unknown> }[] = [];
+      await page.route(WORKER, (r) => {
+        const req = r.request(), url = req.url();
+        if (/cloudflareinsights/.test(url)) return r.fulfill({ status: 200, contentType: 'application/javascript', body: '' });
+        const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type', 'access-control-allow-methods': 'POST' };
+        if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+        if (req.method() === 'POST') calls.push({ path: new URL(url).pathname, body: JSON.parse(req.postData() || '{}') });
+        return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: '{"ok":true,"sent":true}' });
+      });
+      await noPaddle(page);
+      await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('form[data-wbp-gate][data-wb-needs-script]')).toHaveCount(0);
+      await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+      const s1 = page.locator('[data-wbp-s1] [data-wbp-ask]'), c = card(page).locator('[data-wbp-ask]');
+      await c.getByRole('textbox', { name: 'Your email', exact: true }).fill('card@example.com');
+      await c.locator('form[data-wbp-gate] button[type=submit]').click();
+      await expect.poll(() => calls.length).toBe(2);
+      expect(calls.map((x) => x.path)).toEqual(['/download/register', '/form-once']);
+      expect(calls[0].body).toEqual({ email: 'card@example.com', plugin: widebeam.gateId, marketing: true });
+      expect(calls[1].body).toEqual({ form: 'newsletter', page: '/widebeam/', email: 'card@example.com', source: askFor().source, _gotcha: '' });
+      await expect(c.locator('.wbp-done')).toBeVisible();
+      await expect(s1).toHaveAttribute('data-wb-done', '');
+      await expect(s1.locator('.wbp-done em')).toContainText('@example.com');
+      // the other way: Change on section 1, a new address there, the card shows it done
+      await s1.locator('[data-wbp-change]').click();
+      await expect(c).not.toHaveAttribute('data-wb-done', '');
+      await s1.getByRole('textbox', { name: 'Your email', exact: true }).fill('first@example.com');
+      await s1.locator('form[data-wbp-gate] button[type=submit]').click();
+      await expect.poll(() => calls.length).toBe(4);
+      await expect(c).toHaveAttribute('data-wb-done', '');
+      await expect(c.locator('.wbp-done em')).toContainText('first@');
+    });
   });
 });

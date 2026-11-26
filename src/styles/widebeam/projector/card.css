@@ -1,0 +1,88 @@
+/* Section 2's title card (WbpFilm.astro .wbp-card, the gate's 'card' variant): the film's last shot cuts to a 1930s
+   title card on the same strip (Dan, 2026-11-23: "the card will be the film"). Black and white, a double-ruled frame,
+   the plugin's own lettering in film white, the gate lettered like the card. The mock-up's Intertitle (Dan's pick,
+   2026-11-25: "doesn't look all the way like a film"), its print layer folded in: lifted, uneven blacks, film white with
+   halation (the glow round white letters on a print; no blur: a filter smeared the letters on a real iPhone), the
+   film's grain on it (s2.css), still while it holds. The field is a double-ruled box like the frame, the keys are
+   cartouches (a film-white plate with a black inner rule), the film key is underlined lettering. */
+.wbp-card {
+  position: relative; display: grid; container-type: inline-size; color: #e8e2d4;
+  background:
+    radial-gradient(ellipse 64% 58% at 50% 45%, rgba(255, 246, 226, .085), transparent 72%),
+    radial-gradient(ellipse 125% 105% at 50% 48%, #1f1d18 0%, #161411 52%, #0b0a08 100%);
+}
+.wbp-card::before { content: ''; position: absolute; inset: clamp(8px, 2.6cqi, 22px); pointer-events: none;
+  border: 1.5px solid rgba(236, 230, 214, .78); outline: 1px solid rgba(236, 230, 214, .34); outline-offset: clamp(3px, .7cqi, 6px);
+  box-shadow: 0 0 9px rgba(255, 240, 214, .2), inset 0 0 9px rgba(255, 240, 214, .12); }
+.wbp-card-body { position: relative; box-sizing: border-box; display: grid; align-content: center; justify-items: center; text-align: center;
+  gap: clamp(7px, 1.5cqi, 14px); padding: clamp(26px, 6.4cqi, 54px) clamp(22px, 7cqi, 64px); }
+.wbp-card-title { display: block; width: clamp(170px, 44cqi, 420px); height: auto; filter: grayscale(1) brightness(1.3) contrast(1.04) drop-shadow(0 0 7px rgba(255, 240, 214, .3)); }
+.wbp-card-tag { display: flex; align-items: center; gap: .9em; width: fit-content; min-width: clamp(170px, 44cqi, 420px); max-width: 100%; font-family: var(--serif); font-variant: small-caps;
+  letter-spacing: .3em; font-size: clamp(11px, 1.75cqi, 15px); color: #cfc8b6; white-space: nowrap; }
+.wbp-card-tag span { margin-right: -.3em; }
+.wbp-card-tag::before, .wbp-card-tag::after { content: ''; flex: 1; min-width: 10px; height: 1px; background: rgba(236, 230, 214, .6); box-shadow: 0 0 6px rgba(255, 240, 214, .3); }
+.wbp-card :is(.wbp-card-tag, .wbp-eng, .wbp-fine, .wbp-status, .wbp-done b, .wbp-done span) { text-shadow: 0 0 1px rgba(255, 248, 232, .4), 0 0 10px rgba(255, 240, 214, .24); }
+
+/* the gate in the card's own hand */
+.wbp-ask--card { --wbp-gap: clamp(7px, 1.5cqi, 14px); width: 100%; }
+.wbp-ask--card .wbp-eng { color: #cfc8b6; }
+.wbp-ask--card .wbp-fine { color: #a9a293; font-size: clamp(12.5px, 1.6cqi, 14px); }
+.wbp-ask--card .wbp-buyrow { flex-direction: column; gap: var(--wbp-gap); width: 100%; }
+/* "or try it free for N days" between two rules, under the Buy key */
+.wbp-ask--card .wbp-or { display: flex; align-items: center; gap: 12px; width: min(100%, 420px); max-width: none; font-size: .95rem; }
+.wbp-ask--card .wbp-or::before, .wbp-ask--card .wbp-or::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(236, 230, 214, .55), transparent); }
+.wbp-ask--card .wbp-well { background: none; box-shadow: none; padding: 0; gap: 10px; border-radius: 0; }
+.wbp-ask--card .wbp-divider { display: none; }
+.wbp-ask--card .wbp-rail input { background: rgba(0, 0, 0, .22); border: 1.5px solid rgba(236, 230, 214, .9); border-radius: 0; color: #f3eddd;
+  outline: 1px solid rgba(236, 230, 214, .36); outline-offset: 3px; font-style: italic; letter-spacing: .02em; box-shadow: 0 0 10px rgba(255, 240, 214, .12); }
+.wbp-ask--card .wbp-rail input::placeholder { color: #9d978a; }
+.wbp-ask--card .wbp-rail input:focus-visible { outline: 1.5px solid #fff; outline-offset: 3px; border-color: #fff; }
+.wbp-ask--card .wbp-gate.is-err .wbp-rail input { border: 2px dashed #fff; outline: 1px solid rgba(255, 255, 255, .5); outline-offset: 3px; box-shadow: none; }
+.wbp-card .wbp-key { transform: none; transition: background .12s; }
+.wbp-card .wbp-key:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.wbp-card .wbp-key:not(.wbp-again) { border-radius: 1px; background: #e9e3d3; color: #0c0b09; text-shadow: none; letter-spacing: .1em;
+  box-shadow: inset 0 0 0 3px #e9e3d3, inset 0 0 0 4.5px rgba(12, 11, 9, .9), 0 0 12px rgba(255, 240, 214, .22); }
+.wbp-card .wbp-key:not(.wbp-again):hover { background: #fff; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 4.5px rgba(12, 11, 9, .9), 0 0 14px rgba(255, 240, 214, .3); }
+.wbp-card .wbp-key:not(.wbp-again):active { transform: none; background: #d6cfbd; box-shadow: inset 0 0 0 3px #d6cfbd, inset 0 0 0 4.5px rgba(12, 11, 9, .9); }
+.wbp-ask--card .wbp-status { color: #cfc8b6; }
+.wbp-ask--card .wbp-status.ok { color: #e6e0d0; }
+.wbp-ask--card .wbp-status.err { color: #fff; font-style: italic; }
+.wbp-ask--card .wbp-status.err::before { content: '\2715\00a0'; font-style: normal; }
+.wbp-ask--card .wbp-done { inset: 0; border: 1.5px solid #e6dfcd; outline: 1px solid rgba(236, 230, 214, .36); outline-offset: 3px; }
+.wbp-ask--card .wbp-done b { color: #f3eddd; }
+.wbp-ask--card .wbp-done :is(span, button) { color: #b9b2a2; }
+.wbp-ask--card .wbp-done em { color: #f3eddd; }
+
+/* a laptop: the done box takes the field's place in the flow instead of lying over it, so a message on two lines (the
+   'already signed up' one) grows the box, and the card, instead of running over its rules. A phone's box is as tall as
+   the stacked field and key, room enough. */
+@media (min-width: 561px) {
+  .wbp-ask--card .wbp-gate.is-done .wbp-done { position: relative; inset: auto; flex: 1 1 auto; min-height: 50px; padding-block: 6px; }
+  .wbp-ask--card .wbp-gate.is-done .wbp-rail > :not(.wbp-done) { display: none; }
+}
+
+/* the film key (Watch again / Play the film): underlined lettering */
+.wbp-card .wbp-again { margin-top: 2px; min-height: 36px; padding: 0 14px; font-size: 17px; letter-spacing: .1em; background: none; box-shadow: none;
+  color: #d8d1bf; text-shadow: 0 0 1px rgba(255, 248, 232, .4), 0 0 10px rgba(255, 240, 214, .24);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+.wbp-card .wbp-again:hover { color: #fff; }
+.wbp-card .wbp-again[hidden] { display: none; }
+
+/* a laptop: the small print runs the card's full width (the mock-up's card had one line of it, the real one has three),
+   so the card stays as close to the film's 16:9 as the words allow */
+@media (min-width: 561px) { .wbp-ask--card .wbp-fine { max-width: none; } }
+
+/* the card holds: the film's grain shows in its lifted blacks */
+.wbp-s2.carded .wbp-fx-grain, .wbp-s2:not(.is-film) .wbp-fx-grain { opacity: .3; }
+
+/* a short laptop (1141x636: Safari at 115 %): the real words make the card taller than the mock-up's, so it gives back
+   some of its air to stay on the screen under the nav and the strip */
+@media (min-width: 640px) and (max-height: 700px) {
+  .wbp-card-body { gap: 8px; padding-block: clamp(30px, 4.8cqi, 40px); } /* ~16 px of air inside the rule */
+  .wbp-ask--card { --wbp-gap: 8px; }
+}
+@media (max-width: 560px) {
+  .wbp-card-body { gap: 8px; }
+  .wbp-ask--card { --wbp-gap: 8px; }
+  .wbp-ask--card .wbp-well.wbp-rail { padding: 0; gap: 6px; }
+}

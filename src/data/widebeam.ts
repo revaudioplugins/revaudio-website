@@ -108,6 +108,26 @@ export const projector = {
   orTry: () => `or try it free for ${widebeam.trialDays} days`,
   /** the link in the done box that lets a visitor sign up another address */
   change: 'Change',
+  /** Section 2: the film on the projector (a stand-in cut until our own manual film exists) and its last title card */
+  film: {
+    /** the section's heading (visually hidden: the film is the heading's picture); /widebeam/#manual lands on it */
+    heading: 'The WIDE BEAM film',
+    /** the title card's group label */
+    card: 'Get WIDE BEAM',
+    /** the sound key: before the voice can be heard, and while it is */
+    tapOff: 'Tap for sound',
+    tapOn: 'Sound on',
+    /** the card's film key: the film has not run (blocked, Save-Data, reduced motion), or it has */
+    play: 'Play the film',
+    again: 'Watch again',
+    /** the captions, on the film's clock: [from s, to s, lines]; shown with the sound on or off */
+    cues: [
+      [0.15, 2.08, ['Why does your mix sound so narrow?']],
+      [2.15, 5.3, ['Same sound in both speakers?', 'It sits dead center.']],
+      [5.44, 7.76, ['Width is the difference', 'between left and right.']],
+      [7.8, 11.6, ['The copy-and-delay trick fakes it,', 'and falls apart in mono.']],
+    ] as [number, number, string[]][],
+  },
 };
 
 /* ---------- formats: every string reads the flags ---------- */

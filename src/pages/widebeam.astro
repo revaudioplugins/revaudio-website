@@ -6,8 +6,9 @@
  * phase and the listing live in src/data/widebeam.ts.
  *
  * Step 1: section 1 (WbpCar: the car film with the glass card, the Buy key and the trial gate) between the house header
- * / sale strip and the house footer. Sections 2 (the projector film and its title card) and 3 (the plugin's face) come
- * next and reuse the gate (WbpGate). The old page (WbHero, WbDrive, WbGet, WbManual, WbCloser, WbStickyBar, their
+ * / sale strip and the house footer. Step 2: section 2 (WbpFilm, #manual: the projector film with its captions and
+ * voice, cut to the film's own title card with BUY and the same gate). Section 3 (the plugin's face) comes next and
+ * reuses the gate (WbpGate). The old page (WbHero, WbDrive, WbGet, WbManual, WbCloser, WbStickyBar, their
  * styles in src/styles/widebeam.css and their scripts under src/lib/widebeam/) is left in the repo, no longer imported:
  * going back is one revert of this file.
  * Every word that names the ask, the price, the formats or the trial comes from src/data/widebeam.ts;
@@ -18,6 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { plugins } from '../data/plugins';
 import { widebeam, askFor, assertWidebeamConfig } from '../data/widebeam';
 import WbpCar from '../components/widebeam/projector/WbpCar.astro';
+import WbpFilm from '../components/widebeam/projector/WbpFilm.astro';
 import '../styles/widebeam/projector/index.css';
 
 // the social card (public/og/widebeam.png, 1200x630): the lit dash beside the WIDE BEAM lockup and the hero line, shot
@@ -36,12 +38,14 @@ const description = `WIDE BEAM is a stereo-width plugin fronted by a pair of cla
 >
   <div class="wbp-page" data-wb-page>
     <WbpCar />
+    {/* before the near-script below: it collects [data-wb-defer] once, as it runs */}
+    <WbpFilm />
     {/* the look-ahead marker (kept from the old page): anything marked [data-wb-defer] gets [data-wb-near] once it comes
          within 3/4 of a screen (a deferred <img> gets its data-srcset / data-src then), and so does the house footer,
          whose two smoke photos wait for it (base.css, r-cross-g11fv: they stay out of the first view). The look-ahead
          starts with the visitor's first scroll; until then only what is on screen is marked. Inline, not in the page's
-         script chunk: a late or failed chunk must not leave deferred art bare. Sections 2 and 3 will hang their films
-         and art on it. */}
+         script chunk: a late or failed chunk must not leave deferred art bare. Section 2 hangs its film, poster, end
+         still and voice on it (film.ts); section 3 will hang its art on it. */}
     <script is:inline>
       (function () {
         var els = [].slice.call(document.querySelectorAll('.wb-part-lamp-l, .wb-part-lamp-r, .wb-part-road, .wb-part-meter, .wb-part-cap, [data-wb-defer]'));

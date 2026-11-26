@@ -1,0 +1,101 @@
+/* Section 2 (WbpFilm.astro): the projector room (the mock-up's s2, P1: a beam in the dark), the film on its frame and
+   the cut to its title card (card.css). It fills the band under the sticky nav and the sale strip, like section 1, at
+   least 560 px; a card taller than that makes it taller, never clipped. film.ts drives the states:
+   .is-film (the film is the picture; without it, as with no script, the card is) .carding (a cut is running) .carded
+   (the card holds) .is-on (the lamp is lit) .lampup (the strike) .playing .is-seen (on screen) .rm (reduced motion)
+   .lbox (a phone: the picture letterboxed in a frame as tall as the card). */
+.wbp-s2 {
+  --wbp-s2-h: max(560px, min(calc(100svh - var(--nav-h) - var(--sale-h)), 980px));
+  position: relative; min-height: var(--wbp-s2-h); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; overflow: clip;
+  background: #060504;
+  /* /widebeam/#manual and the scroll cue land with the section's top (and its heading) just under the nav: the house's
+     scroll-padding-top (global.css) already clears the nav, the sale strip above it is ours to add */
+  scroll-margin-top: var(--sale-h);
+}
+/* a phone, the cookie banner up (a first visit landing on #manual): the section makes room for it at its foot, so the
+   card, centred in it, rides up clear of the banner like section 1's glass card does (film.ts re-aims the beam) */
+@media (max-width: 760px) { .wbp-s2 { padding-bottom: var(--lift); } }
+.wbp-s2-h { top: 0; left: 0; }
+.wbp-room { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 40%, #12100d, #060504 70%); }
+.wbp-beam { position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(10px); }
+.wbp-beam.wbp-dust { filter: none; }
+
+/* the frame: 80 % of the section's width, or as wide as a 16:9 picture 72 % of the band's height (the mock-up's P1);
+   a phone: the width less a 16 px gutter each side. Its height is the film's: 16:9, or the card's when that is taller. */
+.wbp-stage { position: relative; z-index: 1; width: min(80%, calc(var(--wbp-s2-h) * 1.28)); margin-block: 8px; }
+@media (max-width: 639px) { .wbp-stage { width: calc(100% - 32px); } }
+.wbp-glow { position: absolute; inset: -6%; border-radius: 40px; background: radial-gradient(closest-side, rgba(255, 236, 200, .09), transparent); opacity: 0; transition: opacity .6s; pointer-events: none; }
+.wbp-s2.is-on .wbp-glow { opacity: 1; }
+.wbp-front {
+  --wbp-inset: max(6px, .8%);
+  position: relative; padding: var(--wbp-inset); border-radius: 14px; background: #0a0908;
+  box-shadow: 0 0 0 1px #1b1915, 0 30px 80px rgba(0, 0, 0, .6);
+}
+/* the film: a grid of one cell holding a 16:9 spacer and the card (in the flow), so the frame is 16:9, or as tall as the
+   card when it needs more, with or without a script (not aspect-ratio: a clipped box never grows to its content) */
+.wbp-film { position: relative; display: grid; box-sizing: border-box; width: 100%; overflow: clip; border-radius: 8px; background: #000; }
+.wbp-film::before { content: ''; grid-area: 1 / 1; padding-top: 56.25%; }
+.wbp-film > .wbp-card { grid-area: 1 / 1; }
+.wbp-film > :is(.wbp-film-v, .wbp-still) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.wbp-still { visibility: hidden; }
+.wbp-film.show-still .wbp-still { visibility: visible; }
+.wbp-film.show-still .wbp-film-v { visibility: hidden; }
+
+/* the print over everything on the strip, the card included */
+.wbp-fx { position: absolute; inset: 0; pointer-events: none; }
+.wbp-fx-grain { opacity: 0; mix-blend-mode: overlay; background-image: var(--wbp-grain); }
+/* the overlay scales what is there, so in the near-blacks it all but vanishes: a faint screen pass of the same grain
+   carries it into the shadows of the film, as the mock-up's grain baked into its picture did */
+.wbp-fx-lift { opacity: 0; mix-blend-mode: screen; background-image: var(--wbp-grain); inset: var(--wbp-band, 0px) 0; } /* the picture only: no grain on the bands */
+.wbp-s2 { --wbp-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.2 -.1'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.wbp-fx-scratch { opacity: 0; background:
+  linear-gradient(90deg, transparent 0 18%, rgba(240, 236, 226, .35) 18% 18.12%, transparent 18.12%),
+  linear-gradient(90deg, transparent 0 63%, rgba(10, 9, 8, .55) 63% 63.15%, transparent 63.15%),
+  linear-gradient(90deg, transparent 0 81%, rgba(240, 236, 226, .2) 81% 81.08%, transparent 81.08%); }
+.wbp-fx-flick { background: #fff4dc; mix-blend-mode: soft-light; opacity: 0; }
+.wbp-fx-vig { background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(6, 5, 4, .6) 100%); }
+.wbp-fx-dust { opacity: 0; } /* a speck of dust on one frame now and then (film.ts) */
+.wbp-fx-splice { background: #f4efe2; opacity: 0; }
+/* the film files carry no grain of their own (the mock-up's stand-in had it baked in): these two layers are all of it,
+   so they are a little stronger than the mock-up's .22 over its baked grain (measured against it, 1440 x 2) */
+.wbp-s2.is-on .wbp-fx-grain { opacity: .26; }
+.wbp-s2.is-on.is-film .wbp-fx-lift { opacity: .012; }
+
+/* captions: live text over the film, legible at every size (burned-in ones were 9 px on a phone); on the picture, above
+   any band a card taller than 16:9 leaves under it (film.ts --wbp-band) */
+.wbp-cap { position: absolute; z-index: 2; left: 50%; bottom: calc(var(--wbp-band, 0px) + 6%); translate: -50% 0; width: max-content; max-width: 88%; padding: .2em .65em .26em;
+  text-align: center; text-wrap: balance; font-family: var(--serif); font-size: clamp(15px, 3cqi, 28px); line-height: 1.3;
+  color: #f4efe2; background: rgba(6, 5, 4, .66); border-radius: 4px; text-shadow: 0 1px 2px #000; opacity: 0; transition: opacity .16s; pointer-events: none; }
+.wbp-film { container-type: inline-size; }
+.wbp-cap.on { opacity: 1; }
+.wbp-tap { position: absolute; z-index: 3; right: 12px; bottom: 12px; min-height: 36px; padding: 0 14px 0 10px; display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 8px; border: 1px solid rgba(201, 163, 92, .55); background: rgba(14, 12, 10, .78); color: var(--brass-hi); cursor: pointer;
+  font-family: var(--label); font-weight: 400; font-size: 17px; letter-spacing: .1em; text-transform: uppercase; }
+.wbp-tap svg { width: 18px; height: 18px; }
+.wbp-tap[aria-pressed='true'] { color: var(--ivory); border-color: rgba(239, 230, 210, .5); }
+/* letterbox (a phone: the frame is as tall as the title card, the 16:9 picture in its middle): the captions sit in the
+   black band under the picture like subtitles, the sound key in the band above it (film.ts measures the bands) */
+.wbp-s2.lbox .wbp-cap { bottom: auto; top: calc(50% + var(--wbp-pich) / 2 + var(--wbp-band) / 2); translate: -50% -50%; background: none; padding: 0; max-width: 94%; }
+.wbp-s2.lbox .wbp-tap { bottom: auto; top: calc(var(--wbp-ftop) + max(6px, (var(--wbp-band) - 36px) / 2)); right: calc(var(--wbp-fside) + 10px); }
+
+/* the card shows unless the film is the picture (no script: always); the tap key and the captions only with the film */
+.wbp-s2.is-film:not(.carding) .wbp-card { visibility: hidden; }
+.wbp-s2:not(.is-film) :is(.wbp-tap, .wbp-cap) { display: none; }
+
+/* motion that runs only while the film runs or the card holds, and only on screen */
+.wbp-s2.is-seen:is(.playing, .carded):not(.rm) :is(.wbp-fx-grain, .wbp-fx-lift) { animation: wbp-grain .21s steps(1) infinite; }
+.wbp-s2.is-seen:is(.playing, .carded):not(.rm) .wbp-fx-flick { animation: wbp-flick .5s steps(1) infinite; }
+@keyframes wbp-grain { 0% { background-position: 0 0; } 20% { background-position: -60px 40px; } 40% { background-position: 80px -30px; } 60% { background-position: -20px -90px; } 80% { background-position: 110px 70px; } }
+/* a real projector's light wavers a little on every frame (24 a second); it never blinks (Dan, 2026-11-23) */
+@keyframes wbp-flick { 0% { opacity: .022; } 8.3% { opacity: .045; } 16.7% { opacity: .03; } 25% { opacity: .052; } 33.3% { opacity: .026; } 41.7% { opacity: .04; }
+  50% { opacity: .034; } 58.3% { opacity: .05; } 66.7% { opacity: .024; } 75% { opacity: .043; } 83.3% { opacity: .031; } 91.7% { opacity: .047; } }
+.wbp-s2.lampup .wbp-film { animation: wbp-lampup .75s steps(1) 1; }
+@keyframes wbp-lampup { 0% { filter: brightness(0); } 15% { filter: brightness(.7); } 25% { filter: brightness(.08); } 40% { filter: brightness(1.15); } 55% { filter: brightness(.45); } 70% { filter: brightness(1); } }
+@media (prefers-reduced-motion: reduce) { .wbp-glow { transition: none; } }
+
+/* section 1's scroll cue is a link to #manual now (WbpCar.astro); its look stays s1.css's, the house link colours off.
+   Once section 2 is on screen it has done its job and fades: scrolled on, it sat behind the see-through nav. */
+.wbp-page a.wbp-scroll-cue, .wbp-page a.wbp-scroll-cue:hover { color: var(--ivory-2); text-decoration: none; }
+.wbp-page a.wbp-scroll-cue { transition: opacity .3s, visibility 0s; }
+.wbp-page:has(.wbp-s2.is-seen) a.wbp-scroll-cue { opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
+@media (prefers-reduced-motion: reduce) { .wbp-page a.wbp-scroll-cue { transition: none !important; } }
