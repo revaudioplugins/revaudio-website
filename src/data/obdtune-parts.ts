@@ -33,7 +33,7 @@ export const READINGS: Record<string, Reading> = {
     n: '02', label: 'TUNE',
     h: 'From hard snap to no trace.',
     p: 'At 1 ms the voice jumps note to note: the sound everybody knows. Near 200 ms it glides home and nobody hears a tuner. HUMANIZE lets held notes breathe; FLEX leaves small intonation alone.',
-    spec: 'SPEED 1–200 MS · 12 KEYS · 13 SCALES',
+    spec: '1–200 MS · 13 SCALES',
   },
   voice: {
     n: '02', label: 'TUNE · VOICE',
