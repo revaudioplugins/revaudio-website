@@ -1,0 +1,255 @@
+/* /obdlook — the OBDTUNE one-pager look round (2026-11-26). One screen under the header: the plugin's live UI hovering on
+   the house background (BaseLayout's bakelite + smoke), the reading beside it. Three looks on the same pieces:
+   [data-look='a'] SHEET · 'b' CALLOUT · 'c' PRINTOUT. Small type on purpose (Dan: "lower down and minimize the fonts").
+   House laws: one upper-left light, no pure black / white, nothing drawn ON the tool (no rings, arrows, outlines), red
+   only on the tool and its one rule under the name. */
+
+/* the plugin screen's PIXEL font: the scanner lives in a shadow root, the face has to be on the document */
+@font-face { font-family: 'OBD Pixel'; src: url('./fonts/vt323-latin.woff2') format('woff2'); font-display: block; }
+
+.ol {
+  --ol-cream: #efe9df;
+  --ol-ink-2: #b3a99f;
+  --ol-ink-3: #7f766e;
+  --ol-lcd: #6cc6e6;          /* the tool's LCD ink: the label of what you pressed */
+  --ol-red: #c8392c;          /* the tool's factory red: the rule under the name, nowhere else */
+  --ol-lamp: #f0c070;
+  --ol-stage-h: calc(100svh - var(--sale-h, 0px) - var(--nav-h, 44px));
+  --ol-unit-h: clamp(380px, calc(var(--ol-stage-h) * .86), 700px);
+  --ol-settle: cubic-bezier(.22, 1, .36, 1);
+  position: relative;
+  color: var(--ol-cream);
+}
+
+/* ------------------------------------------------------------------ the stage: one screen, a grid per look */
+.ol-stage {
+  position: relative;
+  display: grid;
+  height: var(--ol-stage-h);
+  min-height: 460px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------------ the name: the plugin's header print, light on dark */
+.ol-name { grid-area: name; margin: 0; }
+.ol-maker {
+  margin: 0 0 2px; font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; font-weight: 700;
+  font-size: 13px; letter-spacing: .01em; color: rgba(239, 233, 223, .62);
+}
+.ol-mark {
+  margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 800; font-size: 30px; line-height: 1;
+  letter-spacing: .16em; color: var(--ol-cream);
+  filter: drop-shadow(0 1px 0 rgba(12, 9, 6, .8)) drop-shadow(0 0 14px rgba(12, 9, 6, .55));
+}
+.ol-mark::after { /* the rule under the print, ~.4em under the letters, in the tool's red */
+  content: ''; display: block; width: 34px; height: 2px; margin-top: 11px; border-radius: 1px;
+  background: linear-gradient(90deg, #8f2219, var(--ol-red) 40%, #d9503f);
+}
+.ol-tag {
+  margin: 12px 0 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ol-ink-3);
+}
+
+/* ------------------------------------------------------------------ the tool, hovering */
+.ol-unitwrap {
+  grid-area: unit; position: relative; justify-self: center;
+  height: var(--ol-unit-h); aspect-ratio: 767 / 900;
+}
+.ol-unit { position: relative; display: block; width: 100%; height: 100%; outline-offset: 6px; }
+.ol-unit:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); border-radius: 18px; }
+.ol-still { display: block; width: 100%; height: auto; }
+/* the floor under a hovering object: far and soft, warm near-black, falling down-right from the upper-left lamp */
+.ol-floor {
+  position: absolute; left: 33%; right: 2%; bottom: 2.5%; height: 7%;
+  background: radial-gradient(closest-side, rgba(12, 9, 6, .78), rgba(12, 9, 6, .3) 62%, transparent);
+  filter: blur(9px); transform: translateX(3%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ol-unit { animation: ol-hover 6s ease-in-out infinite; }
+  .ol-floor { animation: ol-floor 6s ease-in-out infinite; }
+}
+@keyframes ol-hover { 50% { translate: 0 -9px; } }
+@keyframes ol-floor { 50% { opacity: .72; } }
+
+.ol-hint {
+  grid-area: unit; align-self: end; justify-self: center; z-index: 1;
+  margin: 0 0 max(6px, calc((var(--ol-stage-h) - var(--ol-unit-h)) / 2 - 22px));
+  padding-left: 20%; /* under the device body, not the connector */
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--ol-ink-3);
+}
+
+/* ------------------------------------------------------------------ the reading */
+.ol-read { grid-area: read; max-width: 330px; }
+.ol-r-label { display: flex; gap: 10px; margin: 0 0 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; color: var(--ol-lcd); }
+.ol-r-n { color: var(--ol-ink-3); }
+.ol-r-h {
+  margin: 0 0 10px; font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: .02em;
+  color: var(--ol-cream); text-transform: none;
+}
+.ol-r-p { margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: var(--ol-ink-2); text-wrap: pretty; }
+.ol-r-spec { margin: 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .16em; color: var(--ol-ink-3); }
+
+/* ------------------------------------------------------------------ look A's index: pilot lamps */
+.ol-index { grid-area: index; display: none; flex-wrap: wrap; gap: 4px 14px; max-width: 330px; }
+.ol-ix {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 0; border: 0; background: none; cursor: pointer;
+  font: 500 10.5px/1.2 var(--font-mono); letter-spacing: .14em; color: var(--ol-ink-3); transition: color .12s;
+}
+.ol-ix i { /* the lamp: dark glass at rest, lit from inside when it's the one you're reading */
+  width: 5px; height: 5px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 35% 30%, #4a4038, #1d1916 70%); box-shadow: 0 0 0 1px rgba(12, 9, 6, .8);
+  transition: background .12s, box-shadow .12s;
+}
+.ol-ix-n { display: none; }
+.ol-ix:hover { color: var(--ol-ink-2); }
+.ol-ix.is-on { color: var(--ol-cream); }
+.ol-ix.is-on i { background: radial-gradient(circle at 40% 35%, #fff1c8, var(--ol-lamp) 45%, #a8661c); box-shadow: 0 0 0 1px rgba(12, 9, 6, .8), 0 0 8px rgba(240, 192, 112, .55); }
+.ol-ix:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 3px; border-radius: 3px; }
+
+/* ------------------------------------------------------------------ the keys */
+.ol-get { grid-area: get; }
+.ol-keys { display: flex; flex-wrap: wrap; gap: 10px; }
+.ol-get .rv-btn { --rb-fs: 14px; --rb-px: 18px; }
+.ol-fine { margin: 10px 0 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--ol-ink-3); }
+
+/* the parts only one look uses */
+.ol-leader, .ol-printer { display: none; }
+
+/* ================================================================== A · SHEET: one quiet column beside the tool */
+.ol[data-look='a'] .ol-stage {
+  grid-template-columns: auto minmax(260px, 330px);
+  grid-template-rows: 1fr auto auto auto auto 1fr;
+  grid-template-areas: 'unit .' 'unit name' 'unit read' 'unit index' 'unit get' 'unit .';
+  justify-content: center; column-gap: clamp(36px, 6vw, 96px);
+}
+.ol[data-look='a'] .ol-name { margin-bottom: 30px; }
+.ol[data-look='a'] .ol-read { height: 236px; } /* the longest reading fits: the column never moves when the words change */
+.ol[data-look='a'] .ol-hint { display: none; } /* the home reading says it, in the column */
+.ol[data-look='a'] .ol-index { display: flex; margin: 22px 0 26px; padding-top: 16px; border-top: 1px solid rgba(239, 233, 223, .08); }
+
+@media (max-height: 700px) { /* Dan's Safari laptop, 1141 x 636 with the sale strip: the column has ~546 px */
+  .ol[data-look='a'] .ol-name { margin-bottom: 18px; }
+  .ol[data-look='a'] .ol-read { height: 214px; }
+  .ol[data-look='a'] .ol-r-p { font-size: 13.5px; line-height: 1.55; }
+  .ol[data-look='a'] .ol-index { margin: 12px 0 16px; padding-top: 12px; }
+}
+
+/* ================================================================== B · CALLOUT: the words go to the part */
+.ol[data-look='b'] .ol-stage {
+  grid-template-columns: minmax(240px, 1fr) auto minmax(240px, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: 'name unit .' '. unit .' '. unit get';
+}
+.ol[data-look='b'] .ol-name { align-self: start; margin-top: clamp(18px, 4vh, 40px); }
+.ol[data-look='b'] .ol-get { align-self: end; justify-self: end; margin-bottom: clamp(18px, 4vh, 40px); text-align: right; }
+.ol[data-look='b'] .ol-keys { justify-content: flex-end; }
+.ol[data-look='b'] .ol-hint { display: none; }
+.ol[data-look='b'] .ol-read { position: absolute; top: 0; left: 0; width: 290px; max-width: none; }
+.ol[data-look='b'] .ol-read[data-side='left'] { text-align: right; }
+.ol[data-look='b'] .ol-read[data-side='left'] .ol-r-label { justify-content: flex-end; }
+.ol[data-look='b'] .ol-leader { display: block; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.ol-leader line { stroke: rgba(232, 200, 120, .5); stroke-width: 1; }
+.ol-leader circle { fill: #e8c878; }
+.ol-leader[data-off] { opacity: 0; }
+
+/* ================================================================== C · PRINTOUT: a scan report rising out of a slot */
+.ol[data-look='c'] .ol-stage {
+  grid-template-columns: minmax(220px, 260px) auto minmax(250px, 280px);
+  grid-template-rows: 1fr auto auto auto 1fr;
+  grid-template-areas: '. unit printer' 'name unit printer' 'get unit printer' 'hint unit printer' '. unit printer';
+  justify-content: center; column-gap: clamp(28px, 4vw, 64px);
+}
+.ol[data-look='c'] .ol-name { margin-bottom: 28px; }
+.ol[data-look='c'] .ol-keys { flex-direction: column; align-items: flex-start; }
+.ol[data-look='c'] .ol-hint::after { content: ' It prints on the report.'; }
+.ol[data-look='c'] .ol-hint { grid-area: hint; justify-self: start; align-self: start; margin: 22px 0 0; padding: 0; max-width: 220px; line-height: 1.7; }
+/* the words live on the paper; the reading stays for a screen reader */
+.ol[data-look='c'] .ol-read {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.ol[data-look='c'] .ol-printer { display: block; grid-area: printer; position: relative; align-self: stretch; }
+
+.ol-paperwin {
+  position: absolute; left: 16px; right: 16px; top: 46px; bottom: 40px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 26%); mask-image: linear-gradient(180deg, transparent 0, #000 26%);
+}
+.ol-paper {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 16px 16px 22px;
+  color: #2c2724;
+  font: 500 10.5px/1.5 var(--font-mono); letter-spacing: .02em;
+  /* thermal paper, lit from the upper left: the curl darkens both edges, the slot's shadow the bottom */
+  background:
+    linear-gradient(180deg, rgba(255, 252, 240, .10), transparent 30%, transparent 82%, rgba(20, 14, 10, .26)),
+    linear-gradient(90deg, #c9c2b4 0%, #e4dfd3 6%, #efebe2 38%, #ebe6dc 70%, #dad4c7 94%, #c4bdaf 100%);
+  box-shadow: 6px 10px 26px rgba(12, 9, 6, .55);
+  will-change: transform;
+}
+.ol-tear { /* the torn top edge the first time it shows */
+  position: absolute; left: 0; right: 0; top: -5px; height: 6px;
+  background:
+    linear-gradient(135deg, transparent 50%, #e8e3d8 50%) 0 0 / 7px 6px repeat-x,
+    linear-gradient(225deg, transparent 50%, #e8e3d8 50%) 0 0 / 7px 6px repeat-x;
+}
+.pe { padding: 12px 0; border-top: 1px dashed rgba(44, 39, 36, .4); }
+.pe:first-of-type { border-top: 0; }
+.pe p { margin: 0; }
+.pe-top { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px !important; letter-spacing: .1em; }
+.pe-top b { font-weight: 800; padding: 0 4px; background: #2c2724; color: #ebe6dc; letter-spacing: .06em; }
+.pe-top time { margin-left: auto; opacity: .7; }
+.pe-h { font-weight: 800; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 5px !important; }
+.pe-p { opacity: .9; }
+.pe-spec { margin-top: 6px !important; letter-spacing: .1em; opacity: .7; }
+.pe-head { text-align: center; }
+.ph-brand { font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; font-weight: 700; font-size: 13px; letter-spacing: .01em; }
+.ph-title { font-weight: 800; letter-spacing: .18em; margin: 2px 0 8px !important; }
+.ph-row { display: flex; justify-content: space-between; gap: 8px; text-align: left; letter-spacing: .08em; }
+.ph-row span:first-child { opacity: .7; }
+
+.ol-slot { /* the printer's mouth: dark plastic, a lit lip on top, the paper goes in behind it */
+  position: absolute; left: 0; right: 0; bottom: 18px; height: 22px; border-radius: 5px;
+  background: linear-gradient(180deg, #3a3531 0%, #24201d 30%, #171412 75%, #1f1b18 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 220, .16), inset 0 -1px 0 rgba(0, 0, 0, .5), 0 1px 0 rgba(12, 9, 6, .9), 0 10px 22px rgba(12, 9, 6, .6);
+}
+.ol-slot i { /* the slit */
+  position: absolute; left: 12px; right: 12px; top: 4px; height: 3px; border-radius: 2px;
+  background: linear-gradient(180deg, #050403, #14110f); box-shadow: 0 1px 0 rgba(255, 240, 220, .08);
+}
+
+/* ------------------------------------------------------------------ the look switcher (review only) */
+.ol-looks {
+  position: fixed; right: 14px; top: calc(var(--sale-h, 0px) + var(--nav-h, 44px) + 10px); z-index: 40;
+  display: flex; align-items: center; gap: 2px; padding: 3px;
+  border-radius: 999px; background: rgba(20, 17, 15, .86); box-shadow: 0 0 0 1px rgba(239, 233, 223, .1), 0 8px 24px rgba(12, 9, 6, .6);
+  font: 500 10px/1 var(--font-mono); letter-spacing: .14em;
+}
+.ol-looks span { padding: 0 6px 0 8px; color: var(--ol-ink-3); }
+.ol-looks button { padding: 6px 9px; border: 0; border-radius: 999px; background: none; color: var(--ol-ink-2); font: inherit; letter-spacing: inherit; cursor: pointer; }
+.ol-looks button b { font-weight: 700; }
+.ol-looks button em { font-style: normal; display: none; margin-left: 6px; }
+.ol-looks button[aria-pressed='true'] em { display: inline; }
+.ol-looks button:hover { color: var(--ol-cream); }
+.ol-looks button[aria-pressed='true'] { background: #e8c878; color: #1e1710; }
+
+/* ------------------------------------------------------------------ phones: one column (rough; the phone pass comes after the pick) */
+@media (max-width: 860px) {
+  .ol .ol-stage {
+    height: auto; min-height: 0; padding: 24px 20px 40px; row-gap: 22px;
+    grid-template-columns: 1fr !important; grid-template-rows: none !important;
+    grid-template-areas: 'name' 'unit' 'read' 'get' !important; justify-items: start;
+  }
+  .ol .ol-unitwrap { height: auto; width: min(100%, 430px); }
+  .ol .ol-hint, .ol .ol-index, .ol .ol-leader, .ol .ol-printer { display: none !important; }
+  .ol .ol-read { position: static !important; width: auto !important; text-align: left !important; clip: auto; height: auto; margin: 0; overflow: visible; white-space: normal; }
+  .ol .ol-read .ol-r-label { justify-content: flex-start !important; }
+  .ol .ol-get { justify-self: start; text-align: left; margin: 0; }
+  .ol .ol-keys { flex-direction: row; justify-content: flex-start; }
+  .ol .ol-name { margin: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ol-paper { will-change: auto; }
+}
