@@ -1,3 +1,19 @@
+## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), NOT on main (waits for Yoni's push word)
+
+Claim: CLOSED 2026-11-26 `revaudio-52`. Files: `src/components/TempHero.astro`, this entry.
+- Yoni: the TV on entering the site shows the line added under the plugin strip; it belongs only after the scroll.
+- Cause: TempHero's opening screen hides the menu with `html.th-on .ww > :not(.th, .ww-screen, ...)`, and Dan's pick-C
+  split (the 35 % darker menu glass + the 2 px line) is `.ww-screen::before`, so it showed through once the tube lit.
+  Same family: the strip's disabled prev arrow sets its own `opacity: .25`, which outranks that rule (a faint `‹`).
+- Fix (TempHero only, WordWall untouched): under `html.th-on` the split's opacity is 0 and the strip arrows are
+  `visibility: hidden`; both come back with the menu's power-on after the channel change.
+- Checks on the built site (`astro preview`): Chromium 1312x734 + 1141x636: control `?cat=all` line 1 / arrows on;
+  opening screen (tube on) line 0, both arrows hidden; after one wheel the menu: line 1, arrows back. WebKit (reduced
+  motion; Playwright's Windows WebKit never resolves `document.fonts.ready`, so the tune-in and screenshots hang there):
+  opening 0, menu 1. `astro build` green. Not checked: a real phone, Safari on a Mac.
+- Seen, not touched: under reduced motion the split never shows when the page skips the opening screen
+  (`?cat=` / `#plugins` links), because `:not([data-ww-power='on'])` waits for a power-on that reduced motion never runs.
+
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 
 Claim: OPEN (Dan's Mac) until the merge (waiting on Gil's QA, then Dan's word). Files: `src/components/WordWall.astro` (the BUNDLES tab, the bundle's channel and page),
