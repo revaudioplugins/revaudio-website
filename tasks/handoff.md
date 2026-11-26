@@ -1,6 +1,6 @@
-## 2026-11-26 — OBDTUNE one-pager: look round, Dan picked A "Sheet", built into /obdtune (Claude Code, Dan's Mac) — branch `feat/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, on top of `look/obdtune-onepager` 90f2741, from origin/main `d619810`), LOCAL ONLY (auto mode refused the branch push), NOT on main
+## 2026-11-26/27 — OBDTUNE one-pager: Dan picked A "Sheet", then screen C; NEXT = the garage desk + PUSH LIVE before 2026-11-28 (Claude Code, Dan's Mac) — branch `feat/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, from origin/main `d619810`), NOT on main
 
-Claim: OPEN 2026-11-26. Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
+Claim: closed 2026-11-27 by the session that built it; HANDED TO THE NEXT SESSION (one session per worktree). Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
 `src/data/obdtune-parts.ts` (new); removed `src/lib/obdtune/story.ts`, `bench.ts`, `graph.ts` (only the old page used them);
 this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
 - Dan: redesign /obdtune as a minimal one-pager: the scan tool hovering on the house background, press a part of the plugin
@@ -28,7 +28,28 @@ this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
   from plate-A2 into src/assets/obdtune/readout-frame.webp) + roll, C data page (the tool's header row) + scan bar and
   pixel blocks. Glass = the tool's own recipe. All 18 readings fit at 1312x734 and 1141x636 (TUNE spec shortened to
   "1–200 MS · 13 SCALES"). Pick page: claude.ai artifact CkiYoPDwWDuxYURJNc8oPY (db picks/screen1); Claude's pick C.
-- Next: Dan's screen pick -> keep that one, drop the other two + the switcher; his notes; his iPhone; his push word.
+- 11-27: Dan picked screen C ("C"). `5265999`: C is the only reading screen (header row + T H F C + scan bar, the words
+  change through the tool's scan); A, B, the switcher and `readout-frame.webp` gone; the part's name kept for screen
+  readers; + the impeccable Helvetica waiver. Checked: the 18 readings fit at 1312x734 (Chromium), 1141x636 (WebKit, sale
+  strip on), 390x844 (WebKit); presses switch the reading; `astro build` green; tsc clean. Dan has seen C in his browser
+  (round-2 page); the C-only commit itself was checked headless, not yet by his eye.
+- 11-27, Dan: "C put the background look like it's on a desk" -> chose all three desks -> "think like this plugin sits
+  somewhere in the 3D garage we build" -> "keep the same room we have ... in the last branch". Plan (approved, "go"):
+  `tasks/obdtune-garage-plan.md`. The room = `feat/phone-dive` @ `14ba0ff` (newest), rendered, never edited.
+- **Dan's push word, 2026-11-27: "give me handoff to another session so he will push this last design to the website
+  before tomorrow".** Target = main (a push to main is the live deploy).
+- NEXT SESSION, in order:
+  1. Do `tasks/obdtune-garage-plan.md`: the three garage views, Dan's pick (pick page + his Safari), build the pick.
+  2. Ship it. Before the push, one line to Dan naming what ships. If the garage isn't picked in time, ask him whether
+     to ship screen C as it is now (`5265999` + this handoff).
+  3. Push recipe: `git fetch`. The gap at handoff: origin/main 2 ahead (`d28d19c` TempHero split line, `9701578`
+     handoff), this branch 8 ahead. Short branch -> rebase onto origin/main in a temp worktree (memory
+     feedback_rebase_long_branch_merge_main). `tasks/handoff.md` will clash: keep both entries, main's first if newer.
+     Then `npx astro build` green, then `git pull --rebase` + push to main in ONE command (the push hook wants that).
+     If auto mode refuses the push to main, give Dan the exact `!` line to run.
+  4. After it: the deploy run succeeds (`gh run list -L 3`), revaudio.net/obdtune/ serves the one-pager (cache-busted),
+     open it in Dan's Safari, update this entry (ON MAIN + LIVE, sha, run id).
+- Still open: a real iPhone check; Dan's notes on the page; Yoni / Gil own the commerce wiring (unchanged).
 
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 
