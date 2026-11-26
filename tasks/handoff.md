@@ -1,4 +1,4 @@
-## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/home-phone-sections` (worktree `.claude/worktrees/daw-small`, rebased onto main `d619810` on 2026-11-26); NOT on main
+## 2026-11-24 — Home page on phones: "Goes with every vehicle" (the DAW strip) a lot smaller (Claude Code `Garage phone port [6d2512]`, Dan's Mac) — branch `feat/home-phone-sections` (worktree `.claude/worktrees/daw-small`, rebased onto main `9701578` on 2026-11-26); on GitHub, NOT on main
 
 Claim: OPEN 2026-11-24 `Garage phone port [6d2512]`. Files: `src/components/DAWStrip.astro` (one phone block), `src/components/EmailCapture.astro`, this entry. (Branch renamed from `feat/daw-strip-phone-small`.)
 Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller".
@@ -22,9 +22,10 @@ Dan 2026-11-24, on the section in the Simulator: "make this smaller alot smaller
   green (37 pages, no warnings). Rechecked on the dev server: DAW strip 254 / 202 / 202 px at 360 / 390 / 402 (WebKit),
   pit crew 311 at all three, laptop 1312x734 DAW 338 / pit crew 403; no sideways scroll, no page errors, the same with
   `?sale=bf` (main's sale strip on phones). `astro check` still not run.
-  GitHub still holds the OLD tip `2648e76` (pushed 2026-11-25 13:26, not in this session's transcript): publishing the
-  rebase replaces it, `git push --force-with-lease=feat/home-phone-sections:2648e76`, on Dan's word only.
-- To ship: build green, then Dan's push word (a push to main is a live deploy).
+  Main then took Yoni's opening-screen fix (`d28d19c`, `TempHero.astro`): rebased again onto `9701578`, same clash, same
+  fix; build green again, the sizes above re-measured identical. Dan: "push the branch": force-pushed with lease over the
+  old `2648e76` (pushed 2026-11-25 13:26, not in this session's transcript) -> `b19a582`, 2026-11-26 23:39.
+- To ship: Dan's push word for main (a live deploy); a fast-forward of main to this branch while main is still `9701578`.
 
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
 
