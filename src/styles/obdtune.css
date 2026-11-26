@@ -59,9 +59,10 @@
 }
 
 /* ------------------------------------------------------------------ the tool, hovering */
-.obd-unitwrap {
+.obd-unitwrap { /* both sides set in length: Safari sized the auto column to 0 when the width came from aspect-ratio +
+                   a max-width in % (Dan's Safari, 2026-11-26: the tool vanished; WebKit in Playwright drew it) */
   grid-area: unit; position: relative; justify-self: center;
-  height: var(--obd-unit-h); aspect-ratio: 767 / 900; max-width: 100%;
+  height: var(--obd-unit-h); width: calc(var(--obd-unit-h) * 767 / 900);
 }
 .obd-unit { position: relative; display: block; width: 100%; height: 100%; outline-offset: 6px; }
 .obd-unit:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); border-radius: 18px; }
@@ -133,7 +134,7 @@
   }
   .obd-name { margin: 0 0 8px; }
   .obd-mark { font-size: 26px; }
-  .obd-unitwrap { height: auto; width: min(100%, 420px); }
+  .obd-unitwrap { height: auto; width: min(100%, 420px); aspect-ratio: 767 / 900; }
   .obd-read { height: auto; min-height: 196px; max-width: 560px; margin-top: 18px; }
   .obd-r-h { font-size: 28px; }
   .obd-index { max-width: 560px; gap: 8px 16px; margin: 8px 0 22px; }
