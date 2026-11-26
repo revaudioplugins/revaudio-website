@@ -32,54 +32,17 @@ export function initObdtune() {
       if (el) el.textContent = r[f];
     });
   };
-  // ---------------------------------------------------------------- the reading screen: the words change through a
-  // glitch, one per screen look ([data-screen], SCREEN LOOK ROUND 2026-11-26). The glitch is the change itself: before
-  // and after it the words stand still (DESIGN.md §6). Reduced motion: a plain swap.
-  const screen = () => page.dataset.screen || 'a';
-  const band = page.querySelector<HTMLElement>('.obd-scr-band');
+  // ---------------------------------------------------------------- the reading screen (screen C "Data page", Dan's pick
+  // of three, 2026-11-27): the words change through the tool's own scan. The glitch is the change itself: before and
+  // after it the words stand still (DESIGN.md §6). Reduced motion: a plain swap.
   const fx = page.querySelector<HTMLCanvasElement>('[data-scr-fx]');
   const meter = page.querySelector<HTMLElement>('[data-scr-meter]');
   const crumb = page.querySelector<HTMLElement>('[data-scr-crumb]');
   let swap = 0;   // the change in flight; a newer press wins
   const setCrumb = (k: string) => { if (crumb) crumb.textContent = k === 'home' ? '' : READINGS[k].label; };
 
-  // A · GLASS: a signal tear. Slices of the words jump sideways with a red / cyan split, the new words tear in and settle.
-  const TEAR = (x: number, top: number, bot: number, a = 1) => ({
-    transform: `translateX(${x}px)`, clipPath: `inset(${top}% 0 ${bot}% 0)`, opacity: a,
-    textShadow: `${-x / 3}px 0 rgba(255, 70, 60, .75), ${x / 3}px 0 rgba(90, 220, 255, .75)`,
-  });
-  function tear(k: string, id: number) {
-    const out = read.animate([TEAR(0, 0, 0), TEAR(-9, 8, 62), TEAR(7, 44, 30), TEAR(-12, 70, 6, .5), TEAR(0, 0, 100, 0)],
-      { duration: 130, easing: 'steps(4, end)', fill: 'forwards' });
-    out.onfinish = () => {
-      if (id !== swap) return;
-      fill(k); out.cancel();
-      read.animate([TEAR(10, 60, 10, .6), TEAR(-6, 0, 55), TEAR(4, 30, 0), TEAR(-2, 0, 0), { transform: 'none', clipPath: 'inset(0 0 0 0)', opacity: 1, textShadow: '0 0 3px rgba(108, 198, 230, .22)' }],
-        { duration: 170, easing: 'steps(5, end)' });
-    };
-  }
-
-  // B · RED TWIN: the picture loses vertical hold. The old words roll up under a bright scan band, the new ones roll in
-  // from below, overshoot and lock.
-  function roll(k: string, id: number) {
-    band?.animate([{ top: '105%', opacity: 1 }, { top: '-30%', opacity: 1 }], { duration: 300, easing: 'linear' });
-    const out = read.animate([{ transform: 'translateY(0)', filter: 'brightness(1)', opacity: 1 }, { transform: 'translateY(-55%)', filter: 'brightness(1.7)', opacity: 0 }],
-      { duration: 120, easing: 'cubic-bezier(.5,0,.9,.5)', fill: 'forwards' });
-    out.onfinish = () => {
-      if (id !== swap) return;
-      fill(k); out.cancel();
-      read.animate([
-        { transform: 'translateY(60%)', filter: 'brightness(1.7)', opacity: 0 },
-        { transform: 'translateY(-5%)', filter: 'brightness(1.25)', opacity: 1, offset: .55 },
-        { transform: 'translateY(2.5%)', offset: .75 },
-        { transform: 'translateY(-1%)', offset: .88 },
-        { transform: 'none', filter: 'brightness(1)', opacity: 1 },
-      ], { duration: 280, easing: 'linear' });
-    };
-  }
-
-  // C · DATA PAGE: the tool's own scan bar fills in the header while the old words break up into the LCD's pixel blocks,
-  // then the blocks clear off the new words in another random order
+  // the tool's own scan bar fills in the header while the old words break up into the LCD's pixel blocks, then the
+  // blocks clear off the new words in another random order
   function blocks(k: string, id: number) {
     if (!fx) { fill(k); setCrumb(k); return; }
     const r = fx.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), S = 9;
@@ -124,11 +87,7 @@ export function initObdtune() {
     const id = ++swap;
     read.getAnimations().forEach((a) => a.cancel());
     if (reduced()) { fill(k); setCrumb(k); return; }
-    const s = screen();
-    if (s === 'b') roll(k, id);
-    else if (s === 'c') blocks(k, id);
-    else tear(k, id);
-    if (s !== 'c') setCrumb(k);
+    blocks(k, id);
   }
 
   // a sub-reading lights its parent's lamp (FX · EQ -> FX): they share the number
@@ -206,15 +165,4 @@ export function initObdtune() {
     }
   });
   lightIndex(cur);
-
-  // the screen switcher (dev only: the look round's three screens); a press replays the current reading's change
-  const lookBtns = [...page.querySelectorAll<HTMLButtonElement>('[data-scr-look]')];
-  const markLook = () => lookBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.scrLook === screen())));
-  lookBtns.forEach((b) => b.addEventListener('click', () => {
-    page.dataset.screen = b.dataset.scrLook!;
-    const u = new URL(location.href); u.searchParams.set('screen', screen()); history.replaceState(null, '', u);
-    markLook();
-    showRead(cur);
-  }));
-  markLook();
 }

@@ -4,8 +4,8 @@
  * feat/obdtune-onepager). Before: Gil's 2026-11-25 page (hero + six readings + bench + parameter table + get card).
  *
  * One screen under the header: the plugin's own live UI hovers on the house background (BaseLayout's bakelite + smoke);
- * beside it one quiet column: the name in the plugin's header print, the reading, an index of the parts with pilot
- * lamps, the two keys. A press on any part of the tool (or the page its screen opens) picks the reading
+ * beside it one quiet column: the name in the plugin's header print, the reading on a second screen in the tool's own
+ * LCD (screen C "Data page", Dan's pick of three, 2026-11-27), an index of the parts with pilot lamps, the two keys. A press on any part of the tool (or the page its screen opens) picks the reading
  * (src/data/obdtune-parts.ts); a press on the index does the same and opens that page on the tool's screen.
  * The tool IS the plugin's UI (Source/ui/public, synced by tools/obdtune-ui/sync.sh into public/obdtune/ui, mounted by
  * src/lib/obdtune/unit.ts); re-sync when the plugin's UI changes.
@@ -31,13 +31,7 @@ const home = READINGS.home;
   description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Free 30-day trial."
   index={true}
 >
-  <div class="obd" data-obd-page data-screen="a">
-    {import.meta.env.DEV && (
-      <script is:inline>
-        // SCREEN LOOK ROUND (dev only, 2026-11-26): ?screen=a|b|c before the first paint
-        (function () { var m = /[?&]screen=([abc])/.exec(location.search); if (m) document.currentScript.parentElement.dataset.screen = m[1]; })();
-      </script>
-    )}
+  <div class="obd" data-obd-page>
     <section class="obd-stage" data-obd-stage aria-labelledby="obd-title">
       <header class="obd-name">
         <p class="obd-maker" aria-hidden="true">RevAudio</p>
@@ -53,10 +47,8 @@ const home = READINGS.home;
       </div>
 
       <div class="obd-scr" data-obd-scr>
-        {/* a print on the frame (look B only), like the tool's own header */}
-        <span class="obd-scr-print" aria-hidden="true">RevAudio</span>
         <div class="obd-glass">
-          {/* look C: the tool's own header row: where you are + the telltales, the scan bar while it reads */}
+          {/* the tool's own header row: where you are + the telltales, the scan bar while it reads */}
           <div class="obd-scr-bar" aria-hidden="true">
             <span class="obd-scr-crumb">◂ HOME <b data-scr-crumb></b></span>
             <span class="obd-scr-meter" data-scr-meter><i></i></span>
@@ -68,7 +60,6 @@ const home = READINGS.home;
             <p class="obd-r-p" data-r-p>{home.p}</p>
             <p class="obd-r-spec" data-r-spec>{home.spec}</p>
           </div>
-          <i class="obd-scr-band" aria-hidden="true"></i>
           <canvas class="obd-scr-fx" data-scr-fx aria-hidden="true"></canvas>
         </div>
       </div>
@@ -97,14 +88,6 @@ const home = READINGS.home;
         <p class="obd-fine">{obdtune.formats}</p>
       </div>
     </section>
-    {import.meta.env.DEV && (
-      <nav class="obd-looks" aria-label="Screen look round (dev only)">
-        <span>SCREEN</span>
-        <button type="button" data-scr-look="a" aria-label="A, Glass"><b>A</b><em>Glass</em></button>
-        <button type="button" data-scr-look="b" aria-label="B, Red twin"><b>B</b><em>Red twin</em></button>
-        <button type="button" data-scr-look="c" aria-label="C, Data page"><b>C</b><em>Data page</em></button>
-      </nav>
-    )}
   </div>
 </BaseLayout>
 
