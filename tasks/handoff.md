@@ -1,22 +1,27 @@
-## 2026-11-26 — OBDTUNE one-pager: LOOK ROUND, three looks on the real unit (Claude Code, Dan's Mac) — branch `look/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, from origin/main `d619810`), pushed as a branch, NOT on main, NEVER merge as is
+## 2026-11-26 — OBDTUNE one-pager: look round, Dan picked A "Sheet", built into /obdtune (Claude Code, Dan's Mac) — branch `feat/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, on top of `look/obdtune-onepager` 90f2741, from origin/main `d619810`), LOCAL ONLY (auto mode refused the branch push), NOT on main
 
-Claim: OPEN 2026-11-26 until Dan picks. Files (all new, nothing existing touched): `src/pages/obdlook.astro` (noindex, review only),
-`src/styles/obdlook.css`, `src/lib/obdtune/look.ts`, `src/data/obdtune-parts.ts`, this entry.
-- Dan: redesign /obdtune as a minimal one-pager: the scan tool hovering on the house background, press a part of the plugin and
-  the reading beside it changes; smaller fonts; 3 options, the 3rd Claude's own; design only (backend stays Yoni / Gil's).
-- One screen under the header. The tool = the plugin's own live UI (unit.ts, FLOATING, as today) with a floor shadow and a slow
-  hover; the reading follows a press on a part (shadow-root pointerdown) or the page the tool's screen is on (OBD.ui.page), so
-  BACK / D-pad / OK keep the words in step. Copy = the current page's STEPS + DATA and the plugin's own labels, no new claims.
-- `/obdlook/?look=a|b|c` (switch top-right): A SHEET (a column beside the tool + an index with pilot lamps; an index press also
-  opens that page on the tool), B CALLOUT (the reading moves beside the part, a hairline to the tool's edge), C PRINTOUT (Claude's:
-  every press prints an entry on a scan report that rises out of a printer slot; header = date, $15, 30-day trial).
-- Keys in all three: "Try free · 30 days" = the site's TrialGateModal (data-trial-gate-open, gate id obdtune), "Buy · $15" =
-  the existing data-add-to-cart hooks. Checked: the trial dialog opens, the cart gets OBDTUNE $15.
-- Leaves the page if picked as is: the six readings story, the play/sing bench, the parameter table, the inline trial form.
-- Checks (dev, port 4744): Chromium 1312x734 + WebKit 1141x636 with the sale strip, presses TUNE / DETECT / FX / BACK / POWER /
-  codes / HARMONY: readings change in all three, no page errors (only the dev toolbar's 403 through the symlinked node_modules),
-  no sideways scroll; phone 390 stacks (rough, not designed). Stills: `~/Pictures/project-renders/revaudio/2026-11-26-obdtune-looks/`.
-- Next: Dan's pick -> the picked look into obdtune.astro on a build branch (phone pass, a11y, reduced motion), obdlook goes.
+Claim: OPEN 2026-11-26. Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
+`src/data/obdtune-parts.ts` (new); removed `src/lib/obdtune/story.ts`, `bench.ts`, `graph.ts` (only the old page used them);
+this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
+- Dan: redesign /obdtune as a minimal one-pager: the scan tool hovering on the house background, press a part of the plugin
+  and the reading beside it changes; smaller fonts; 3 options, the 3rd Claude's own; design only (backend stays Yoni / Gil's).
+- Look round on `look/obdtune-onepager` (`/obdlook/?look=a|b|c`, gone on this branch): A SHEET, B CALLOUT (the reading beside
+  the part + a hairline), C PRINTOUT (a scan report printing each press). Pick page: claude.ai artifact 9wX3wanvD2ywGvA46NDTVC
+  (db `picks/round1`). Dan's pick, in chat: "sheet".
+- Built: one screen under the header. The tool = the plugin's own live UI (unit.ts, FLOATING) with a floor shadow, a 6 s
+  hover and a small lean to the mouse. Beside it one column: RevAudio / OBDTUNE in the plugin's header print + a red rule,
+  the reading (fixed box, so the column never moves), an index of 11 parts with pilot lamps, Try free (TrialGateModal, gate
+  id obdtune) + Buy $15 (data-add-to-cart). A press on a part, or the page the tool's screen opens, picks the reading;
+  BACK / D-pad keep their own reading; an index press opens that page on the tool (DETECT starts a scan). Copy = Gil's page's
+  STEPS + DATA + the plugin's labels, no new claims. Phones (<= 860 px): one column, the reading right under the tool.
+- Left the page: the six readings story, the play / sing bench, the parameter table, the inline trial form.
+- Checks (dev, port 4744): Chromium 1312x734 + WebKit 1141x636 (sale strip on) and Chromium + WebKit iPhone 13: presses on
+  tiles, BACK, DETECT, POWER, codes and the index all switch the reading and the lit lamp, no page errors, no sideways scroll;
+  trial dialog opens; cart gets OBDTUNE $15.
+- NOT seen: a real iPhone. Playwright WebKit at 3x draws the tool's box empty on phones, on the LIVE page too (Gil's), and
+  draws it at 1x: likely the emulator, but only a real iPhone settles it. The cookie banner covers the keys on a first visit
+  (site-wide). Keyboard: the index and keys are buttons; the tool itself is pointer-only (D / P keys as before).
+- Next: Dan looks at /obdtune (dev) and on his iPhone; then his push word for the branch; merge to main = live, his word.
 
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 
