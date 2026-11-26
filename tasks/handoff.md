@@ -1,3 +1,106 @@
+## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
+
+Claim: OPEN (Dan's Mac) until the merge (waiting on Gil's QA, then Dan's word). Files: `src/components/WordWall.astro` (the BUNDLES tab, the bundle's channel and page),
+`src/data/sale.ts` (`saleBundle.meta`, `.slugs`, `.tv`), `src/assets/sale/bundle-thumb.png` + `tools/sale/bundle-thumb.cjs`
+(new), `src/components/Cart.astro` (bundle thumbnail + row line, no paying twice), `src/components/SaleStrip.astro` (the
+bundle line stays on phones, short), `src/layouts/BaseLayout.astro` (SaleIntro unmounted), `src/pages/plugins.astro` +
+`src/pages/index.astro` (round 1's card mounts, gone again), `src/components/SaleBundleCard.astro` (round 1, deleted),
+`tests/sale-bundle-tv.spec.ts` (new), `tools/wwbench/bundle-options.cjs` (new, dev only), `DESIGN.md` §4, this entry.
+`Cart.astro` is also in the open garage-home claim (2026-11-18): different lines.
+- Gil's handoff `tasks/bundle-checkout-handoff-dan-2026-11-25.md`: the site's look and placement are Dan's. Licence worker
+  live with the bundle (`/version` stamp `43a2105`, the bundle price commit) on 2026-11-25 20:55 Israel.
+- Found: on phones the strip hides the bundle and the pop-up shows on home only, once per phase, so a phone visitor on
+  any other page never sees the bundle.
+- Built for Dan's pick (review bench, phone, WebKit 402x714): A the strip keeps "ALL 8 $69" on phones (fits at 360);
+  B a card under the TV on /plugins + home (steel slat, 8 pictures on plates, $69 plate, "Add all 8 to cart", the
+  DRIFT promise; CM = the scan-tool screen); C the cart: "Swap for the bundle" when it holds singles, the bundle row
+  gets a picture of the 8 and "6 licence keys in one email · GAS + GAS 2 free"; adding the bundle takes the singles
+  out, a single added after it is refused with a note. All gated on html[data-sale] (gone Dec 1 with no push).
+- Open for Dan (+ Gil): with REDLINE the 5 priced plugins = $55.50 < $69, so the bundle only wins through DRIFT (TV says
+  FREE BETA): no value line for now. Paddle's checkout name is Paddle's product name (Gil).
+- Checks: `astro build` green; WebKit 402 + Chromium 390/360/1312x734, `?sale=bf|cm`: no sideways scroll, swap leaves
+  only `bundle` in the cart, no page errors. Not yet: a real Paddle overlay opened with the bundle price (not paid).
+- Later the same evening, Dan: the bundle goes INSIDE the TV, not under it: a new BUNDLES category, highlighted and
+  blinking, the bundle the TV's front page during Black Friday / Cyber Monday, in the screen's own look; "give me 3
+  options". Three rough looks drawn into the real TV (`tools/wwbench/bundle-options.cjs`, dev only): A Channel 00 (the
+  bundle as one more channel, its picture = the 8 plugins as a multi-view; Claude's pick), B the teletext front page
+  (P100, the page takes the screen), C Live (a shopping channel: the picture runs through the 8, a crawl). Dan's pick
+  page: claude.ai artifact 7K6g8eBK61qKSMcs8UV4MQ. Dan picked **A**, note on the multi-view: "just the html not the
+  frame" (the plugins bare, no box round each).
+- Built A for real in `src/components/WordWall.astro` (+ `src/data/sale.ts` `saleBundle.tv`): the BUNDLES tab, the
+  bundle's channel and page, all `data-ww-sale` (CSS hides them off the sale, the script removes them), the TV opening
+  on BUNDLES / the bundle while html[data-sale], ALL = the plugins only, a phone opening on the bundle's page (no history
+  entry), CM in green. `SaleBundleCard.astro` deleted (and its two mounts); the sale pop-up `SaleIntro` unmounted in
+  `BaseLayout.astro` (file kept, Gil's). DESIGN.md §4 has the bullet. Files added to the claim: WordWall.astro,
+  BaseLayout.astro, DESIGN.md.
+- Checks (dev, Chromium, `?sale=bf|cm|off`): laptop 1312x734 + 1141x636 and phone 390: BUNDLES pressed + bundle lit and
+  its page up on both sale days; off the sale no `[data-ww-sale]` left, ALL pressed, RevLimiter lit, `--ww-rows` 8 (as
+  before); phone: lands on the bundle's page, "All plugins" -> the list (BUNDLES first, the bundle on top), ALL -> the
+  plugins only; "Add all 8 to cart" -> cart = `bundle`, drawer open; home: the opening screen first, the first scroll
+  -> the TV on BUNDLES, no pop-up; no page errors; `astro build` green.
+- Follow-ups the same night: the cart's "Make it all 8" swap offer taken OUT (Dan never answered it, and with REDLINE
+  the singles cost less, so it would steer a buyer to pay more; it lives in `8f245b2` / `2da146f` if wanted; the
+  no-paying-twice and the bundle row stay; `saleBundle.free` went with it). The TV steps to ALL and its first plugin
+  when the sale ends with the page open (the strip clears html[data-sale]; a MutationObserver in WordWall). The dev
+  bench (`?bench`) no longer copies moves to or from the bundle's page (run: a move on the bundle's picture stays there,
+  one on RevLimiter's reaches RevFX and DRIFT, not the bundle). Today's countdown week on the build (real clock, laptop +
+  WebKit 390): the TV as before (ALL, RevLimiter, no bundle, 8 rows, no pop-up). New `tests/sale-bundle-tv.spec.ts`: the real
+  date path on the built site (BF, CM, off, the end with the page open), 8/8 in Chromium + WebKit. Use
+  `page.clock.setSystemTime`, never `setFixedTime`, for the TV: GSAP's ticker reads `Date.now`, so a frozen clock
+  freezes every channel change (a phone's "All plugins" looks broken). Full suite: 96 passed, 3 failed in pages this
+  doesn't touch (widebeam's robots test waits forever on the missing meta since `listed: true`; /drift on WebKit
+  logs the video controls' icons), 1 skipped; main's CI is red since 2026-11-23 for another reason (`webServer` 60 s
+  timeout, no test runs). WebKit on the real build with the clock: 1141x636 BF + CM, 390 /plugins and home (the
+  opening screen, a tap -> the bundle's page -> All plugins -> ALL), off the sale. Before the page's script arrives the
+  TV shows RevLimiter unassembled, as it always did; the bundle comes with the script.
+- Dan's notes on the bundle page (screenshot, same night): a dividing line under the strip, one section a bit darker,
+  GAS smaller. Built TV-wide on laptops (every channel, so it goes live with the merge, not with the sale): the glass
+  behind the categories + strip at black 25%, ending in a 1 px line in the channel's ink halfway between the strip and
+  the panel (`.ww-screen::before`, `--ww-split` measured in `fit()`, hidden until the tube is on); GAS at 72% in the
+  bundle's picture (`--mv-k`, phones too). Claude's call: the menu darker, the page keeps the glow (Dan can flip it).
+  Checked on dev, WebKit 1312x740 + Chromium 1141x636: the line exactly halfway (287 between 278 and 296), BF, CM, off
+  the sale, after a channel change; phones unchanged but GAS. Sale test + smoke: 53 passed, the /drift WebKit one failed.
+- Dan: "give me 3 more option for this" (the split). Round 2 of the pick page (artifact 7K6g8eBK61qKSMcs8UV4MQ, db
+  `notes-r2`): A built, B the page darker (35%), C his line as drawn (content width, 2 px, glow; menu 35%), D bold
+  (menu 50%, 2 px glowing line), each on the bundle's page + RevLimiter, cropped to the seam; asks: which split, and
+  every channel or the bundle's page only. Claude's pick: C. B/C/D live behind a TEMPORARY dev-only `?split=b|c|d`
+  block in WordWall's script, NOT committed: build the pick properly, then delete that block before any commit of
+  WordWall. Until he picks, the branch carries A (a "push" ships A on every channel).
+- Dan picked **C** (page db `notes-r2`: choice c, no notes; the every-channel question unanswered, so it stays on every
+  channel as built). Built in WordWall (the band at 35%, the 2 px line + glow from `--ww-split-l` over `--ww-split-w`,
+  both measured in `fit()`); the `?split=` dev block is deleted. Checked on dev: WebKit 1312x740 (BF, CM, an ordinary
+  channel) + Chromium 1141x636, the line from 88 to 1225 px against the strip's 88 to 1224, the same as the picked
+  crop; sale test + smoke 53 passed, the /drift WebKit one failed. Pre-push sync (an agent, 2026-11-25 ~23:00):
+  origin/main is still `7598f36` and origin/feat/bundle-checkout still `f461175`, so both pushes are fast-forwards and
+  merge-tree is clean; the shared repo pulled to `ddbd7f2` (nothing on the site or the sale). Other sessions' unmerged
+  branches on our files: `feat/garage-home` (index, Cart) and `feat/phone-dive` (WordWall +103/-14) clash with this
+  only in `tasks/handoff.md`, `tasks/lessons.md` (+ `.impeccable/config.json` for phone-dive); WordWall auto-merges
+  (not built). Whoever lands second merges those notes by hand.
+- Dan: "push the branch, send to Gil for QA" (not main). Gil's QA note: `tasks/bundle-qa-handoff-gil-2026-11-25.md`
+  (what changed from his reference, how to run it, a 9-item QA list, what we checked, the open price question). The
+  cart rules were clicked through in WebKit for it (bundle in -> RevLimiter out with a note; RevFX refused with a
+  note; subtotal $69.00). The merge into main waits for Gil's QA and Dan's word. Claim stays OPEN until then.
+- Dan's round-1 notes (pick page "The $69 Bundle", artifact 8yYU5gsCbcoSYKuWWbNixU, pasted 22:56): the card "Not
+  now" ("all these sections should be a part of the screen we have right now", also for Cyber Monday); value line:
+  none; the cart name stays "RevAudio bundle (all 8 plugins)". All three already as built; written into Gil's note.
+- Recap page for Dan ("show me what we did"): "The $69 Bundle" round 2 = the 8 screens as built, each with his last note
+  and what changed (artifact 8yYU5gsCbcoSYKuWWbNixU, db `notes-r2`, one ask: keep $69?). Private: Gil sees it only if
+  Dan shares it.
+- **SESSION END 2026-11-25 (rv close).**
+  - State: `feat/bundle-checkout` pushed at `c44adf8`, plus this close's tasks commit. It is 0 behind and 14 ahead of
+    origin/main `7598f36` (Gil's 2 + this session's). Worktree clean, main untouched.
+  - **Next:** Gil's QA. His note is `tasks/bundle-qa-handoff-gil-2026-11-25.md`, and Dan sends him the message. Then
+    Dan's word merges into main before Fri Nov 27 00:00 PT (10:00 Israel).
+  - **Merge trap:** the branch ends on `[skip ci]` tasks commits. A push to main that ends on one skips the deploy
+    (wiki `website-update` step 5). Push the last code commit first, `git push origin 94845ce:main` (`pull --rebase`
+    first), then the rest.
+  - **Open:**
+    - 🔴 The $69 price against the singles with REDLINE ($55.50) or CYBER40 ($66.60): Dan + Gil. It is the ask on
+      the recap page.
+    - Gil's: the real Paddle overlay with the bundle price, and whether the 10% welcome code works on the bundle.
+  - Left running: the dev server on 127.0.0.1:4392, from this worktree, for Dan's Safari tab. Stop it with
+    `lsof -ti tcp:4392 | xargs kill`.
+
 ## 2026-11-24 — Review: WIDE BEAM joins the plugin picker (Claude Code `revaudio-cc [35df6d]`, laptop 2) — branch `feat/review-widebeam` (worktree `C:\RevAudio\Website\revaudio-website-rvwb`, from origin/main `4471496`) — ON MAIN + LIVE 2026-11-24 on Yoni's "push" (fast-forward to `8f620d5`; deploy run 45389825103 success; revaudio.net/review/ serves WIDE BEAM at $9, plain URL + cache-busted)
 
 Claim: CLOSED 2026-11-24 `revaudio-cc`. Files: `src/data/review-survey.ts` (`REVIEW_PLUGINS` + `widebeam`), `src/pages/review.astro`, `DESIGN.md` (Review picker bullet only), this entry.

@@ -151,6 +151,15 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     `WALL_BG = 'wood'`) they
     stay the button family (D9, the user 2026-11-01): Try = brass (honey when free), Product page = small ghost. GAS's tall panel
     stands beside its text (at least `--ww-side-min` 16rem wide, 17 on a small laptop).
+  - The sale bundle on the TV (Dan 2026-11-25, pick A "Channel 00" of three; `src/data/sale.ts`): while a sale is on
+    (html[data-sale]) a BUNDLES tab comes first, outlined, blinking five times when the tube comes on, then lit; the TV
+    opens on it with the bundle's channel lit (first in the strip, "All 8"); BUNDLES = the bundle, then the plugins in
+    it; ALL = the plugins. Its picture = every plugin at once, bare on the glass ("just the html not the frame": no box
+    round any), standing on one line in two rows, each name in its own channel's colour. Black Friday plays it in warm
+    white, Cyber Monday in the scan tool's green. Its key = the cart's add ("Add all 8 to cart", $69 in the price
+    spot). A phone with nothing asked for opens on the bundle's page (no history entry). Off the sale the script takes
+    it all out: the TV is exactly as before. The sale's pop-up (SaleIntro) is off: the TV carries the offer. GAS
+    stands at 72% in that picture (tall and wide at once, it towered over its row and reached the strip; Dan's note).
   - Laptop layout B, "the channel strip" (Dan 2026-11-23, picked on `/__wwlayout` over two others; branch
     `feat/home-tv-layout`, being tuned on the live bench `/?bench`): from plugin to plugin the words jumped up to 356 px
     and the picture swung from 130 to 419 px tall. Now the plugins are one row of channels under the categories, the lit
@@ -158,6 +167,14 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     grid) and never move, and the picture changes in a fixed stage on the right. The words change in place (they fade,
     never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
     it on laptops.
+    - The menu and the page (Dan 2026-11-25, on the bundle's page: "a dividing line ... a section a bit darker so you
+      feel the difference between the sections"; his pick C of four, "your line, as drawn"): the glass behind the
+      categories and the strip is black at 35% over the glow, across the whole glass; halfway between the strip and the
+      panel it ends in a 2 px line in the channel's ink with a soft glow over it, running only from the words' left
+      edge to the pictures' right edge, as he drew it. On every channel. The page below keeps the tube's full glow, so
+      the eye lands on the plugin, not the menu. Hidden until the tube is on (an unlit screen shows no line). Laptop
+      only. Passed over on the pick page: 25% with a 1 px line across the glass (too quiet), the page darker instead
+      (pulled the eye to the menu), 50% with a bold line (the loudest).
     - The keys in B (Dan's bench export, 2026-11-24): row 1 = Try (one fixed width for every plugin, 16rem) with the
       price beside it, big (Bebas 3.4rem; "Free beta" 2.4rem), at the same spot on every plugin; row 2 = Product page
       and Add to cart, left, side by side.

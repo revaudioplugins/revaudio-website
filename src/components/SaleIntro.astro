@@ -12,7 +12,7 @@
 import { Image } from 'astro:assets';
 import frameImg from '../assets/seasons/drift/tv-broken-2.png';
 import frameMeta from '../assets/seasons/drift/tv-broken.json';
-import { salePhases, saleBundlePlugins, saleBundleCount, saleBundleUrl } from '../data/sale';
+import { salePhases, saleBundlePlugins, saleBundleCount, saleBundleUrl, saleBundle } from '../data/sale';
 
 // the opening in the cabinet, as % of the photo (bezel = top, right, bottom, left in its own pixels)
 const m = frameMeta['2'];
@@ -39,7 +39,8 @@ const copy = {
                 <span class="si-code-with">code</span> <b>{p.code}</b>
                 <span class="si-copied" aria-live="polite" data-sale-copied></span>
               </button>
-              <span class="si-bundle">All {saleBundleCount} plugins <b>${p.bundleUsd}</b></span>
+              {/* buys it: the intro powers off and the cart opens with the bundle in it (Cart.astro) */}
+              <button type="button" class="si-bundle" data-add-to-cart data-cart-open data-si-close data-slug={saleBundle.slug} data-name={saleBundle.name} data-price={saleBundle.priceUsd}>All {saleBundleCount} plugins <b>${p.bundleUsd}</b></button>
             </div>
             <p class="si-list si-pop" style="--d:4">{saleBundlePlugins.join(' · ')}</p>
             <p class="si-ends si-pop" style="--d:4">Ends {p.endShort}<span class="sr-only"> ({p.endLabel})</span></p>
@@ -334,6 +335,10 @@ const copy = {
   }
   .is-copied .si-copied { opacity: 1; }
   .si-bundle {
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
     font-family: var(--font-display);
     font-size: max(1rem, 3.6cqi);
     letter-spacing: 0.08em;
@@ -343,6 +348,8 @@ const copy = {
     filter: drop-shadow(0 0 6px var(--glow));
   }
   .si-bundle b { font-weight: 400; color: var(--ink-hot); }
+  .si-bundle:hover { filter: drop-shadow(0 0 10px var(--glow)); }
+  .si-bundle:focus-visible { outline: 2px solid var(--ink-hot); outline-offset: 4px; }
   .si-list, .si-ends {
     font: 500 max(0.6rem, 1.55cqi)/1.4 var(--font-mono);
     letter-spacing: 0.12em;
