@@ -23,7 +23,12 @@ this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
   (site-wide). Keyboard: the index and keys are buttons; the tool itself is pointer-only (D / P keys as before).
 - Dan's Safari (laptop, Retina) first showed NO tool: the box had width 0 (aspect-ratio + max-width:100% in an auto grid
   column); Playwright WebKit drew it. Fixed in 5a2532b (width + height in length); Dan: "it's back".
-- Next: Dan's notes on /obdtune (dev) and a look on his iPhone; then his push word for the branch; merge to main = live, his word.
+- Round 2, the reading screen (Dan: "another screen for the reading ... the words change like a glitch ... 3 options ...
+  look a little like the OBD tune"): 896fff2, `?screen=a|b|c` (switcher dev only): A glass + tear, B red twin (frame cut
+  from plate-A2 into src/assets/obdtune/readout-frame.webp) + roll, C data page (the tool's header row) + scan bar and
+  pixel blocks. Glass = the tool's own recipe. All 18 readings fit at 1312x734 and 1141x636 (TUNE spec shortened to
+  "1–200 MS · 13 SCALES"). Pick page: claude.ai artifact CkiYoPDwWDuxYURJNc8oPY (db picks/screen1); Claude's pick C.
+- Next: Dan's screen pick -> keep that one, drop the other two + the switcher; his notes; his iPhone; his push word.
 
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 
