@@ -1,3 +1,15 @@
+## 2026-11-27 — The TV menu's split line removed (Claude Code `revaudio-97 [1cfdf1]`, Yoni's laptop 2) — branch `fix/remove-cat-line` (worktree `../revaudio-website-noline`, on main `9701578`), NOT on main (waits for Yoni's "push")
+
+Claim: CLOSED 2026-11-27 `revaudio-97`. Files: `src/components/WordWall.astro` (the `.ww-screen::before` split + its
+`fit()` measure), `src/components/TempHero.astro` (one comment), `DESIGN.md` §the menu and the page, this entry.
+- Yoni (screenshot of the bundle channel): "lets remove this line from the website, it looks bad" = the 2 px gold ink
+  line + glow under the plugin strip (Dan's pick C, 2026-11-25).
+- Fix: `.ww-screen::before` keeps only the 35 % darker menu glass; the line + glow layers and the `--ww-split-l` / `-w`
+  measures (used only by the line) are gone. TempHero's opening-screen hide still applies to the darker glass.
+- Checks: `astro build` green; Chromium 1600x900 on `astro preview` vs the live site: `::before` background-image
+  `none` (live: the two gradients), colour `rgba(0,0,0,.35)`, height unchanged; screenshot: line gone, glass kept.
+  Not checked: phone (the split is laptop only), WebKit.
+
 ## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
 
 Claim: CLOSED 2026-11-26 `revaudio-52`. Files: `src/components/TempHero.astro`, this entry.
