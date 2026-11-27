@@ -1,6 +1,7 @@
-/* /obdtune — the one-pager (Dan 2026-11-26, look A "Sheet"). One screen under the header: the plugin's live UI hovering on
-   the house background (BaseLayout's bakelite + smoke), one quiet column beside it: the name, the reading, the index of
-   parts with pilot lamps, the keys. Small type on purpose (Dan: "lower down and minimize the fonts").
+/* /obdtune — the one-pager (Dan 2026-11-26, look A "Sheet"). One screen under the header: the plugin's live UI standing
+   on a desk in our 3D garage (2026-11-27: a still of the home page's room, .obd-garage), one quiet column beside it: the
+   name, the reading, the index of parts, the keys. Small type on purpose (Dan: "lower down and minimize the fonts"); the
+   loose type over the garage wears a per-letter halo (GAS 2's caption recipe, --obd-halo).
    House laws: one upper-left light, no pure black / white, nothing drawn ON the tool, red only on the tool and the name's
    plate (the plugin's own red header print). Bench round 2 (2026-11-27): Dan picked name A (the header plate), index B
    (screen tiles), readings A, trial key A (the big key). */
@@ -12,13 +13,17 @@
 .obd {
   --obd-cream: #efe9df;
   --obd-ink-2: #b3a99f;
-  --obd-ink-3: #7f766e;
+  --obd-ink-3: #8a8178;        /* was #7f766e: over the garage, with the halo, it holds AA (4.5:1) */
   --obd-lcd: #6cc6e6;          /* the tool's LCD ink: the name of the part you pressed */
   --obd-lamp: #f0c070;
   --obd-stage-h: calc(100svh - var(--sale-h, 0px) - var(--nav-h, 44px));
   --obd-unit-h: clamp(380px, calc(var(--obd-stage-h) * .86), 700px);
+  --obd-halo: 0 1px 2px #0b0806, 0 0 4px rgba(11, 8, 6, .95), 0 0 10px rgba(11, 8, 6, .85), 0 0 20px rgba(11, 8, 6, .7);
   position: relative;
   color: var(--obd-cream);
+  overflow: hidden; /* the garage still runs past the screen: cut here, its foot fades into the page below */
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
 }
 
 /* ------------------------------------------------------------------ the stage: the tool | the column */
@@ -36,6 +41,7 @@
   max-width: 1240px;
   margin: 0 auto;
   padding: 0 32px;
+  isolation: isolate; /* the garage still (z-index -1) sits under everything in the stage */
 }
 
 /* ------------------------------------------------------------------ the name (Dan, round 1: "let's frame this area"; he
@@ -49,12 +55,12 @@
     radial-gradient(circle at calc(100% - 8px) 8px, #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
     radial-gradient(circle at 8px calc(100% - 8px), #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
     radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
-    linear-gradient(165deg, #d9503f 0%, #c13427 40%, #9e271c 100%);
+    linear-gradient(165deg, #c8402f 0%, #b52f22 40%, #94241a 100%); /* a touch under the tool's red: AA for the small print */
   box-shadow: inset 0 1px 0 rgba(255, 210, 190, .35), inset 0 -2px 0 rgba(60, 10, 6, .45), 0 1px 0 rgba(12, 9, 6, .9), 0 12px 24px rgba(12, 9, 6, .5);
 }
 .obd-maker {
   margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; font-weight: 700;
-  font-size: 15px; letter-spacing: .01em; color: rgba(250, 238, 222, .95); text-shadow: 0 1px 1px rgba(60, 10, 6, .6);
+  font-size: 15px; letter-spacing: .01em; color: #fbf1e4; text-shadow: 0 1px 1px rgba(60, 10, 6, .6);
 }
 .obd-mark {
   justify-self: end; margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1;
@@ -62,10 +68,10 @@
 }
 .obd-tag {
   grid-column: 1 / -1; margin: 8px 0 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .22em;
-  text-transform: uppercase; color: rgba(250, 232, 214, .78);
+  text-transform: uppercase; color: rgba(251, 241, 228, .92);
 }
 
-/* ------------------------------------------------------------------ the tool, hovering */
+/* ------------------------------------------------------------------ the tool, standing on its desk in the garage */
 .obd-unitwrap { /* both sides set in length: Safari sized the auto column to 0 when the width came from aspect-ratio +
                    a max-width in % (Dan's Safari, 2026-11-26: the tool vanished; WebKit in Playwright drew it) */
   grid-area: unit; position: relative; justify-self: center;
@@ -74,18 +80,23 @@
 .obd-unit { position: relative; display: block; width: 100%; height: 100%; outline-offset: 6px; }
 .obd-unit:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); border-radius: 18px; }
 .obd-still { display: block; width: 100%; height: auto; }
-/* the floor under a hovering object: far and soft, warm near-black, falling down-right from the upper-left lamp */
+/* the garage still: its frame is laid out in the tool's box (render: box 0.852 x 1 at left 1.2, top 0.6 of a 3.85 x 2.2
+   frame, in tool heights), so the desk's surface stays under the tool's base at every size; where the frame runs out
+   it fades into the house dark */
+.obd-garage {
+  position: absolute; z-index: -1; left: -140.81%; top: -60%; width: 451.76%; height: 220%; max-width: none;
+  pointer-events: none; -webkit-user-select: none; user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent), linear-gradient(transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent), linear-gradient(transparent, #000 8%, #000 92%, transparent);
+  mask-composite: intersect;
+}
+/* where its base meets the desk: a tight contact shadow under the body (the plugin paints the cast shadow itself) */
 .obd-floor {
-  position: absolute; left: 33%; right: 2%; bottom: 2.5%; height: 7%;
-  background: radial-gradient(closest-side, rgba(12, 9, 6, .78), rgba(12, 9, 6, .3) 62%, transparent);
-  filter: blur(9px); transform: translateX(3%);
+  position: absolute; left: 29%; right: 1%; top: 88.6%; height: 3.4%;
+  background: radial-gradient(closest-side, rgba(12, 9, 6, .85), rgba(12, 9, 6, .45) 60%, transparent);
+  filter: blur(3px);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .obd-unit { animation: obd-hover 6s ease-in-out infinite; }
-  .obd-floor { animation: obd-floor 6s ease-in-out infinite; }
-}
-@keyframes obd-hover { 50% { translate: 0 -9px; } }
-@keyframes obd-floor { 50% { opacity: .72; } }
 
 /* ------------------------------------------------------------------ the reading SCREEN (Dan 2026-11-26: "another screen
    for the reading ... the words change like a glitch ... look a little like the OBD tune"). The glass is the tool's own
@@ -177,12 +188,25 @@
 .obd-buylink {
   align-self: center; padding: 4px 6px; border: 0; background: none; cursor: pointer;
   font: 600 13px/1.2 var(--font-body, Inter, system-ui, sans-serif); color: var(--obd-ink-2); text-decoration: underline;
-  text-decoration-color: rgba(239, 233, 223, .25); text-underline-offset: 3px;
+  text-decoration-color: rgba(239, 233, 223, .25); text-underline-offset: 3px; text-shadow: var(--obd-halo);
 }
 .obd-buylink:hover { color: var(--obd-cream); text-decoration-color: currentColor; }
 .obd-buylink.is-in-cart { color: var(--obd-lamp); }
 .obd-buylink:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 2px; border-radius: 3px; }
-.obd-fine { margin: 10px 0 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--obd-ink-3); }
+.obd-fine { margin: 10px 0 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--obd-ink-3); text-shadow: var(--obd-halo); }
+
+/* the desk switcher (dev only, the desk round) */
+.obd-looks {
+  position: fixed; right: 14px; top: calc(var(--sale-h, 0px) + var(--nav-h, 44px) + 10px); z-index: 40;
+  display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px;
+  background: rgba(20, 17, 15, .86); box-shadow: 0 0 0 1px rgba(239, 233, 223, .1), 0 8px 24px rgba(12, 9, 6, .6);
+  font: 500 10px/1 var(--font-mono); letter-spacing: .14em;
+}
+.obd-looks span { padding: 0 6px 0 8px; color: var(--obd-ink-3); }
+.obd-looks a { padding: 6px 9px; border-radius: 999px; color: var(--obd-ink-2); text-decoration: none; }
+.obd-looks a em { font-style: normal; display: none; margin-left: 6px; }
+.obd-looks a[aria-current='true'] { background: #e8c878; color: #1e1710; }
+.obd-looks a[aria-current='true'] em { display: inline; }
 
 /* Dan's Safari laptop (1141 x 636 with the sale strip): the column has ~546 px */
 @media (max-height: 700px) and (min-width: 861px) {

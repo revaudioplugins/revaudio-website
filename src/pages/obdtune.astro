@@ -20,12 +20,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { obdtune, buyable, registerUrl, fmtUsd } from '../data/obdtune';
 import { READINGS, INDEX, KEY_LABEL } from '../data/obdtune-parts';
 import stillSrc from '../assets/obdtune/unit-still.png';
+import garageA from '../assets/obdtune/garage-a.jpg';
+import garageB from '../assets/obdtune/garage-b.jpg';
+import garageC from '../assets/obdtune/garage-c.jpg';
 import '../styles/obdtune.css';
 
 const canBuy = buyable();
 const trialRegister = registerUrl();
 // the scanner's still (the plugin's home screen, as the page opens): shows until unit.ts mounts the live UI
 const still = await getImage({ src: stillSrc, format: 'webp', width: 1080, quality: 82 });
+// the garage behind it (Dan 2026-11-27: "think like this plugin sits somewhere in the 3D garage we build"): a still of
+// the home page's 3D room (feat/phone-dive 14ba0ff, VHS look) from the spot the tool stands on, the tool's own spot left
+// for it, focus falling off away from it and the column's side in shadow. Its frame is laid out in the tool's box
+// (obdtune.css .obd-garage), so the desk stays under the tool at every size.
+// DESK ROUND (dev only, 2026-11-27): A the workbench, B the test-drive desk, C the mixing desk; ?desk=a|b|c
+const DESK_Q = { format: 'webp', width: 2156, quality: 82 } as const;
+const desks = {
+  a: await getImage({ src: garageA, ...DESK_Q }),
+  ...(import.meta.env.DEV ? { b: await getImage({ src: garageB, ...DESK_Q }), c: await getImage({ src: garageC, ...DESK_Q }) } : {}),
+};
+const desk = desks.a;
 const home = READINGS.home;
 const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
 ---
@@ -43,6 +57,13 @@ const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
       </header>
 
       <div class="obd-unitwrap" data-obd-wrap>
+        <img class="obd-garage" src={desk.src} width={desk.attributes.width} height={desk.attributes.height} alt="" aria-hidden="true" decoding="async" fetchpriority="high" data-obd-garage />
+        {import.meta.env.DEV && (
+          <script is:inline define:vars={{ desks: Object.fromEntries(Object.entries(desks).map(([k, v]) => [k, v.src])) }}>
+            // DESK ROUND (dev only): ?desk=a|b|c before the first paint
+            (function () { var m = /[?&]desk=([abc])/.exec(location.search); if (m && desks[m[1]]) document.querySelector('[data-obd-garage]').src = desks[m[1]]; })();
+          </script>
+        )}
         <i class="obd-floor" aria-hidden="true"></i>
         <div class="obd-unit" data-obd-unit role="group" aria-label="OBDTUNE, the plugin's own screen, live. Press any part of it and the reading beside it changes. D = DETECT, P = POWER.">
           <img class="obd-still" src={still.src} width={still.attributes.width} height={still.attributes.height} alt="" decoding="async" />
@@ -93,6 +114,18 @@ const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
         <p class="obd-fine">{fmts}</p>
       </div>
     </section>
+    {import.meta.env.DEV && (
+      <nav class="obd-looks" aria-label="Desk round (dev only)">
+        <span>DESK</span>
+        <a href="?desk=a" data-desk="a">A <em>workbench</em></a>
+        <a href="?desk=b" data-desk="b">B <em>test desk</em></a>
+        <a href="?desk=c" data-desk="c">C <em>mixing desk</em></a>
+        <script is:inline>
+          (function () { var m = /[?&]desk=([abc])/.exec(location.search), k = m ? m[1] : 'a';
+            document.querySelectorAll('.obd-looks a').forEach(function (a) { a.setAttribute('aria-current', String(a.dataset.desk === k)); }); })();
+        </script>
+      </nav>
+    )}
   </div>
 </BaseLayout>
 
