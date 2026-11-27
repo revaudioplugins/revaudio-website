@@ -1,4 +1,21 @@
-## 2026-11-26/27 — OBDTUNE one-pager: Dan picked A "Sheet", then screen C; NEXT = the garage desk + PUSH LIVE before 2026-11-28 (Claude Code, Dan's Mac) — branch `feat/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, from origin/main `d619810`), NOT on main
+## 2026-11-27 — OBDTUNE one-pager SHIPS: Dan's column picks on the default background, pushed to main on his word (Claude Code "OBD Tune page redesign", Dan's Mac) — branch `feat/obdtune-ship` (worktree `.claude/worktrees/obd-column`)
+
+Claim: closed 2026-11-27 at the push. Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts`,
+`src/data/obdtune-parts.ts`, this entry; `tasks/obdtune-garage-plan.md` removed.
+- **Dan, 11-27: "forget the background, leave the default background for the OBD tune, and let's check the OBD tune for
+  backend and push it to main. Send an agent to do the backend."** The garage desk round (`feat/obdtune-onepager` @
+  `093b1f3`, session danavivi-d9, told the same day) stays on its branch, unshipped. The tool hovers on the house
+  background again (6 s bob + the small lean to the mouse).
+- Bench round 2 (claude.ai artifact 1e3dCpgJN7PusemmzJsDdh; Dan's picks read off his switcher tab, the bench's `notes-r2`
+  stayed empty): name A = a plate of the tool's red header print (darkened a touch so its small print holds AA), index B
+  = the tool's screen tiles, 8 parts (POWER, BACK · OK, SERVICE keep their readings on the tool), readings A = headline +
+  one line + value box (`READINGS` in obdtune-parts.ts, checked against Gil's copy; the longer copy is in git at
+  `9965fa0`), trial key A = full-width "Try free · 30 days / Full version · no credit card", Buy = "or buy · $15".
+  The formats line is `obdtune.formats` (the Mac pkg has no ARA). The option set Dan saw is `42ac1e8` on
+  `feat/obdtune-column` (pushed; it also holds the garage merge, not shipped).
+- Checks before the push: below, and in the push session's final message.
+
+## 2026-11-26/27 — OBDTUNE one-pager, its history (look A, screen C, the garage round that was dropped); state: the entry above
 
 Claim: closed 2026-11-27 by the session that built it; HANDED TO THE NEXT SESSION (one session per worktree). Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
 `src/data/obdtune-parts.ts` (new); removed `src/lib/obdtune/story.ts`, `bench.ts`, `graph.ts` (only the old page used them);
@@ -38,7 +55,7 @@ this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
   `tasks/obdtune-garage-plan.md`. The room = `feat/phone-dive` @ `14ba0ff` (newest), rendered, never edited.
 - **Dan's push word, 2026-11-27: "give me handoff to another session so he will push this last design to the website
   before tomorrow".** Target = main (a push to main is the live deploy).
-- NEXT SESSION, in order:
+- (Replaced 11-27 by the entry above: the garage was dropped and the column round 2 shipped instead.) NEXT SESSION, as it was:
   1. Do `tasks/obdtune-garage-plan.md`: the three garage views, Dan's pick (pick page + his Safari), build the pick.
   2. Ship it. "Before tomorrow" = live by the end of 2026-11-27, Israel time.
      - The pick page is a private Artifact. Send Dan the link.
@@ -63,6 +80,35 @@ this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
 - Known tight spot: the longest readings have 3 px to spare at 1312x734 (TUNE) and 1.6 px on a 390 phone (DETECT, TUNE).
   Keep the reading box's height and these strings as they are, or re-run the fit probe (the plan's Checks).
 - Still open: a real iPhone check; Dan's notes on the page; Yoni / Gil own the commerce wiring (unchanged).
+
+## 2026-11-27 — The TV menu's split line removed (Claude Code `revaudio-97 [1cfdf1]`, Yoni's laptop 2) — branch `fix/remove-cat-line` (worktree `../revaudio-website-noline`, on main `9701578`), PUSHED TO MAIN 2026-11-27 on Yoni's word "push" (`eccf261`, deploy 45970696679 green, live checked: `::before` background-image `none`)
+
+Claim: CLOSED 2026-11-27 `revaudio-97`. Files: `src/components/WordWall.astro` (the `.ww-screen::before` split + its
+`fit()` measure), `src/components/TempHero.astro` (one comment), `DESIGN.md` §the menu and the page, this entry.
+- Yoni (screenshot of the bundle channel): "lets remove this line from the website, it looks bad" = the 2 px gold ink
+  line + glow under the plugin strip (Dan's pick C, 2026-11-25).
+- Fix: `.ww-screen::before` keeps only the 35 % darker menu glass; the line + glow layers and the `--ww-split-l` / `-w`
+  measures (used only by the line) are gone. TempHero's opening-screen hide still applies to the darker glass.
+- Checks: `astro build` green; Chromium 1600x900 on `astro preview` vs the live site: `::before` background-image
+  `none` (live: the two gradients), colour `rgba(0,0,0,.35)`, height unchanged; screenshot: line gone, glass kept.
+  Not checked: phone (the split is laptop only), WebKit. Smoke test red on this push as on every push since 11-25
+  (`config.webServer` 60 s timeout in CI), not this change.
+
+## 2026-11-26 — Home opening screen: the TV's split line + strip arrow off until the first scroll (Claude Code `revaudio-52 [55e2fb]`, Yoni's laptop 2) — branch `fix/split-line-intro` (worktree `../revaudio-website-splitfix`, on main `d619810`), PUSHED TO MAIN 2026-11-26 on Yoni's word "push"
+
+Claim: CLOSED 2026-11-26 `revaudio-52`. Files: `src/components/TempHero.astro`, this entry.
+- Yoni: the TV on entering the site shows the line added under the plugin strip; it belongs only after the scroll.
+- Cause: TempHero's opening screen hides the menu with `html.th-on .ww > :not(.th, .ww-screen, ...)`, and Dan's pick-C
+  split (the 35 % darker menu glass + the 2 px line) is `.ww-screen::before`, so it showed through once the tube lit.
+  Same family: the strip's disabled prev arrow sets its own `opacity: .25`, which outranks that rule (a faint `‹`).
+- Fix (TempHero only, WordWall untouched): under `html.th-on` the split's opacity is 0 and the strip arrows are
+  `visibility: hidden`; both come back with the menu's power-on after the channel change.
+- Checks on the built site (`astro preview`): Chromium 1312x734 + 1141x636: control `?cat=all` line 1 / arrows on;
+  opening screen (tube on) line 0, both arrows hidden; after one wheel the menu: line 1, arrows back. WebKit (reduced
+  motion; Playwright's Windows WebKit never resolves `document.fonts.ready`, so the tune-in and screenshots hang there):
+  opening 0, menu 1. `astro build` green. Not checked: a real phone, Safari on a Mac.
+- Seen, not touched: under reduced motion the split never shows when the page skips the opening screen
+  (`?cat=` / `#plugins` links), because `:not([data-ww-power='on'])` waits for a power-on that reduced motion never runs.
 
 ## 2026-11-25 — The $69 bundle on the site: inside the TV (Claude Code `Black Friday bundle website`, Dan's Mac) — branch `feat/bundle-checkout` (worktree `.claude/worktrees/bundle`, on Gil's `f461175`), PUSHED for Gil's QA, NOT on main
 

@@ -207,6 +207,11 @@
   }
   /* the menu waits unseen under it (still in the tab order: a Tab into it changes the channel) */
   :global(html.th-on .ww > :not(.th, .ww-screen, .ww-screen-fx, .ww-frame, noscript)) { opacity: 0; pointer-events: none; }
+  /* the menu's split (its darker glass, WordWall's .ww-screen::before) is the menu's too:
+     off under the line, lit with the menu's power-on after the first scroll (Yoni 2026-11-26) */
+  :global(html.th-on .ww > .ww-screen::before) { opacity: 0; }
+  /* and the strip's arrows: a disabled one sets its own opacity (.25), which outranks the 0 above */
+  :global(html.th-on .ww > .ww-strip-arrow) { visibility: hidden; }
 
   .th-px { position: absolute; inset: 0; width: 100%; height: 100%; display: none; image-rendering: pixelated; }
   .th.is-px .th-px { display: block; }

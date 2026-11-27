@@ -562,13 +562,10 @@ const bundleIn = saleBundle.slugs.flatMap((slug) => {
     const fit = () => {
       // rounded UP, + 1 px: a TV one pixel taller than the screen already shifts the lock's landing
       if (osdEl?.offsetParent) wall.style.setProperty('--ww-osd-h', `${Math.ceil(tall(osdEl))}px`);
-      // the menu's darker glass (laptop): from the glass's top to halfway between the strip and the panel; its line
-      // runs across the content only (the strip's box: the words' left edge to the pictures' right edge)
+      // the menu's darker glass (laptop): from the glass's top to halfway between the strip and the panel
       if (!phone.matches && glassEl && list?.offsetParent && list.offsetParent === glassEl.offsetParent) {
         const gap = parseFloat(getComputedStyle(wall).rowGap) || 0;
         wall.style.setProperty('--ww-split', `${list.offsetTop + list.offsetHeight + gap / 2 - glassEl.offsetTop}px`);
-        wall.style.setProperty('--ww-split-l', `${list.offsetLeft - glassEl.offsetLeft}px`);
-        wall.style.setProperty('--ww-split-w', `${list.offsetWidth}px`);
       }
       panels.forEach((p) => {
         const fig = p.querySelector<HTMLElement>('.ww-ui');
@@ -2815,17 +2812,12 @@ html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui .ww-mv 
 }
 /* the menu and the page (Dan 2026-11-25: "a dividing line ... a section a bit darker so you feel the difference between
    the sections"; his pick C of four on the pick page, round 2: "your line, as drawn"): the glass behind the categories
-   and the strip 35% darker, across the whole glass; where it ends, halfway between the strip and the panel, a 2 px line
-   in the channel's ink with a soft glow over it, only from the words' left edge to the pictures' right edge, as he drew
-   it. The script measures --ww-split (the line's distance from the glass's top) and --ww-split-l / -w (where it runs).
-   Off until the tube is on, so an unlit screen shows no line. Every channel, not just the bundle's. */
+   and the strip 35% darker, across the whole glass, down to halfway between the strip and the panel. The 2 px glowing
+   line he drew at that edge is gone (Yoni 2026-11-27: "it looks bad"); the darker glass alone marks the split. The
+   script measures --ww-split (the edge's distance from the glass's top). Off until the tube is on. Every channel. */
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-screen::before {
   content: ''; position: absolute; inset: 0 0 auto; height: var(--ww-split, 0px); z-index: 1; pointer-events: none;
-  background:
-    linear-gradient(color-mix(in srgb, var(--ww-ink) 90%, transparent), color-mix(in srgb, var(--ww-ink) 90%, transparent))
-      var(--ww-split-l, 0px) 100% / var(--ww-split-w, 100%) 2px no-repeat,                          /* the line */
-    linear-gradient(transparent, var(--ww-glow)) var(--ww-split-l, 0px) 100% / var(--ww-split-w, 100%) 12px no-repeat, /* its glow */
-    rgba(0, 0, 0, 0.35);                                                                              /* the menu's glass */
+  background: rgba(0, 0, 0, 0.35); /* the menu's glass */
   transition: opacity 320ms ease;
 }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen']:not([data-ww-power='on']) > .ww-screen::before { opacity: 0; }
