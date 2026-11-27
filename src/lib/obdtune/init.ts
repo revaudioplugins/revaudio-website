@@ -1,11 +1,11 @@
 /**
  * /obdtune boot (the one-pager, 2026-11-26): the live signal, the hovering scanner (the plugin's own UI, unit.ts), and
  * the reading that follows the hand. A press on a part of the tool, or the page its screen opens, picks a reading
- * (src/data/obdtune-parts.ts); the index lamps light the part being read, and an index press also opens that page on
+ * (src/data/obdtune-parts.ts); the index tile of the part being read lights up, and an index press also opens that page on
  * the tool's screen. BACK and the D-pad keep their own reading while they walk the screen; OK, a tile or a code's jump
  * hands over to the page they open.
  */
-import { KEY_TO_PAGE, PAGE_TO_KEY, PART_TO_KEY, READINGS, shortFor } from '../../data/obdtune-parts';
+import { KEY_TO_PAGE, PAGE_TO_KEY, PART_TO_KEY, READINGS } from '../../data/obdtune-parts';
 import { pressDetect, startLive } from './live';
 import { mountUnit } from './unit';
 
@@ -25,18 +25,11 @@ export function initObdtune() {
   let cur = 'home';
 
   // ---------------------------------------------------------------- the reading: out, swap, in (one tween each way)
-  // the words: the part's number + name from READINGS, the rest from the short reading in the page's style ([data-read])
   const fill = (k: string) => {
-    const r = READINGS[k], s = shortFor(page.dataset.read || 'a', k);
+    const r = READINGS[k];
     const set = (f: string, v: string) => { const el = read.querySelector<HTMLElement>(`[data-r-${f}]`); if (el) el.textContent = v; };
-    set('n', r.n); set('label', r.label); set('h', s.h); set('p', s.p ?? ''); set('spec', s.spec ?? '');
-    const rows = read.querySelector<HTMLElement>('[data-r-rows]');
-    if (rows) rows.replaceChildren(...(s.rows ?? []).map(([l, v]) => {
-      const row = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd');
-      dt.textContent = l; dd.textContent = v; row.append(dt, dd); return row;
-    }));
+    set('n', r.n); set('label', r.label); set('h', r.h); set('p', r.p); set('spec', r.spec);
   };
-  fill('home');
   // ---------------------------------------------------------------- the reading screen (screen C "Data page", Dan's pick
   // of three, 2026-11-27): the words change through the tool's own scan. The glitch is the change itself: before and
   // after it the words stand still (DESIGN.md §6). Reduced motion: a plain swap.
@@ -95,7 +88,7 @@ export function initObdtune() {
     blocks(k, id);
   }
 
-  // a sub-reading lights its parent's lamp (FX · EQ -> FX): they share the number
+  // a sub-reading lights its parent's tile (FX · EQ -> FX): they share the number
   const lightIndex = (k: string) => {
     const n = READINGS[k].n;
     ixs.forEach((b) => {
@@ -170,17 +163,4 @@ export function initObdtune() {
     }
   });
   lightIndex(cur);
-
-  // ROUND 2 switcher (dev only): each area three ways ([data-name|ixl|read|cta] on the page, ?name= &ix= &read= &cta=)
-  const looks = [...page.querySelectorAll<HTMLButtonElement>('[data-look]')];
-  const attr = (k: string) => (k === 'ix' ? 'ixl' : k);
-  const markLooks = () => looks.forEach((b) => b.setAttribute('aria-pressed', String(page.dataset[attr(b.dataset.look!)] === b.dataset.v)));
-  looks.forEach((b) => b.addEventListener('click', () => {
-    const k = b.dataset.look!, v = b.dataset.v!;
-    page.dataset[attr(k)] = v;
-    const u = new URL(location.href); u.searchParams.set(k, v); history.replaceState(null, '', u);
-    markLooks();
-    if (k === 'read') showRead(cur);
-  }));
-  markLooks();
 }

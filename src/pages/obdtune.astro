@@ -4,8 +4,10 @@
  * feat/obdtune-onepager). Before: Gil's 2026-11-25 page (hero + six readings + bench + parameter table + get card).
  *
  * One screen under the header: the plugin's own live UI hovers on the house background (BaseLayout's bakelite + smoke);
- * beside it one quiet column: the name in the plugin's header print, the reading on a second screen in the tool's own
- * LCD (screen C "Data page", Dan's pick of three, 2026-11-27), an index of the parts with pilot lamps, the two keys. A press on any part of the tool (or the page its screen opens) picks the reading
+ * beside it one quiet column: the name on a plate of the plugin's red header print, the reading on a second screen in
+ * the tool's own LCD (screen C "Data page", Dan's pick of three, 2026-11-27), an index of the parts as the tool's own
+ * screen tiles, the two keys (bench round 2, 2026-11-27: Dan picked name A, index B, readings A, trial key A). A press
+ * on any part of the tool (or the page its screen opens) picks the reading
  * (src/data/obdtune-parts.ts); a press on the index does the same and opens that page on the tool's screen.
  * The tool IS the plugin's UI (Source/ui/public, synced by tools/obdtune-ui/sync.sh into public/obdtune/ui, mounted by
  * src/lib/obdtune/unit.ts); re-sync when the plugin's UI changes.
@@ -16,7 +18,7 @@
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { obdtune, buyable, registerUrl, fmtUsd } from '../data/obdtune';
-import { READINGS, INDEX, KEY_LABEL, shortFor } from '../data/obdtune-parts';
+import { READINGS, INDEX, KEY_LABEL } from '../data/obdtune-parts';
 import stillSrc from '../assets/obdtune/unit-still.png';
 import '../styles/obdtune.css';
 
@@ -25,11 +27,6 @@ const trialRegister = registerUrl();
 // the scanner's still (the plugin's home screen, as the page opens): shows until unit.ts mounts the live UI
 const still = await getImage({ src: stillSrc, format: 'webp', width: 1080, quality: 82 });
 const home = READINGS.home;
-// ROUND 2 (Dan's bench notes, 2026-11-27): each area comes three ways for his pick; the defaults are Claude's picks.
-// Dev only: ?name=a|b|c (the name's frame) &ix=a|b|c (the index) &read=a|b|c (how the readings are written)
-// &cta=a|b|c (the free-trial key), read before the first paint; the switcher top right flips them live.
-const LOOK = { name: 'b', ix: 'a', read: 'a', cta: 'a' };
-const hs = shortFor(LOOK.read, 'home');
 const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
 ---
 <BaseLayout
@@ -37,13 +34,7 @@ const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
   description="OBDTUNE is vocal pitch correction built like a shop scan tool: it reads every note, finds the key with DETECT, tunes as hard or as human as you want, stacks two harmony voices and adds EQ, compression, echo and reverb. Free 30-day trial."
   index={true}
 >
-  <div class="obd" data-obd-page data-name={LOOK.name} data-ixl={LOOK.ix} data-read={LOOK.read} data-cta={LOOK.cta}>
-    {import.meta.env.DEV && (
-      <script is:inline>
-        (function () { var q = new URLSearchParams(location.search), d = document.currentScript.parentElement.dataset;
-          [['name', 'name'], ['ix', 'ixl'], ['read', 'read'], ['cta', 'cta']].forEach(function (k) { var v = q.get(k[0]); if (/^[abc]$/.test(v || '')) d[k[1]] = v; }); })();
-      </script>
-    )}
+  <div class="obd" data-obd-page>
     <section class="obd-stage" data-obd-stage aria-labelledby="obd-title">
       <header class="obd-name">
         <p class="obd-maker" aria-hidden="true">RevAudio</p>
@@ -68,25 +59,24 @@ const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
           </div>
           <div class="obd-read" data-obd-read aria-live="polite">
             <p class="obd-r-label"><span class="obd-r-n" data-r-n>{home.n}</span><span data-r-label>{home.label}</span></p>
-            <h2 class="obd-r-h" data-r-h>{hs.h}</h2>
-            <p class="obd-r-p" data-r-p>{hs.p ?? ''}</p>
-            <dl class="obd-r-rows" data-r-rows>{(hs.rows ?? []).map(([l, v]) => (<div><dt>{l}</dt><dd>{v}</dd></div>))}</dl>
-            <p class="obd-r-spec" data-r-spec>{hs.spec ?? ''}</p>
+            <h2 class="obd-r-h" data-r-h>{home.h}</h2>
+            <p class="obd-r-p" data-r-p>{home.p}</p>
+            <p class="obd-r-spec" data-r-spec>{home.spec}</p>
           </div>
           <canvas class="obd-scr-fx" data-scr-fx aria-hidden="true"></canvas>
         </div>
       </div>
 
       <nav class="obd-index" aria-label="The parts of OBDTUNE">
-        <span class="obd-ix-lead" aria-hidden="true">Press a part ◂</span>
         {INDEX.map((k) => (
-          <button type="button" class="obd-ix" data-ix={k}><i aria-hidden="true"></i><span>{KEY_LABEL[k]}</span></button>
+          <button type="button" class="obd-ix" data-ix={k}><span>{KEY_LABEL[k]}</span></button>
         ))}
       </nav>
 
       <div class="obd-get">
-        {/* A · the big key: the trial the width of the column, what you get under it, Buy as a quiet line */}
-        <div class="obd-cta obd-cta--a">
+        {/* the big key (Dan, round 1: "give some love to the free trial button"; option A of three): the trial the width
+            of the column, what you get under it (the trial form promises it), Buy as a quiet line */}
+        <div class="obd-cta">
           <button
             type="button" class="rv-btn rv-btn--stack obd-try"
             data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
@@ -100,48 +90,9 @@ const fmts = 'VST3 · AU · AAX · ARA · Mac + Windows';
             >or buy · {fmtUsd(obdtune.priceUsd!)}</button>
           )}
         </div>
-        {/* B · the lit key: today's pair, the trial key with its pilot lamp lit and a warm glow */}
-        <div class="obd-cta obd-cta--b">
-          <span class="obd-glow">
-            <button
-              type="button" class="rv-btn rv-btn--sm rv-btn--shine obd-try"
-              data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
-              data-register-url={trialRegister ?? undefined}
-            ><i class="obd-try-lamp" aria-hidden="true"></i>Try free · {obdtune.trialDays} days</button>
-          </span>
-          {canBuy && (
-            <button
-              type="button" class="rv-btn rv-btn--ghost rv-btn--sm"
-              data-add-to-cart data-cart-open
-              data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
-            >Buy · {fmtUsd(obdtune.priceUsd!)}</button>
-          )}
-        </div>
-        {/* C · the ticket: a stamped card-stock tag is the trial key */}
-        <div class="obd-cta obd-cta--c">
-          <button
-            type="button" class="obd-ticket"
-            data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
-            data-register-url={trialRegister ?? undefined}
-          ><span class="obd-ticket-big">Free · {obdtune.trialDays} days</span><span class="obd-ticket-small">Try the full version</span></button>
-          {canBuy && (
-            <button
-              type="button" class="rv-btn rv-btn--ghost rv-btn--sm"
-              data-add-to-cart data-cart-open
-              data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
-            >Buy · {fmtUsd(obdtune.priceUsd!)}</button>
-          )}
-        </div>
         <p class="obd-fine">{fmts}</p>
       </div>
     </section>
-    {import.meta.env.DEV && (
-      <nav class="obd-looks" aria-label="Round 2 options (dev only)">
-        {[['name', 'Name'], ['ix', 'Index'], ['read', 'Reading'], ['cta', 'Trial']].map(([k, t]) => (
-          <div><span>{t}</span>{['a', 'b', 'c'].map((v) => <button type="button" data-look={k} data-v={v}>{v.toUpperCase()}</button>)}</div>
-        ))}
-      </nav>
-    )}
   </div>
 </BaseLayout>
 

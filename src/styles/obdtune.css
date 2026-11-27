@@ -1,8 +1,9 @@
 /* /obdtune — the one-pager (Dan 2026-11-26, look A "Sheet"). One screen under the header: the plugin's live UI hovering on
    the house background (BaseLayout's bakelite + smoke), one quiet column beside it: the name, the reading, the index of
    parts with pilot lamps, the keys. Small type on purpose (Dan: "lower down and minimize the fonts").
-   House laws: one upper-left light, no pure black / white, nothing drawn ON the tool, red only on the tool and the one
-   rule under the name (the plugin's own header print, light on dark). */
+   House laws: one upper-left light, no pure black / white, nothing drawn ON the tool, red only on the tool and the name's
+   plate (the plugin's own red header print). Bench round 2 (2026-11-27): Dan picked name A (the header plate), index B
+   (screen tiles), readings A, trial key A (the big key). */
 
 /* the plugin screen's PIXEL font (OBDTune obdtune.css "OBD Pixel" = VT323): declared on the document, because the scanner
    lives in a shadow root and the sync drops the plugin's own bench-relative @font-face */
@@ -13,7 +14,6 @@
   --obd-ink-2: #b3a99f;
   --obd-ink-3: #7f766e;
   --obd-lcd: #6cc6e6;          /* the tool's LCD ink: the name of the part you pressed */
-  --obd-red: #c8392c;          /* the tool's factory red: the rule under the name, nowhere else */
   --obd-lamp: #f0c070;
   --obd-stage-h: calc(100svh - var(--sale-h, 0px) - var(--nav-h, 44px));
   --obd-unit-h: clamp(380px, calc(var(--obd-stage-h) * .86), 700px);
@@ -38,24 +38,31 @@
   padding: 0 32px;
 }
 
-/* ------------------------------------------------------------------ the name: the plugin's header print, light on dark */
-.obd-name { grid-area: name; margin: 0 0 30px; }
+/* ------------------------------------------------------------------ the name (Dan, round 1: "let's frame this area"; he
+   picked A of three): a plate of the tool's own red header print, RevAudio left, OBDTUNE right, four screws */
+.obd-name {
+  grid-area: name; position: relative; box-sizing: border-box; width: 330px; max-width: 100%;
+  display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 12px;
+  margin: 0 0 18px; padding: 14px 18px 12px; border-radius: 9px;
+  background:
+    radial-gradient(circle at 8px 8px, #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 8px) 8px, #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
+    radial-gradient(circle at 8px calc(100% - 8px), #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
+    linear-gradient(165deg, #d9503f 0%, #c13427 40%, #9e271c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 210, 190, .35), inset 0 -2px 0 rgba(60, 10, 6, .45), 0 1px 0 rgba(12, 9, 6, .9), 0 12px 24px rgba(12, 9, 6, .5);
+}
 .obd-maker {
-  margin: 0 0 2px; font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; font-weight: 700;
-  font-size: 13px; letter-spacing: .01em; color: rgba(239, 233, 223, .62);
+  margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; font-weight: 700;
+  font-size: 15px; letter-spacing: .01em; color: rgba(250, 238, 222, .95); text-shadow: 0 1px 1px rgba(60, 10, 6, .6);
 }
 .obd-mark {
-  margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 800; font-size: 30px; line-height: 1;
-  letter-spacing: .16em; color: var(--obd-cream);
-  filter: drop-shadow(0 1px 0 rgba(12, 9, 6, .8)) drop-shadow(0 0 14px rgba(12, 9, 6, .55));
-}
-.obd-mark::after { /* the rule under the print, in the tool's red */
-  content: ''; display: block; width: 34px; height: 2px; margin-top: 11px; border-radius: 1px;
-  background: linear-gradient(90deg, #8f2219, var(--obd-red) 40%, #d9503f);
+  justify-self: end; margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1;
+  letter-spacing: .18em; color: #fbf1e4; filter: drop-shadow(0 1px 1px rgba(60, 10, 6, .65));
 }
 .obd-tag {
-  margin: 12px 0 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
-  color: var(--obd-ink-3);
+  grid-column: 1 / -1; margin: 8px 0 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .22em;
+  text-transform: uppercase; color: rgba(250, 232, 214, .78);
 }
 
 /* ------------------------------------------------------------------ the tool, hovering */
@@ -121,18 +128,11 @@
   color: #eef4f5; text-wrap: balance;
 }
 .obd-r-p { margin: 0 0 12px; font: 400 14px/1.5 var(--font-mono); color: #cfdce2; text-wrap: pretty; }
-.obd-r-rows { margin: 0 0 12px; display: grid; gap: 4px; }
-.obd-r-rows div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 3px; border-bottom: 1px dotted var(--lcd-grid); }
-.obd-r-rows dt { font: 400 18px/1 'OBD Pixel', ui-monospace, monospace; letter-spacing: .06em; color: var(--lcd-dim); }
-.obd-r-rows dd { margin: 0; font: 400 20px/1 'OBD Pixel', ui-monospace, monospace; letter-spacing: .04em; color: var(--lcd-ink); text-align: right; }
 .obd-r-spec {
   display: inline-block; margin: 0; padding: 4px 7px 3px; border: 1px solid var(--lcd-grid); border-radius: 2px;
   font: 400 19px/1 'OBD Pixel', ui-monospace, monospace; letter-spacing: .08em; color: #a9c3cf;
 }
-.obd-r-p:empty, .obd-r-rows:empty, .obd-r-spec:empty { display: none; }
-/* C · just the punch: the headline carries it */
-.obd[data-read='c'] .obd-r-h { font-size: 21px; line-height: 1.2; margin-bottom: 16px; }
-.obd[data-read='c'] .obd-r-spec { font-size: 22px; }
+.obd-r-p:empty, .obd-r-spec:empty { display: none; }
 /* the scan's pixel blocks, over the words while they change */
 .obd-scr-fx { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
 
@@ -150,73 +150,30 @@
 .obd-scr-tt i:first-child { background: var(--lcd-acc); color: var(--lcd-bg); border-color: var(--lcd-acc); text-shadow: none; }
 
 /* ------------------------------------------------------------------ the index: the eight parts (Dan, round 1: "make it
-   much more appealing and intuitive to press"), three looks ([data-ixl]) */
-.obd-index { grid-area: index; width: 330px; max-width: 100%; box-sizing: border-box; margin: 18px 0 22px; }
-.obd-ix { position: relative; border: 0; background: none; cursor: pointer; font: inherit; color: inherit; }
-.obd-ix i { /* the pilot lamp: dark glass at rest, lit from inside on the part being read */
-  display: block; width: 6px; height: 6px; border-radius: 50%; flex: none;
-  background: radial-gradient(circle at 35% 30%, #4a4038, #1d1916 70%); box-shadow: 0 0 0 1px rgba(12, 9, 6, .8);
-  transition: background .12s, box-shadow .12s;
-}
-.obd-ix.is-on i { background: radial-gradient(circle at 40% 35%, #fff1c8, var(--obd-lamp) 45%, #a8661c); box-shadow: 0 0 0 1px rgba(12, 9, 6, .8), 0 0 8px rgba(240, 192, 112, .6); }
-.obd-ix:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 3px; border-radius: 6px; }
-.obd-ix-lead { display: none; }
-
-/* A · rubber keys: a 4 x 2 grid of the tool's own dark keys, a lamp in the corner; the key being read sits pressed in */
-.obd[data-ixl='a'] .obd-index { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
-.obd[data-ixl='a'] .obd-ix {
-  height: 40px; display: grid; place-items: center; padding: 6px 4px 0; border-radius: 7px;
-  font: 600 10.5px/1 var(--font-mono); letter-spacing: .08em; color: var(--obd-ink-2);
-  background: linear-gradient(180deg, #3a3531 0%, #292522 55%, #201d1a 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 240, 220, .12), inset 0 -2px 0 rgba(12, 9, 6, .55), 0 1px 0 rgba(12, 9, 6, .9), 0 5px 10px rgba(12, 9, 6, .45);
-  transition: color .12s, transform .08s, box-shadow .12s;
-}
-.obd[data-ixl='a'] .obd-ix i { position: absolute; left: 7px; top: 7px; width: 5px; height: 5px; }
-@media (hover: hover) { .obd[data-ixl='a'] .obd-ix:hover { color: var(--obd-cream); } }
-.obd[data-ixl='a'] .obd-ix.is-on {
-  color: var(--obd-cream); transform: translateY(1px);
-  background: linear-gradient(180deg, #24211e 0%, #2a2623 100%);
-  box-shadow: inset 0 2px 5px rgba(12, 9, 6, .75), inset 0 -1px 0 rgba(255, 240, 220, .06), 0 1px 0 rgba(255, 240, 220, .05);
-}
-
-/* B · screen tiles: the tool's own home-screen tiles, in a strip of its glass */
-.obd[data-ixl='b'] .obd-index {
+   much more appealing and intuitive to press"; he picked B of three): the tool's own home-screen tiles, in a strip of
+   its rubber; the part being read lights up */
+.obd-index {
+  grid-area: index; width: 330px; max-width: 100%; box-sizing: border-box; margin: 18px 0 22px;
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 6px; border-radius: 9px;
   background: linear-gradient(180deg, #2c2825 0%, #1a1714 55%, #201c19 100%);
   box-shadow: inset 0 1px 0 rgba(255, 240, 220, .08), 0 1px 0 rgba(12, 9, 6, .9), 0 10px 22px rgba(12, 9, 6, .45);
 }
-.obd[data-ixl='b'] .obd-ix {
-  height: 36px; display: grid; align-items: center; padding: 0 7px; border-radius: 3px; text-align: left;
+.obd-ix {
+  height: 36px; display: grid; align-items: center; padding: 0 7px; border-radius: 3px; text-align: left; cursor: pointer;
   font: 400 18px/1 'OBD Pixel', ui-monospace, monospace; letter-spacing: .04em; color: #9fc8d8;
   background: radial-gradient(130% 120% at 30% 20%, #1e3040, #142432 60%, #0d1922); border: 1px solid #2c4252;
   transition: color .12s, border-color .12s, background .12s;
 }
-.obd[data-ixl='b'] .obd-ix span { border-bottom: 1px solid currentColor; padding-bottom: 2px; justify-self: start; }
-.obd[data-ixl='b'] .obd-ix i { display: none; }
-@media (hover: hover) { .obd[data-ixl='b'] .obd-ix:hover { color: #e2ebec; border-color: #3f6176; } }
-.obd[data-ixl='b'] .obd-ix.is-on { color: #e9f6fa; border-color: #6cc6e6; background: radial-gradient(130% 120% at 30% 20%, #27465a, #1a3344 60%, #11222e); }
-
-/* C · lamp chips: today's list, bigger and brighter, led by a pointer to the tool */
-.obd[data-ixl='c'] .obd-index { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.obd[data-ixl='c'] .obd-ix-lead { display: block; flex-basis: 100%; margin-bottom: 2px; font: 600 10px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--obd-lamp); opacity: .8; }
-.obd[data-ixl='c'] .obd-ix {
-  display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px 7px 9px; border-radius: 999px;
-  font: 600 11.5px/1 var(--font-mono); letter-spacing: .1em; color: var(--obd-ink-2);
-  box-shadow: inset 0 0 0 1px rgba(239, 233, 223, .14); transition: color .12s, box-shadow .12s, background .12s;
-}
-@media (hover: hover) { .obd[data-ixl='c'] .obd-ix:hover { color: var(--obd-cream); box-shadow: inset 0 0 0 1px rgba(240, 192, 112, .45); } }
-.obd[data-ixl='c'] .obd-ix.is-on { color: var(--obd-cream); background: rgba(240, 192, 112, .08); box-shadow: inset 0 0 0 1px rgba(240, 192, 112, .6); }
+.obd-ix span { border-bottom: 1px solid currentColor; padding-bottom: 2px; justify-self: start; }
+@media (hover: hover) { .obd-ix:hover { color: #e2ebec; border-color: #3f6176; } }
+.obd-ix.is-on { color: #e9f6fa; border-color: #6cc6e6; background: radial-gradient(130% 120% at 30% 20%, #27465a, #1a3344 60%, #11222e); }
+.obd-ix:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 3px; }
 
 /* ------------------------------------------------------------------ the keys (Dan, round 1: "give some love to the free
-   trial button"), three looks ([data-cta]) */
+   trial button"; he picked A of three): the trial the width of the column, what you get under it; Buy a quiet line */
 .obd-get { grid-area: get; width: 330px; max-width: 100%; }
-.obd-cta { display: none; }
-.obd[data-cta='a'] .obd-cta--a, .obd[data-cta='b'] .obd-cta--b, .obd[data-cta='c'] .obd-cta--c { display: flex; }
-.obd-fine { margin: 10px 0 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--obd-ink-3); }
-
-/* A · the big key: the trial the width of the column, what you get under it; Buy a quiet line */
-.obd-cta--a { flex-direction: column; align-items: stretch; gap: 6px; }
-.obd-cta--a .obd-try { --rb-fs: 16px; width: 100%; }
+.obd-cta { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.obd-cta .obd-try { --rb-fs: 16px; width: 100%; }
 .obd-buylink {
   align-self: center; padding: 4px 6px; border: 0; background: none; cursor: pointer;
   font: 600 13px/1.2 var(--font-body, Inter, system-ui, sans-serif); color: var(--obd-ink-2); text-decoration: underline;
@@ -225,104 +182,15 @@
 .obd-buylink:hover { color: var(--obd-cream); text-decoration-color: currentColor; }
 .obd-buylink.is-in-cart { color: var(--obd-lamp); }
 .obd-buylink:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 2px; border-radius: 3px; }
-
-/* B · the lit key: today's pair, the trial key's pilot lamp lit, a warm pool of light under it */
-.obd-cta--b { flex-wrap: wrap; gap: 10px; }
-.obd-cta--b .rv-btn { --rb-fs: 14px; --rb-px: 18px; }
-.obd-glow { position: relative; display: inline-flex; }
-.obd-glow::before { content: ''; position: absolute; inset: -14px -18px; border-radius: 40px; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(240, 192, 112, .22), rgba(240, 192, 112, 0)); }
-.obd-try-lamp { width: 7px; height: 7px; margin-right: 9px; border-radius: 50%; flex: none;
-  background: radial-gradient(circle at 40% 35%, #fff6dc, #ffd27a 45%, #b0701e); box-shadow: 0 0 0 1px rgba(60, 36, 10, .55), 0 0 7px rgba(255, 200, 110, .9); }
-
-/* C · the ticket: a stamped card-stock tag on a string is the trial key */
-.obd-cta--c { align-items: center; gap: 14px; }
-.obd-cta--c .rv-btn { --rb-fs: 14px; --rb-px: 18px; }
-.obd-ticket {
-  position: relative; display: grid; gap: 3px; padding: 10px 18px 10px 30px; border: 0; cursor: pointer; text-align: left;
-  color: #2a231d; rotate: -2deg;
-  background:
-    radial-gradient(circle at 13px 50%, #1a1714 0 4px, rgba(26, 23, 20, .5) 4.5px, transparent 5.5px),
-    linear-gradient(170deg, #f1e7d3 0%, #e4d6bb 70%, #d9c8a8 100%);
-  clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
-  filter: drop-shadow(0 1px 0 rgba(12, 9, 6, .6)) drop-shadow(6px 9px 10px rgba(12, 9, 6, .5));
-  transition: rotate .12s, translate .08s;
-}
-.obd-ticket-big { font: 800 17px/1 'Helvetica Neue', Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
-.obd-ticket-small { font: 600 11.5px/1.2 var(--font-mono); letter-spacing: .06em; color: #5a4c3e; }
-@media (hover: hover) { .obd-ticket:hover { rotate: 0deg; } }
-.obd-ticket:active { translate: 0 1px; }
-.obd-ticket:focus-visible { outline: 2px solid rgba(232, 200, 120, .8); outline-offset: 3px; }
-
-/* ------------------------------------------------------------------ the name (Dan, round 1: "let's frame this area"),
-   three frames ([data-name]); the print stays the plugin's own header lockup */
-.obd[data-name] .obd-name { width: 330px; max-width: 100%; box-sizing: border-box; }
-/* A · header plate: a strip of the tool's own red header, RevAudio left, OBDTUNE right, four screws */
-.obd[data-name='a'] .obd-name {
-  position: relative; display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 12px;
-  margin: 0 0 18px; padding: 14px 18px 12px; border-radius: 9px;
-  background:
-    radial-gradient(circle at 8px 8px, #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 8px) 8px, #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
-    radial-gradient(circle at 8px calc(100% - 8px), #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #e9d9c6 0 1.5px, #5d1a12 2.5px, transparent 3.5px),
-    linear-gradient(165deg, #d9503f 0%, #c13427 40%, #9e271c 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 210, 190, .35), inset 0 -2px 0 rgba(60, 10, 6, .45), 0 1px 0 rgba(12, 9, 6, .9), 0 12px 24px rgba(12, 9, 6, .5);
-}
-.obd[data-name='a'] .obd-maker { margin: 0; font-size: 15px; color: rgba(250, 238, 222, .95); text-shadow: 0 1px 1px rgba(60, 10, 6, .6); }
-.obd[data-name='a'] .obd-mark { justify-self: end; font-size: 24px; letter-spacing: .18em; color: #fbf1e4; filter: drop-shadow(0 1px 1px rgba(60, 10, 6, .65)); }
-.obd[data-name='a'] .obd-mark::after { display: none; }
-.obd[data-name='a'] .obd-tag { grid-column: 1 / -1; margin: 8px 0 0; color: rgba(250, 232, 214, .78); }
-/* B · one panel: the name sits in the reading screen's own rubber housing, so name + screen read as one instrument */
-.obd[data-name='b'] .obd-name {
-  margin: 0; padding: 16px 18px 14px; border-radius: 12px 12px 0 0;
-  background: linear-gradient(180deg, #34302c 0%, #2a2623 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 240, 220, .1), 0 16px 32px rgba(12, 9, 6, .45);
-}
-.obd[data-name='b'] .obd-scr { border-radius: 0 0 12px 12px; padding-top: 0; }
-.obd[data-name='b'] .obd-mark { font-size: 28px; text-shadow: 0 -1px 0 rgba(12, 9, 6, .7), 0 1px 0 rgba(255, 240, 220, .1); filter: none; }
-.obd[data-name='b'] .obd-tag { margin-top: 10px; }
-/* C · data plate: a stamped steel ID plate, like the one riveted under a car's hood */
-.obd[data-name='c'] .obd-name {
-  position: relative; margin: 0 0 18px; padding: 14px 20px 13px; border-radius: 4px; color: #1f1b18;
-  background:
-    radial-gradient(circle at 9px 9px, #d8d2c8 0 1.5px, #3c3833 2.6px, transparent 3.6px),
-    radial-gradient(circle at calc(100% - 9px) 9px, #d8d2c8 0 1.5px, #3c3833 2.6px, transparent 3.6px),
-    radial-gradient(circle at 9px calc(100% - 9px), #d8d2c8 0 1.5px, #3c3833 2.6px, transparent 3.6px),
-    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #d8d2c8 0 1.5px, #3c3833 2.6px, transparent 3.6px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0 1px, rgba(0, 0, 0, .03) 1px 3px),
-    linear-gradient(160deg, #bdb6ac 0%, #9a938a 55%, #857e75 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -1px 0 rgba(12, 9, 6, .4), 0 1px 0 rgba(12, 9, 6, .9), 0 12px 24px rgba(12, 9, 6, .5);
-}
-.obd[data-name='c'] .obd-maker { color: #2d2824; text-shadow: 0 1px 0 rgba(255, 255, 255, .3); }
-.obd[data-name='c'] .obd-mark { color: #1f1b18; filter: none; text-shadow: 0 1px 0 rgba(255, 255, 255, .35), 0 -1px 0 rgba(12, 9, 6, .35); }
-.obd[data-name='c'] .obd-mark::after { background: #2d2824; opacity: .7; }
-.obd[data-name='c'] .obd-tag { color: #2d2824; text-shadow: 0 1px 0 rgba(255, 255, 255, .3); }
-
-/* the round-2 switcher (dev only) */
-.obd-looks {
-  position: fixed; right: 14px; top: calc(var(--sale-h, 0px) + var(--nav-h, 44px) + 10px); z-index: 40;
-  display: grid; gap: 3px; padding: 6px 8px; border-radius: 12px;
-  background: rgba(20, 17, 15, .9); box-shadow: 0 0 0 1px rgba(239, 233, 223, .1), 0 8px 24px rgba(12, 9, 6, .6);
-  font: 500 10px/1 var(--font-mono); letter-spacing: .12em;
-}
-.obd-looks div { display: flex; align-items: center; gap: 2px; }
-.obd-looks span { width: 64px; color: var(--obd-ink-3); text-transform: uppercase; }
-.obd-looks button { padding: 5px 8px; border: 0; border-radius: 999px; background: none; color: var(--obd-ink-2); font: inherit; cursor: pointer; }
-.obd-looks button[aria-pressed='true'] { background: #e8c878; color: #1e1710; }
+.obd-fine { margin: 10px 0 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--obd-ink-3); }
 
 /* Dan's Safari laptop (1141 x 636 with the sale strip): the column has ~546 px */
 @media (max-height: 700px) and (min-width: 861px) {
-  .obd-name { margin-bottom: 16px; }
+  .obd-name { margin-bottom: 12px; padding-top: 11px; padding-bottom: 10px; }
   .obd-glass { height: 190px; padding: 7px 14px 12px; }
   .obd-r-p { font-size: 13px; line-height: 1.45; }
   .obd-index { margin: 12px 0 14px; }
-  .obd[data-ixl='a'] .obd-ix { height: 34px; }
-  .obd[data-ixl='b'] .obd-ix { height: 30px; }
-  .obd[data-ixl='c'] .obd-index { gap: 6px; }
-  .obd[data-ixl='c'] .obd-ix { padding: 5px 9px 5px 8px; font-size: 10.5px; gap: 6px; }
-  .obd[data-name] .obd-name { padding-top: 11px; padding-bottom: 10px; }
-  .obd[data-name='a'] .obd-name, .obd[data-name='c'] .obd-name { margin-bottom: 12px; }
+  .obd-ix { height: 30px; }
   .obd-fine { margin-top: 8px; }
 }
 
@@ -334,17 +202,10 @@
     grid-template-areas: 'name' 'unit' 'read' 'index' 'get';
     height: auto; min-height: 0; padding: 22px 20px 44px; row-gap: 0; justify-items: stretch;
   }
-  .obd-name { margin: 0 0 8px; }
-  .obd-mark { font-size: 26px; }
   .obd-unitwrap { height: auto; width: min(100%, 420px); aspect-ratio: 767 / 900; }
   .obd-scr { width: 100%; max-width: 560px; margin-top: 18px; }
   .obd-glass { height: auto; min-height: 190px; }
-  .obd-index, .obd-get, .obd[data-name] .obd-name { width: 100%; max-width: 560px; }
+  .obd-name, .obd-index, .obd-get { width: 100%; max-width: 560px; }
   .obd-index { margin: 14px 0 22px; }
-  .obd[data-ixl='a'] .obd-ix { height: 44px; } /* a finger's size */
-  .obd[data-ixl='b'] .obd-ix { height: 40px; }
-  .obd[data-name='b'] .obd-stage { grid-template-areas: 'unit' 'name' 'read' 'index' 'get'; } /* one panel: the name joins the screen under the tool */
-  .obd[data-name='b'] .obd-name { margin-top: 18px; }
-  .obd[data-name='b'] .obd-scr { margin-top: 0; }
-  .obd-looks { top: auto; bottom: 14px; }
+  .obd-ix { height: 40px; } /* a finger's size */
 }
