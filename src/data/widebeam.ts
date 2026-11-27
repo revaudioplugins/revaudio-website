@@ -120,6 +120,8 @@ export const projector = {
     /** the card's film key: the film has not run (blocked, Save-Data, reduced motion), or it has */
     play: 'Play the film',
     again: 'Watch again',
+    /** the same key while the film it asked for is still on its way (the card stays up until the film really plays) */
+    wait: 'Loading the film',
     /** the captions, on the film's clock: [from s, to s, lines]; shown with the sound on or off */
     cues: [
       [0.15, 2.08, ['Why does your mix sound so narrow?']],

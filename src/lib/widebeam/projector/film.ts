@@ -9,7 +9,8 @@
  * Never a dead section: the card is in the markup, visible; this hides it (visibility + inert + aria-hidden) only while
  * the film is the picture, and every way the film can fail to play shows it at once with the key "Play the film":
  * a refused play() (iOS Low Power Mode), every source failed, a stall (no 'playing' 6 s after the play request, or
- * 'waiting' for 6 s), Save-Data, reduced motion. That key plays it from the top, inside the press.
+ * 'waiting' for 6 s), Save-Data, reduced motion. That key plays it from the top, inside the press; the card stays up
+ * (the key busy) until the film really plays, so a line that never answers leaves the card, never a frozen frame.
  *
  * The voice (Dan's picks; critic C3): on by default, but heard only after the visitor's first act on the page itself
  * (.wbp-page): a mouse press, a finger lifted without a scroll, a real click, anywhere but a gate (the ask block, any
@@ -18,6 +19,8 @@
  * press of the sound key, Play the film, Watch again) has set it, because the browser's activation is sticky and a
  * cookie-banner or Buy click would otherwise let the film's next 'play' start it. No key press ever arms it, except on
  * those three keys themselves. The first time it is heard with the film past 1 s, both cut back to the top (pick A).
+ * It runs only while the picture does ('playing' and its clock moving): a film that waits or sticks stops it, and it
+ * starts again with the picture, never over a frozen frame (the press only primes it, play then pause, for iOS).
  * It follows the picture within 0.2 s; while it is still being fetched the picture waits for it (at most 1.5 s), so its
  * first words are never skipped. On a touch screen (a phone, either way up) a tap on the picture toggles it; with a
  * mouse a click only turns it on.
@@ -33,6 +36,8 @@ const REWIND_AFTER = 1.0; // s: a first sound later than this restarts the film 
 const STALL = 6000;
 const SAME_PRESS = 900; // ms: the click of the press that armed the voice is that same act, not a second one
 const HOLD_MAX = 1500; // ms: the longest the picture waits for a voice still on its way
+const STUCK = 500; // ms: a running film whose clock has not moved this long is stuck: the voice stops with it
+const BUSY_WORDS = 300; // ms: the film key says it is loading only if the film takes longer than this to come
 // the longest line the card's status can carry (signup.ts's own), with the error mark: the room it is given
 const LONGEST = '✕ Something went wrong. Try again, or email info@revaudio.net.';
 
@@ -53,6 +58,10 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
 
   let filmMode = false, started = false, ended = false, struck = false, inView = false, seen = false, prepared = false;
   let holding = false, holdT = 0; // the picture is paused for a moment, waiting for the voice (syncVoice)
+  // the picture really advancing: 'playing' came (flowing) and its clock has moved since (moving). Only then the voice.
+  let flowing = false, moving = false, clockT = -1, clockAt = 0, tickAt = 0;
+  // Play the film / Watch again was pressed and the film has not played yet: the card stays up, its key busy
+  let pending = false, busyT = 0;
   // a cut that hides the sound key while it holds focus hands focus to the card's film key (never to <body>)
   const keepFocus = (had: boolean) => { if (had) again.focus({ preventScroll: true }); };
   const running = () => filmMode && (!film.paused || holding) && !ended;
@@ -60,15 +69,27 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
     card.inert = !on;
     if (on) card.removeAttribute('aria-hidden'); else card.setAttribute('aria-hidden', 'true');
   };
-  const keyWords = (k: 'play' | 'again') => { again.querySelector('span')!.textContent = again.dataset[k] ?? ''; };
+  const keyWords = (k: 'play' | 'again' | 'wait') => { again.querySelector('span')!.textContent = again.dataset[k] ?? ''; };
+  function setBusy(on: boolean) {
+    pending = on; clearTimeout(busyT);
+    if (on) {
+      again.setAttribute('aria-busy', 'true'); again.setAttribute('aria-disabled', 'true');
+      busyT = window.setTimeout(() => { if (pending) keyWords('wait'); }, BUSY_WORDS);
+    } else { again.removeAttribute('aria-busy'); again.removeAttribute('aria-disabled'); }
+  }
   const syncRM = () => s2.classList.toggle('rm', RM());
   rmq.addEventListener?.('change', syncRM);
   syncRM();
   again.hidden = false; // the card's film key works from here on
+  // the visitor goes into the card's gate (or Buy) while the film is still on its way: the card is their pick, the film
+  // is called off (it would cut the card away under their typing). Not a pointerdown: a finger may only be scrolling.
+  for (const ev of ['focusin', 'input', 'click']) card.querySelector('[data-wbp-ask]')?.addEventListener(ev, () => { if (pending) cardFirst(); });
 
-  // a slow line drops the hi tier before anything is fetched (preload none); the element re-picks on its first load()
+  // a slow line drops the hi tier before anything is fetched (preload none); the element re-picks on its first load().
+  // So does a phone (the 480's screens): when its 480 fails, the source walk must end on the card, not on the 720.
   const downlink = typeof conn?.downlink === 'number' ? conn.downlink : 0;
-  const drop = [...film.querySelectorAll<HTMLSourceElement>('source')].filter((s) => downlink > 0 && downlink < 3 && s.dataset.wbpTier === 'hi');
+  const small = !!film.dataset.small && matchMedia(film.dataset.small).matches;
+  const drop = [...film.querySelectorAll<HTMLSourceElement>('source')].filter((s) => s.dataset.wbpTier === 'hi' && (small || (downlink > 0 && downlink < 3)));
   drop.forEach((s) => s.remove());
   const kept = [...film.querySelectorAll<HTMLSourceElement>('source')];
   // every source failed (or the file broke): the card, and the next press loads the sources again (an element with no
@@ -85,6 +106,7 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
     clearAnims(); cutTok++; unwatch();
     const had = document.activeElement === tap;
     filmMode = false; started = false; holding = false; clearTimeout(holdT);
+    flowing = moving = false; setBusy(false);
     s2.classList.remove('is-film', 'carding', 'playing');
     s2.classList.add('carded');
     frame.classList.remove('show-still');
@@ -110,9 +132,13 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
 
   /* ---------------- playing, stalls ---------------- */
   function unwatch() { clearTimeout(stallT); stallT = 0; }
+  // a stall: the film still not moving STALL after the play request or a 'waiting'. The next press loads it again (a
+  // request that never ends would otherwise hold the element, and play() alone never asks for the film again)
+  const stall = () => { if (filmMode && inView && !document.hidden && !ended && !holding) { failed = true; noPlay(); } };
   const watch = () => {
     unwatch();
-    stallT = window.setTimeout(() => { stallT = 0; if (filmMode && inView && !document.hidden && !ended && !holding && (film.paused || film.readyState < 3)) noPlay(); }, STALL);
+    const t0 = film.currentTime;
+    stallT = window.setTimeout(() => { stallT = 0; if (film.paused || film.readyState < 3 || film.currentTime === t0) stall(); }, STALL);
   };
   function play() {
     if (!prepared) {
@@ -127,17 +153,26 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
     watch();
     p?.catch((e: unknown) => { if ((e as Error)?.name !== 'AbortError') noPlay(); });
   }
-  film.addEventListener('playing', unwatch);
-  film.addEventListener('waiting', () => { if (filmMode && !film.paused) watch(); });
-  film.addEventListener('play', () => { s2.classList.add('playing'); syncVoice(); capKick(); });
-  film.addEventListener('pause', () => { if (holding) return; s2.classList.remove('playing'); voice.pause(); unwatch(); });
+  // the voice stops whenever the picture does; it comes back with the picture's moving clock (capTick)
+  const halt = () => { moving = false; if (!holding) voice.pause(); };
+  film.addEventListener('playing', () => {
+    unwatch(); flowing = true; clockT = film.currentTime; clockAt = performance.now();
+    if (pending && filmMode) reveal();
+    capKick();
+  });
+  film.addEventListener('waiting', () => { if (filmMode && !film.paused) watch(); flowing = false; halt(); });
+  // 'stalled' is the network's word: buffered playback runs on through it, so only a film with nothing left to play stops
+  film.addEventListener('stalled', () => { if (film.readyState < 3) { flowing = false; halt(); } });
+  film.addEventListener('emptied', () => { flowing = false; halt(); });
+  film.addEventListener('play', () => { s2.classList.add('playing'); capKick(); });
+  film.addEventListener('pause', () => { if (holding) return; flowing = moving = false; s2.classList.remove('playing'); voice.pause(); unwatch(); });
   film.addEventListener('seeking', () => { if (!voice.paused) voice.currentTime = film.currentTime; });
   film.addEventListener('loadedmetadata', () => layout());
   for (const ev of ['seeked', 'loadeddata']) film.addEventListener(ev, capKick);
   film.addEventListener('ended', () => {
     if (!filmMode) return;
     s2.classList.remove('playing'); voice.pause(); unwatch();
-    ended = true; capKick();
+    flowing = moving = false; ended = true; capKick();
     frame.classList.add('show-still');
     setTimeout(() => { if (ended) cut(false); }, RM() ? 0 : 120);
   });
@@ -284,19 +319,25 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
     requestAnimationFrame(() => requestAnimationFrame(() => { if (tok === cutTok) for (const a of anims) a.play(); }));
   }
   // Watch again / Play the film: a deliberate act on the film, so it arms the voice; played inside the press (a phone in
-  // Low Power Mode plays nothing outside one). Focus in the card goes to the sound key, never to <body>.
+  // Low Power Mode plays nothing outside one), and the voice primed in it too. The card stays up, the key busy, until
+  // the film really plays (reveal); a film that never comes leaves the card as it is, Play the film again (the stall).
   again.addEventListener('click', () => {
-    if (filmMode && !ended) return; // the film is the picture: the card is hidden and inert anyway
+    if (pending || (filmMode && !ended)) return; // on its way, or the film is the picture (the card hidden and inert)
     arm(true);
-    const inside = card.contains(document.activeElement);
     filmMode = true; ended = false;
+    setBusy(true);
+    try { film.currentTime = 0; } catch { /* no metadata yet: it starts at 0 */ }
+    play();
+    if (soundOn) unlock();
+  });
+  // the film plays: the card makes way for it. Focus in the card goes to the sound key, never to <body>.
+  function reveal() {
+    setBusy(false);
+    const inside = card.contains(document.activeElement);
     s2.classList.add('is-film');
     if (inside) tap.focus({ preventScroll: true });
     cut(true);
-    try { film.currentTime = 0; } catch { /* no metadata yet: it starts at 0 */ }
-    play();
-    syncVoice();
-  });
+  }
 
   /* ---------------- the voice ---------------- */
   let armed = false, soundOn = true, unlocked = false, blocked = false, rewound = false, starting = false, live = false, armedAt = -1e9;
@@ -305,7 +346,7 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
   const paintTap = () => { const on = audible(); tap.setAttribute('aria-pressed', String(on)); if (tapWords) tapWords.textContent = (on ? tap.dataset.on : tap.dataset.off) ?? ''; };
   const voiceSrc = () => { if (!voice.getAttribute('src') && voice.dataset.src) voice.src = voice.dataset.src; };
   function syncVoice() {
-    if (!armed || !soundOn || !running() || starting) return;
+    if (!armed || !soundOn || !running() || !moving || starting) return;
     voiceSrc();
     // the first start with the film past 1 s takes both back to the top, before the voice plays: nothing chases (one try)
     if (!rewound && film.currentTime > REWIND_AFTER) film.currentTime = 0;
@@ -319,10 +360,13 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
     starting = true;
     voice.play().then(() => {
       starting = false;
-      if (!running()) { voice.pause(); return; }
       unlocked = true; blocked = false; paintTap();
+      if (!running() || (!moving && !holding)) { voice.pause(); return; } // the picture stopped meanwhile: its clock restarts it
       release();
-    }, (e: unknown) => { starting = false; release(); if ((e as Error)?.name === 'NotAllowedError') { blocked = true; paintTap(); } });
+    }, (e: unknown) => {
+      starting = false; release();
+      if ((e as Error)?.name === 'NotAllowedError') { blocked = true; paintTap(); } else syncVoice(); // an AbortError (a pause in between): try again
+    });
   }
   // the picture runs on (if it still may): the voice is playing, failed, was stopped, or is too slow to wait for
   function release() {
@@ -338,13 +382,13 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
   // inside the arming act: the voice for real if the film runs, else played and stopped at once (its first 0.15 s is
   // silence), which is what lets a phone play it later without another touch
   function unlock() {
-    if (running()) { syncVoice(); return; }
+    if (running() && moving) { syncVoice(); return; }
     voiceSrc();
     voice.currentTime = 0;
     voice.play().then(() => {
-      if (!running() || !soundOn) { voice.pause(); voice.currentTime = 0; }
+      if (!moving || !soundOn) { voice.pause(); voice.currentTime = 0; }
       unlocked = true; blocked = false; paintTap();
-      if (running()) syncVoice();
+      if (moving) syncVoice();
     }, () => { /* refused: the key still says Tap for sound */ });
   }
   function arm(quiet = false) {
@@ -399,17 +443,27 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
       if (i >= 0) { cap.replaceChildren(...cues[i][2].flatMap((line, k) => (k ? [document.createElement('br'), line] : [line]))); cap.classList.add('on'); }
       else cap.classList.remove('on');
     }
-    if (live && !voice.seeking && armed && soundOn && !film.paused && !voice.paused && voice.duration && t < voice.duration - 0.15 && Math.abs(voice.currentTime - t) > 0.2) voice.currentTime = t;
+    // the picture's clock: moving again (after 'playing', a wait, a stick) lets the voice go; still for STUCK stops it,
+    // still for STALL (a film frozen with no word from the element: no 'waiting', not paused) is a stall: the card
+    if (flowing && !film.paused) {
+      const now = performance.now();
+      if (now - tickAt > 1000) clockAt = now; // a gap in the ticks (a throttled or sleeping tab) is not the film's
+      tickAt = now;
+      if (t !== clockT) { clockT = t; clockAt = now; if (!moving) { moving = true; syncVoice(); } }
+      else if (now - clockAt > STALL) stall();
+      else if (moving && now - clockAt > STUCK) halt();
+    }
+    if (live && moving && !voice.seeking && armed && soundOn && !film.paused && !voice.paused && voice.duration && t < voice.duration - 0.15 && Math.abs(voice.currentTime - t) > 0.2) voice.currentTime = t;
     if (!film.paused && !capRAF) capRAF = requestAnimationFrame(capTick);
   }
   function capKick() { if (!capRAF) capTick(); }
 
   /* ---------------- layout ---------------- */
   let ctx: CanvasRenderingContext2D | null = null;
-  function layout() {
-    // the card's own height at this width, plus the room its status line needs for the longest message
+  const stage = s2.querySelector<HTMLElement>('.wbp-stage');
+  // the card's own height at this width, plus the room its status line needs for the longest message
+  function cardNeed() {
     const st = card.querySelector<HTMLElement>('[data-wbp-status]');
-    frame.style.minHeight = '';
     card.style.alignSelf = 'start';
     let need = card.offsetHeight;
     card.style.alignSelf = '';
@@ -422,14 +476,32 @@ export function initFilm(s2: HTMLElement, page: HTMLElement) {
         need += Math.max(0, lines - Math.round(st.offsetHeight / lh)) * lh;
       }
     }
+    return need;
+  }
+  function layout() {
+    frame.style.minHeight = '';
+    // a laptop: the stage widens (from its CSS width every time, so the answer never depends on the last one) until the
+    // frame's 16:9 holds the card, so the film fills the frame with no bands. The card grows a little with the width
+    // (its sizes follow it), hence a few rounds. s2.css caps it at 80 % of the section; a phone's width is its own.
+    s2.style.removeProperty('--wbp-fit');
+    let need = cardNeed();
+    for (let i = 0; stage && i < 4; i++) {
+      const fw = frame.clientWidth, want = need * 16 / 9;
+      if (want <= fw + 0.5) break;
+      const sw = stage.getBoundingClientRect().width;
+      s2.style.setProperty('--wbp-fit', Math.ceil(sw + (want - fw) * sw / fw + 1) + 'px');
+      if (stage.getBoundingClientRect().width <= sw + 0.5) break; // at the cap (or a phone)
+      need = cardNeed();
+    }
     frame.style.minHeight = Math.ceil(need) + 'px';
-    // a phone: the bands above and below the 16:9 picture in a frame as tall as the card
+    // a phone: the bands above and below the 16:9 picture in a frame as tall as the card. Bands too thin to hold the
+    // captions (a laptop at its 80 % cap with a grown card) are not drawn: the film covers the frame (s2.css), no seam.
     const fw = frame.clientWidth, fh = frame.clientHeight;
     const va = film.videoWidth && film.videoHeight ? film.videoHeight / film.videoWidth : 9 / 16;
-    const pich = Math.min(fh, fw * va), band = (fh - pich) / 2;
-    s2.classList.toggle('lbox', band >= 56);
+    const pich = Math.min(fh, fw * va), band = (fh - pich) / 2, lbox = band >= 56;
+    s2.classList.toggle('lbox', lbox);
     s2.style.setProperty('--wbp-pich', Math.round(pich) + 'px');
-    s2.style.setProperty('--wbp-band', Math.round(band) + 'px');
+    s2.style.setProperty('--wbp-band', (lbox ? Math.round(band) : 0) + 'px');
     s2.style.setProperty('--wbp-ftop', frame.offsetTop + 'px');
     s2.style.setProperty('--wbp-fside', frame.offsetLeft + 'px');
     const sr = s2.getBoundingClientRect(), fr = frame.getBoundingClientRect();

@@ -20,9 +20,13 @@
 .wbp-beam { position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(10px); }
 .wbp-beam.wbp-dust { filter: none; }
 
-/* the frame: 80 % of the section's width, or as wide as a 16:9 picture 72 % of the band's height (the mock-up's P1);
-   a phone: the width less a 16 px gutter each side. Its height is the film's: 16:9, or the card's when that is taller. */
-.wbp-stage { position: relative; z-index: 1; width: min(80%, calc(var(--wbp-s2-h) * 1.28)); margin-block: 8px; }
+/* the frame: 80 % of the section's width, or as wide as a 16:9 picture 72 % of the band's height (the mock-up's P1), or
+   as wide as a 16:9 frame that holds the title card (film.ts --wbp-fit: the real words make the card taller than the
+   mock-up's), but never wider than the mock-up's own frame on this screen (its P1 took 72 % of the whole screen's
+   height: the band here is shorter by the nav and the strip); past that the frame grows taller than 16:9 and the film
+   covers it. A phone: the width less a 16 px gutter each side. Its height is the film's: 16:9, or the card's when that
+   is taller. */
+.wbp-stage { position: relative; z-index: 1; width: min(80%, max(calc(var(--wbp-s2-h) * 1.28), min(var(--wbp-fit, 0px), calc(100svh * 1.28)))); margin-block: 8px; }
 @media (max-width: 639px) { .wbp-stage { width: calc(100% - 32px); } }
 .wbp-glow { position: absolute; inset: -6%; border-radius: 40px; background: radial-gradient(closest-side, rgba(255, 236, 200, .09), transparent); opacity: 0; transition: opacity .6s; pointer-events: none; }
 .wbp-s2.is-on .wbp-glow { opacity: 1; }
@@ -37,6 +41,9 @@
 .wbp-film::before { content: ''; grid-area: 1 / 1; padding-top: 56.25%; }
 .wbp-film > .wbp-card { grid-area: 1 / 1; }
 .wbp-film > :is(.wbp-film-v, .wbp-still) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+/* a frame a little taller than 16:9 (a laptop at its cap, with a grown card): the film covers it, its sides cropped a
+   little, rather than a thin black band with a hard edge under the picture; a phone's tall frame letterboxes (.lbox) */
+.wbp-s2:not(.lbox) .wbp-film > :is(.wbp-film-v, .wbp-still) { object-fit: cover; }
 .wbp-still { visibility: hidden; }
 .wbp-film.show-still .wbp-still { visibility: visible; }
 .wbp-film.show-still .wbp-film-v { visibility: hidden; }

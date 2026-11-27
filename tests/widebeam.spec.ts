@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, devices, type Page } from '@playwright/test';
 import { widebeam, buyable, askFor, projector } from '../src/data/widebeam';
 import { salePhases } from '../src/data/sale';
 
@@ -441,6 +441,106 @@ test.describe('/widebeam section 2: the film and its title card', () => {
     await expect(filmKey(page)).toHaveText(projector.film.play);
   });
 
+  // a line that never answers: the press of Play the film keeps the card up (its key busy) and the voice silent, never
+  // a frozen frame with the voice stuttering over it; the stall then leaves the card with Play the film
+  test('Play the film on a hung line keeps the card up and the voice paused', async ({ page, isMobile }) => {
+    test.setTimeout(60_000);
+    await page.route(FILM, () => { /* never answered */ });
+    await watch(page);
+    await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+    await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+    await expect.poll(() => cardShown(page), { timeout: 20_000, message: 'the stall shows the card' }).toBe(true);
+    await expect(filmKey(page)).toHaveText(projector.film.play);
+    await press(filmKey(page), isMobile);
+    await expect(filmKey(page)).toHaveAttribute('aria-busy', 'true');
+    // the wait words show from about 300 ms until the 6 s stall: read them before the sampling loop, which a loaded
+    // machine can stretch past the stall
+    await expect(filmKey(page)).toHaveText(projector.film.wait);
+    // the press plays the voice and stops it at once (a phone's unlock): read it from a moment after
+    await page.waitForTimeout(1000);
+    for (let i = 0; i < 8; i++) {
+      const s = await page.evaluate(() => { const v = document.querySelector<HTMLAudioElement>('[data-wbp-voice]')!; return { paused: v.paused, t: v.currentTime }; });
+      expect(await cardShown(page), 'the card while the film is on its way').toBe(true);
+      expect(s.paused, `the voice over a film that does not move (t ${s.t})`).toBe(true);
+      await page.waitForTimeout(400);
+    }
+    await expect(filmKey(page)).toHaveText(projector.film.play, { timeout: 10_000 });
+    await expect(filmKey(page)).not.toHaveAttribute('aria-busy', 'true');
+    expect(await cardShown(page), 'the card after the stall').toBe(true);
+  });
+
+  // a stall whose request never ends: the next press asks for the film again (a reload), so it plays
+  test('Play the film after a stall on a request that never ends sends a new request, and the film plays', async ({ page, isMobile }) => {
+    test.setTimeout(60_000);
+    let n = 0;
+    await page.route(FILM, (r) => { if (n++ === 0) return; /* the first one: never answered */ r.continue().catch(() => {}); });
+    await watch(page);
+    await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+    await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+    await expect.poll(() => cardShown(page), { timeout: 20_000, message: 'the stall shows the card' }).toBe(true);
+    await press(filmKey(page), isMobile);
+    await expect.poll(() => n, { timeout: 5_000, message: 'a new film request after the press' }).toBeGreaterThan(1);
+    await expect.poll(() => cardShown(page), { timeout: 15_000, message: 'the card makes way for the film' }).toBe(false);
+    await expect.poll(() => filmRunning(page), { timeout: 10_000 }).toBe(true);
+  });
+
+  // a film that stops moving with no word from the element (no 'waiting', not paused, its data all there): the card
+  test('a film whose clock stops shows the card, and Play the film plays it again', async ({ page, isMobile }) => {
+    test.setTimeout(60_000);
+    await watch(page);
+    await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+    await toFilm(page);
+    await page.evaluate(() => { document.querySelector<HTMLVideoElement>('[data-wbp-manual]')!.playbackRate = 0; });
+    await expect.poll(() => cardShown(page), { timeout: 12_000, message: 'the card over a frozen film' }).toBe(true);
+    await expect(filmKey(page)).toHaveText(projector.film.play);
+    await press(filmKey(page), isMobile);
+    await expect.poll(() => cardShown(page), { timeout: 15_000, message: 'the card makes way for the film' }).toBe(false);
+    await expect.poll(() => filmRunning(page), { timeout: 10_000 }).toBe(true);
+  });
+
+  test.describe('on a phone', () => {
+    const { defaultBrowserType: _b, ...iphone } = devices['iPhone 14 Pro'];
+    test.use(iphone);
+    test('a failed 480 never falls through to the 720: the card, with Play the film', async ({ page }) => {
+      test.setTimeout(60_000);
+      await page.route(/manual-film-480\.mp4/, (r) => r.abort('failed'));
+      const seen = await watch(page);
+      await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+      await expect.poll(() => cardShown(page), { timeout: 20_000 }).toBe(true);
+      await expect(filmKey(page)).toHaveText(projector.film.play);
+      expect(seen.filter((u) => /manual-film-720/.test(u)), 'the 720 on a phone').toEqual([]);
+    });
+  });
+
+  // a laptop: the frame is the film's 16:9, widened until it holds the card but never wider than the mock-up's frame on
+  // that screen (72 % of its height, as 16:9); past that it is a little taller than 16:9 and the film covers it (no bands)
+  for (const vp of [{ width: 1440, height: 900 }, { width: 1312, height: 734 }, { width: 1141, height: 636 }]) {
+    test(`the frame holds the card at ${vp.width}x${vp.height}: 16:9 or a little taller, no wider than the mock-up's, the film covering it`, async ({ page, isMobile }) => {
+      test.skip(!!isMobile, 'a laptop layout');
+      await page.setViewportSize(vp);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await watch(page);
+      await page.goto('/widebeam/', { waitUntil: 'load' });
+      await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+      await page.waitForTimeout(800);
+      const m = await page.evaluate(() => {
+        const f = document.querySelector('[data-wbp-frame]')!.getBoundingClientRect(), c = document.querySelector('[data-wbp-card]')!.getBoundingClientRect();
+        const fit = getComputedStyle(document.querySelector('[data-wbp-manual]')!).objectFit, lbox = document.querySelector('[data-wbp-s2]')!.classList.contains('lbox');
+        return { w: f.width, h: f.height, cardH: c.height, cardBottom: c.bottom, vh: innerHeight, fit, lbox };
+      });
+      expect(m.h, `frame ${m.w}x${m.h} is shorter than 16:9`).toBeGreaterThanOrEqual(m.w * 9 / 16 - 1);
+      expect(m.h / (m.w * 9 / 16), `frame ${m.w}x${m.h} is far taller than 16:9`).toBeLessThan(1.08);
+      expect(m.w, `frame ${m.w} wider than the mock-up's at this height`).toBeLessThanOrEqual(vp.height * 0.72 * 16 / 9 + 1);
+      expect(m.lbox || m.fit !== 'cover', 'the film covers the frame (no bands)').toBe(false);
+      expect(m.cardH, 'the card fits the frame').toBeLessThanOrEqual(m.h + 0.5);
+      expect(m.cardBottom, 'the card ends on the screen').toBeLessThanOrEqual(m.vh);
+    });
+  }
+
   test.describe('with reduced motion', () => {
     test.beforeEach(({ page }) => page.emulateMedia({ reducedMotion: 'reduce' }));
     test('the card shows first, and no film is fetched until Play the film', async ({ page }) => {
@@ -456,8 +556,36 @@ test.describe('/widebeam section 2: the film and its title card', () => {
       await filmKey(page).focus();
       await page.keyboard.press('Enter');
       await expect.poll(() => seen.filter((u) => FILM.test(u)).length, { message: 'the film after the key' }).toBeGreaterThan(0);
-      expect(await cardShown(page), 'the card after the key').toBe(false);
+      // the card makes way once the film really plays (it stays up while the film is still on its way)
+      await expect.poll(() => cardShown(page), { timeout: 10_000, message: 'the card once the film plays' }).toBe(false);
       await expect(page.locator('[data-wbp-tap]')).toBeFocused();
+    });
+
+    // Play the film, then into the card's gate while the film is on its way: the visitor chose the card, so it stays
+    // (the film is called off, the key says Play the film again) and nothing typed is lost
+    test('going into the card while the film is on its way keeps the card and the typing', async ({ page, isMobile }) => {
+      test.setTimeout(60_000);
+      const held: import('@playwright/test').Route[] = []; let hang = true;
+      await page.route(FILM, (r) => { if (hang) held.push(r); else r.continue().catch(() => {}); });
+      await watch(page);
+      await page.goto('/widebeam/', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => document.getElementById('cookie-banner')?.remove());
+      await page.evaluate(() => document.getElementById('manual')?.scrollIntoView());
+      await expect.poll(() => cardShown(page), { timeout: 10_000 }).toBe(true);
+      await press(filmKey(page), isMobile);
+      await expect(filmKey(page)).toHaveAttribute('aria-busy', 'true');
+      const field = card(page).getByRole('textbox', { name: 'Your email', exact: true });
+      await press(field, isMobile);
+      await page.keyboard.type('half@exa');
+      hang = false; for (const r of held.splice(0)) await r.continue().catch(() => {});
+      await page.waitForTimeout(2500);
+      expect(await cardShown(page), 'the card once the film could play').toBe(true);
+      await page.keyboard.type('mple.com');
+      await expect(field).toHaveValue('half@example.com');
+      await expect(field).toBeFocused();
+      await expect(filmKey(page)).toHaveText(projector.film.play);
+      await expect(filmKey(page)).not.toHaveAttribute('aria-busy', 'true');
+      expect(await page.evaluate(() => document.querySelector<HTMLAudioElement>('[data-wbp-voice]')!.paused), 'the voice').toBe(true);
     });
 
     test('the card\'s gate sends the same two requests as section 1\'s, and the done state spreads both ways', async ({ page }) => {
