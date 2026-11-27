@@ -1,3 +1,20 @@
+## 2026-11-27 — The TV's words fit short laptop windows (Claude Code `revaudio-97 [1cfdf1]`, Yoni's laptop 2) — branch `fix/tv-fit` (worktree `../revaudio-website-noline`, on main `93618a6`), PUSHED TO MAIN 2026-11-27 on Yoni's word "push deploy"
+
+Claim: CLOSED 2026-11-27 `revaudio-97`. Files: `src/components/WordWall.astro` (layout B's `.ww-panel` rule + a
+`max-height: 680px` block under it), `DESIGN.md` §Laptop layout B, this entry.
+- Yoni (GAS 2 on MASTERING, a short window): "some mess in the tv ... some buttons are cutted" = PRODUCT PAGE under
+  the bezel, the GAS 2 name up on the menu's band edge. Reproduced at 1573x560 (and 1280x600).
+- Cause: layout B gave `.ww-panel` a fixed `height` (from `--ww-main`) and centred `.ww-info` in it; the words are
+  ~280 px, so below ~650 px of window they overflowed both ways.
+- Fix: `height` -> `min-height` (the words grow the panel and the TV, never clip) + below 680 px tall a tighter words
+  column (name clamp 1.9-2.5rem, gaps .3/.2rem, blurb .94rem/1.36, keys row-gap .4rem and the Try key slimmer with
+  `!important` because the scoped key rules out-rank the global block, price 3rem / 2.15rem).
+- Checks (`astro build` green; Chromium on `astro preview`, script parks the TV under the nav like the lock): 10
+  laptop sizes (1920x1080 down to 1573x560) x 9 channels: 0 cases of words over the strip, past the panel or under
+  the glass's bottom; before: 9 bad at 1280x600 and 1573x560/620. TV fits one screen everywhere except 1573x560
+  (44 px past, scrolls). >= 680 px tall: same panel/words sizes as before. Not checked: WebKit, a real phone (rules
+  are inside the laptop-only block).
+
 ## 2026-11-27 — OBDTUNE one-pager SHIPS: Dan's column picks on the default background, pushed to main on his word (Claude Code "OBD Tune page redesign", Dan's Mac) — branch `feat/obdtune-ship` (worktree `.claude/worktrees/obd-column`)
 
 Claim: closed 2026-11-27 at the push. Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts`,

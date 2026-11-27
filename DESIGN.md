@@ -167,6 +167,14 @@ neon or glow without a lamp (a lit CRT IS a lamp: the TV's phosphor type may glo
     grid) and never move, and the picture changes in a fixed stage on the right. The words change in place (they fade,
     never travel). Phones keep one pane at a time. Where this section still describes the list on the left, B overrides
     it on laptops.
+    - Short laptop windows (Yoni 2026-11-27, a not-maximised window with the BF strip up: "theres some mess in the tv
+      ... some buttons are cutted"): the panel under the strip had a fixed height from the window and the words were
+      centred in it, so on a short window the words (280 px) spilled both ways, the name up onto the menu's band and
+      Product page under the bezel. Two rules now: the panel's height is a MINIMUM (the words push the TV taller rather
+      than ever clip; the one-screen rule's own fallback), and below 680 px tall the words column tightens (~35 px:
+      name, blurb, gaps, the Try key, the price) so it still fits one screen. Measured on 10 laptop sizes x 9 channels:
+      nothing leaves the panel or the glass; at 1280x600 and 1573x620 one screen; at 1573x560 the TV runs 44 px past
+      the screen (scroll). Windows 680 px tall or more are unchanged.
     - The menu and the page (Dan 2026-11-25, on the bundle's page: "a dividing line ... a section a bit darker so you
       feel the difference between the sections"; his pick C of four, "your line, as drawn"): the glass behind the
       categories and the strip is black at 35% over the glow, across the whole glass, down to halfway between the strip

@@ -2800,10 +2800,26 @@ html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-thumb img, html:not(.h
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-rtext { justify-items: center; text-align: center; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-name { font-size: clamp(1rem, 1.5vw, 1.4rem) !important; -webkit-text-stroke-width: 1px; }
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] .ww-type { display: none; }
+/* min-height, not height (Yoni 2026-11-27, a short laptop window: "some buttons are cut"): on a fixed height the
+   centred words outgrew the panel both ways, the name up onto the strip's band and Product page under the bezel. Now
+   the words push the panel, and the TV, taller instead (the one-screen rule's own fallback, see ONE SCREEN above). */
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel {
-  height: calc(var(--ww-main) - var(--lay-strip) - var(--ww-row-gap));
+  min-height: calc(var(--ww-main) - var(--lay-strip) - var(--ww-row-gap));
   grid-template-columns: minmax(0, clamp(26rem, 34vw, 28rem)) minmax(0, 1fr); grid-template-areas: 'info ui';
   column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+/* a short window (a laptop browser not maximised, or with the BF/CM strip up): the words column tightens, ~35 px, so
+   it still fits the glass in one screen; below ~600 px the TV grows instead */
+@media (max-height: 680px) {
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] { --lay-nm: clamp(1.9rem, 2.8vw, 2.5rem); }
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-info { gap: .3rem; }
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-phead { gap: .2rem; }
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-blurb { font-size: .94rem; line-height: 1.36; height: calc(var(--lay-bl-lines) * 1.36em); }
+  /* !important: the scoped key rules out-rank this block (as with the keys' column-gap above) */
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-buy { row-gap: .4rem !important; }
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-buy .ww-try { padding: .42rem .95rem .36rem !important; font-size: 1.45rem !important; }
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price { font-size: 3rem; }
+  html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-price.is-long { font-size: 2.15rem; }
 }
 /* the sale bundle's picture (WordWall's scoped CSS): its plugins keep their own shapes, not the window rule above */
 html:not(.hc) .ww[data-wordwall][data-ww-bg='screen'] > .ww-panel .ww-ui .ww-mv img {
