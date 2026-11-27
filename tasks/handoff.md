@@ -11,6 +11,17 @@ Claim: OPEN 2026-11-27, Claude Code `danavivi-d9 [562cc2]` (took it over from th
   presses switch, no page errors, no sideways scroll, `astro build` green, tsc clean. Pick page: claude.ai artifact
   CLC3UwMtPdBeH5228DNeo6 (db `picks/desk1`); Claude's pick A. Dan's Safari opened on `/obdtune/?desk=a` (dev 4744).
   After his pick: keep that jpg, delete the other two, the B/C imports, the switcher (nav + inline script + CSS).
+- **11-27 column round 2 (the session that built the one-pager; branch `feat/obdtune-column`, worktree
+  `.claude/worktrees/obd-column`, dev 4745):** Dan's bench notes (claude.ai artifact 1e3dCpgJN7PusemmzJsDdh, db `notes`):
+  frame the name, a more pressable index, shorter / clearer readings, love for the trial key. Three options each; his
+  picks (read off his switcher tab, the bench's `notes-r2` stayed empty): name A red header plate, index B the tool's
+  screen tiles (8 parts: POWER, BACK · OK, SERVICE keep their readings on the tool only), readings A (headline + one
+  line + value box, now `READINGS` itself, checked against Gil's copy), trial key A (full-width "Try free · 30 days /
+  Full version · no credit card", Buy = "or buy · $15"). `6fbe9b8` builds them; `b064788` merges this branch's 093b1f3
+  in (conflicts resolved there: column rules from the column branch, the halo on the loose type over the garage, the
+  desk switcher kept; plate darkened a touch so its small print holds AA). **Merging `feat/obdtune-column` into
+  `feat/obdtune-onepager` is clean while it sits at 093b1f3.** Checked on the merge: 18 readings fit (1312x734,
+  1141x636, 390x844, 1920x1080), index / trial / cart work, AA on every column text over desks A-C, build green, tsc.
 Earlier claim: closed 2026-11-27 by the session that built it. Files: `src/pages/obdtune.astro`, `src/styles/obdtune.css`, `src/lib/obdtune/init.ts` (rewritten),
 `src/data/obdtune-parts.ts` (new); removed `src/lib/obdtune/story.ts`, `bench.ts`, `graph.ts` (only the old page used them);
 this entry. `unit.ts`, `live.ts`, `engine.ts`, `src/data/obdtune.ts` untouched.
