@@ -18,6 +18,7 @@
 import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { obdtune, buyable, registerUrl, fmtUsd } from '../data/obdtune';
+import { salePhases } from '../data/sale';
 import { READINGS, INDEX, KEY_LABEL } from '../data/obdtune-parts';
 import stillSrc from '../assets/obdtune/unit-still.png';
 import '../styles/obdtune.css';
@@ -74,19 +75,47 @@ const home = READINGS.home;
 
       <div class="obd-get">
         {/* the big key (Dan, round 1: "give some love to the free trial button"; option A of three): the trial the width
-            of the column, what you get under it (the trial form promises it), Buy as a quiet line */}
-        <div class="obd-cta">
+            of the column, what you get under it (the trial form promises it), Buy as a quiet line.
+            Sale days (html[data-sale], set pre-paint by BaseLayout from src/data/sale.ts; Dan's pick 2026-11-25, moved
+            onto this column 2026-11-28): Buy is the big key with $15 on it (the cart charges $15, the code comes off at
+            checkout), the live phase's net price + a copy-code chip under it, the trial the quiet line. The .obd-day /
+            .obd-sale swap is CSS only (obdtune.css), so the page goes back by itself when the sale ends. */}
+        <div class="obd-cta" data-can-buy={canBuy ? '' : undefined}>
           <button
-            type="button" class="rv-btn rv-btn--stack obd-try"
+            type="button" class="rv-btn rv-btn--stack obd-try obd-day"
             data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
             data-register-url={trialRegister ?? undefined}
           ><span class="rv-btn__label">Try free · {obdtune.trialDays} days</span><span class="rv-btn__sub">Full version · no credit card</span></button>
           {canBuy && (
             <button
-              type="button" class="obd-buylink"
+              type="button" class="obd-buylink obd-day"
               data-add-to-cart data-cart-open
               data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
             >or buy · {fmtUsd(obdtune.priceUsd!)}</button>
+          )}
+          {canBuy && (
+            <>
+              <button
+                type="button" class="rv-btn rv-btn--stack obd-try obd-sale"
+                data-add-to-cart data-cart-open
+                data-slug={obdtune.slug} data-name={obdtune.name} data-price={obdtune.priceUsd}
+              ><span class="rv-btn__label">Buy · {fmtUsd(obdtune.priceUsd!)}</span><span class="rv-btn__sub">{salePhases.map((p) => (
+                <span data-phase={p.id}>{p.name} · {p.pct}% off</span>
+              ))}</span></button>
+              <p class="obd-plates obd-sale">{salePhases.map((p) => (
+                <span class="obd-plate" data-phase={p.id}>
+                  <b>{fmtUsd((obdtune.priceUsd! * (100 - p.pct)) / 100)}</b> with code <button
+                    type="button" class="obd-code" data-obd-code={p.code} aria-label={`Copy code ${p.code}`}
+                  >{p.code}<span class="obd-code-hint" aria-hidden="true"><span>copy</span><span>copied</span></span></button> at checkout
+                  <span class="sr-only" aria-live="polite" data-obd-copied></span>
+                </span>
+              ))}</p>
+              <button
+                type="button" class="obd-buylink obd-sale"
+                data-trial-gate-open data-plugin-name={obdtune.name} data-plugin-slug={obdtune.gateId}
+                data-register-url={trialRegister ?? undefined}
+              >or try free · {obdtune.trialDays} days</button>
+            </>
           )}
         </div>
         <p class="obd-fine">{obdtune.formats}</p>

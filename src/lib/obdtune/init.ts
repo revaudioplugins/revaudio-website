@@ -105,6 +105,20 @@ export function initObdtune() {
     lightIndex(k);
   }
 
+  // ---------------------------------------------------------------- the sale plate's code chip (sale days only, CSS):
+  // a tap copies the code; the chip says "copied" itself, the plate's hidden polite region tells screen readers
+  page.querySelectorAll<HTMLButtonElement>('[data-obd-code]').forEach((btn) => {
+    const note = btn.closest('.obd-plate')?.querySelector<HTMLElement>('[data-obd-copied]');
+    let t = 0;
+    btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.obdCode || ''); } catch { return; }
+      if (note) note.textContent = 'Copied';
+      btn.classList.add('is-copied');
+      clearTimeout(t);
+      t = window.setTimeout(() => { btn.classList.remove('is-copied'); if (note) note.textContent = ''; }, 1600);
+    });
+  });
+
   // ---------------------------------------------------------------- the live tool
   startLive();
   void mountUnit(host).then((ok) => {

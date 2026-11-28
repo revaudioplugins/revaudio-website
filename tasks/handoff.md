@@ -1,3 +1,16 @@
+## 2026-11-28 — OBDTUNE sale keys: Dan's Nov 25 sale picks on the new column (Claude Code "OBD Tune page redesign", Dan's Mac) — branch `feat/obdtune-sale` (worktree `.claude/worktrees/obd-column`, from main `939883a`)
+
+Claim: open until the push (this session). Files: `src/pages/obdtune.astro` (the keys block), `src/styles/obdtune.css`
+(the sale rules after `.obd-fine`), `src/lib/obdtune/init.ts` (the code chip), this entry.
+- Dan, 11-28, asked (the garage session flagged that `feat/obdtune-bf-close` @ `6562845`, his Nov 25 sale picks for the
+  OLD page, never reached main): he picked "Sale mode": while `html[data-sale]` (src/data/sale.ts, BaseLayout's pre-paint
+  gate) Buy is the big key "Buy · $15 / Black Friday · 50% off" (Cyber Monday · 40% off), under it "$7.50 with code
+  [REDLINE copy] at checkout" ($9 + CYBER40 on Cyber Monday), the trial the quiet line "or try free · 30 days". $15 stays
+  on the key (the cart charges $15; the code comes off at Paddle checkout, as on Nov 25). Normal days are unchanged; the
+  swap is CSS only, so Dec 1 00:00 PT it goes back by itself. Not ported from the old branch: the trust line, the close
+  row and the phone bar (the old page's parts). `feat/obdtune-bf-close` is retired by this (local only, never pushed).
+- Short sale windows (<= 620 px tall): tighter name / index / fine-print gaps, so 1280x600 holds one screen.
+
 ## 2026-11-27 — The TV's words fit short laptop windows (Claude Code `revaudio-97 [1cfdf1]`, Yoni's laptop 2) — branch `fix/tv-fit` (worktree `../revaudio-website-noline`, on main `93618a6`), PUSHED TO MAIN 2026-11-27 on Yoni's word "push deploy"
 
 Claim: CLOSED 2026-11-27 `revaudio-97`. Files: `src/components/WordWall.astro` (layout B's `.ww-panel` rule + a

@@ -184,6 +184,37 @@
 .obd-buylink:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 2px; border-radius: 3px; }
 .obd-fine { margin: 10px 0 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; color: var(--obd-ink-3); }
 
+/* sale days (html[data-sale], BaseLayout's pre-paint gate + SaleStrip's clock at midnight PT; Dan's pick 2026-11-25 on
+   this column 2026-11-28): Buy takes the big key, the trial the quiet line, the live phase's net price + code under Buy.
+   Hide-only rules, so every shown key keeps its own display; no buy price (data-can-buy absent) = normal days */
+html:not([data-sale]) .obd-cta .obd-sale,
+html[data-sale] .obd-cta[data-can-buy] .obd-day,
+.obd-cta [data-phase] { display: none; }
+html[data-sale='bf'] .obd-cta [data-phase='bf'],
+html[data-sale='cm'] .obd-cta [data-phase='cm'] { display: inline; }
+.obd-plates { margin: 2px 0 0; max-width: none; text-align: center; font: 500 13px/1.4 var(--font-body, Inter, system-ui, sans-serif); color: var(--obd-ink-2); }
+.obd-plate b { color: var(--obd-lamp); font-weight: 700; }
+.obd-code { /* the code as a chip of the tool's LCD ink: a tap copies it (init.ts), "copied" in the same cell */
+  display: inline-flex; align-items: baseline; gap: .45em; margin: 0 .15em; padding: 2px 8px; border-radius: 4px; cursor: copy;
+  font: 400 17px/1 'OBD Pixel', ui-monospace, monospace; letter-spacing: .08em; color: var(--obd-lamp);
+  background: rgba(240, 192, 112, .08); border: 1px dashed rgba(240, 192, 112, .7);
+}
+.obd-code:hover { background: rgba(240, 192, 112, .16); }
+.obd-code:focus-visible { outline: 2px solid rgba(232, 200, 120, .7); outline-offset: 2px; }
+.obd-code-hint { display: inline-grid; justify-items: center; font: 600 9px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--obd-ink-2); }
+.obd-code-hint > span { grid-area: 1 / 1; } /* "copy" and "copied" share one cell: the chip never changes width */
+.obd-code-hint > span + span, .obd-code.is-copied .obd-code-hint > span:first-child { visibility: hidden; }
+.obd-code.is-copied .obd-code-hint > span + span { visibility: visible; color: var(--obd-lamp); }
+.obd-code.is-copied { background: rgba(240, 192, 112, .2); border-style: solid; }
+html.hc .obd-code { background: #000000; border-style: solid; }
+/* short laptop windows on sale days (the strip takes 46 px, the plate a line): tighter gaps keep the column on one
+   screen (1280 x 600 ran 19 px over) */
+@media (max-height: 620px) and (min-width: 861px) {
+  html[data-sale] .obd-name { margin-bottom: 6px; }
+  html[data-sale] .obd-index { margin: 8px 0; }
+  html[data-sale] .obd-fine { margin-top: 3px; }
+}
+
 /* Dan's Safari laptop (1141 x 636 with the sale strip): the column has ~546 px */
 @media (max-height: 700px) and (min-width: 861px) {
   .obd-name { margin-bottom: 12px; padding-top: 11px; padding-bottom: 10px; }
