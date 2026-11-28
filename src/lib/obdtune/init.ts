@@ -106,12 +106,17 @@ export function initObdtune() {
   }
 
   // ---------------------------------------------------------------- the sale plate's code chip (sale days only, CSS):
-  // a tap copies the code; the chip says "copied" itself, the plate's hidden polite region tells screen readers
+  // a tap copies the code; the chip says "copied" itself, the plate's hidden polite region tells screen readers. If the
+  // clipboard refuses, the code's own text is selected instead, ready for Cmd/Ctrl+C
   page.querySelectorAll<HTMLButtonElement>('[data-obd-code]').forEach((btn) => {
     const note = btn.closest('.obd-plate')?.querySelector<HTMLElement>('[data-obd-copied]');
     let t = 0;
     btn.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(btn.dataset.obdCode || ''); } catch { return; }
+      try { await navigator.clipboard.writeText(btn.dataset.obdCode || ''); } catch {
+        const code = btn.firstChild, sel = getSelection();
+        if (code && sel) { const r = document.createRange(); r.selectNodeContents(code); sel.removeAllRanges(); sel.addRange(r); }
+        return;
+      }
       if (note) note.textContent = 'Copied';
       btn.classList.add('is-copied');
       clearTimeout(t);

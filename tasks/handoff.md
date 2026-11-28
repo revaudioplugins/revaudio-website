@@ -1,6 +1,6 @@
 ## 2026-11-28 — OBDTUNE sale keys: Dan's Nov 25 sale picks on the new column (Claude Code "OBD Tune page redesign", Dan's Mac) — branch `feat/obdtune-sale` (worktree `.claude/worktrees/obd-column`, from main `939883a`)
 
-Claim: open until the push (this session). Files: `src/pages/obdtune.astro` (the keys block), `src/styles/obdtune.css`
+Claim: closed 2026-11-28 at the push (pushed to main on Dan's pick "Sale mode", which named the push). Files: `src/pages/obdtune.astro` (the keys block), `src/styles/obdtune.css`
 (the sale rules after `.obd-fine`), `src/lib/obdtune/init.ts` (the code chip), this entry.
 - Dan, 11-28, asked (the garage session flagged that `feat/obdtune-bf-close` @ `6562845`, his Nov 25 sale picks for the
   OLD page, never reached main): he picked "Sale mode": while `html[data-sale]` (src/data/sale.ts, BaseLayout's pre-paint
@@ -9,7 +9,13 @@ Claim: open until the push (this session). Files: `src/pages/obdtune.astro` (the
   on the key (the cart charges $15; the code comes off at Paddle checkout, as on Nov 25). Normal days are unchanged; the
   swap is CSS only, so Dec 1 00:00 PT it goes back by itself. Not ported from the old branch: the trust line, the close
   row and the phone bar (the old page's parts). `feat/obdtune-bf-close` is retired by this (local only, never pushed).
-- Short sale windows (<= 620 px tall): tighter name / index / fine-print gaps, so 1280x600 holds one screen.
+- Short sale windows: <= 620 px tall tighter gaps; <= 600 px a slimmer plate, 26 px tiles, the reading screen 176 px (all
+  18 readings keep 14 px spare) and a one-line Buy key, so the column holds one screen down to 560 px (Yoni's 1573x560).
+- Checked before the push: 3 agents (code review Opus, browser Sonnet, prices Sonnet), no blocker; their nits fixed (the
+  chip's name "REDLINE, copy code", "at checkout" never splits, the hint isn't selectable, a refused clipboard selects
+  the code). Left as is: the big key goes dark when OBDTUNE is in the cart, without words (as "or buy" on normal days);
+  focus on a sale key drops if the phase flips at midnight PT. Not checked here: that Paddle takes REDLINE / CYBER40 on
+  OBDTUNE (Dan, 11-28: "no need"), real Safari, a real phone.
 
 ## 2026-11-27 — The TV's words fit short laptop windows (Claude Code `revaudio-97 [1cfdf1]`, Yoni's laptop 2) — branch `fix/tv-fit` (worktree `../revaudio-website-noline`, on main `93618a6`), PUSHED TO MAIN 2026-11-27 on Yoni's word "push deploy"
 
