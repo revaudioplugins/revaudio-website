@@ -1,6 +1,10 @@
 ## 2026-11-26/27 — OBDTUNE one-pager: Dan picked A "Sheet", then screen C; NEXT = the garage desk + PUSH LIVE before 2026-11-28 (Claude Code, Dan's Mac) — branch `feat/obdtune-onepager` (worktree `.claude/worktrees/obd-onepager`, from origin/main `d619810`), NOT on main
 
-Claim: OPEN 2026-11-27, Claude Code `danavivi-d9 [562cc2]` (took it over from the session that built the one-pager, now idle). Adds: `src/assets/obdtune/garage-{a,b,c}.jpg`, `tools/obdtune-garage/` (new).
+Claim: CLOSED 2026-11-27, **dropped by Dan 11-27** (`danavivi-d9 [562cc2]`). Dan: "forget the background, leave the default
+background for the OBD tune". The page ships from the session "OBD Tune page redesign" on a branch off
+`feat/obdtune-column` `6fbe9b8` (house background, hover + pointer lean back, no garage still); it updates main's handoff.
+This branch is NOT for main. It keeps the desk round at `093b1f3` for reference: `src/assets/obdtune/garage-{a,b,c}.jpg`,
+`tools/obdtune-garage/` (the camera take-over recipe for stills of the 3D room). Room-render worktree removed.
 - **11-27 garage round (danavivi-d9):** the three desks are built on the page, dev switcher `?desk=a|b|c` (A by default;
   `import.meta.env.DEV` only). Renders: `tools/obdtune-garage/shots.sh` (the three cameras, how to serve the room from a
   detached worktree of `14ba0ff` at `.claude/worktrees/room-render-obd`, port 4761; one render at a time). The frame is
